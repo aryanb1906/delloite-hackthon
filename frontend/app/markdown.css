@@ -1,0 +1,96 @@
+/* Markdown content styling */
+.prose {
+    @apply text-foreground;
+}
+
+.prose p {
+    @apply my-2;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+    @apply font-bold text-foreground;
+}
+
+.prose h1 {
+    @apply text-xl mt-4 mb-2;
+}
+
+.prose h2 {
+    @apply text-lg mt-3 mb-2;
+}
+
+.prose h3 {
+    @apply text-base mt-2 mb-1;
+}
+
+.prose strong {
+    @apply font-bold text-primary;
+}
+
+.prose table {
+    @apply w-full border-collapse my-4;
+}
+
+.prose thead {
+    @apply bg-primary/10;
+}
+
+.prose th {
+    @apply px-4 py-2 text-left text-xs font-semibold border-b border-border;
+}
+
+.prose td {
+    @apply px-4 py-2 text-sm;
+}
+
+.prose tr {
+    @apply hover:bg-muted/50 transition-colors;
+}
+
+.prose tbody {
+    @apply divide-y divide-border;
+}
+
+.prose ul,
+.prose ol {
+    @apply my-3 space-y-1 text-sm;
+}
+
+.prose ul {
+    @apply list-disc list-inside;
+}
+
+.prose ol {
+    @apply list-decimal list-inside;
+}
+
+.prose li {
+    @apply leading-relaxed;
+}
+
+.prose code {
+    @apply px-1.5 py-0.5 rounded bg-muted text-primary text-xs font-mono;
+}
+
+.prose pre {
+    @apply my-2;
+}
+
+.prose pre code {
+    @apply block px-4 py-3 rounded-lg overflow-x-auto;
+}
+
+.prose blockquote {
+    @apply border-l-4 border-primary pl-4 py-2 my-3 italic text-muted-foreground;
+}
+
+.prose a {
+    @apply text-primary hover:text-primary/80 underline font-medium;
+}
+
+.prose hr {
+    @apply my-4 border-border;
+}

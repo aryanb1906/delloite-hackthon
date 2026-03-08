@@ -1,0 +1,10 @@
+organisation,Ministry of Finance
+sectors,"Finance"
+updated_frequency,Quarterly
+granularity,"Fiscal Year, Year, Month"
+time_saved,4.5 hours
+source,"National Savings Institute, Ministry of Finance"
+source_link,"https://nsiindia.gov.in/InternalPage.aspx?Id_Pk=178"
+time_period,"1968 to 2025"
+units,"interest_rate in percentage"
+citation,"Ministry of Finance. Year and Month-wise Public Provident Fund (PPF) Interest Rates Since its Inception [Data set]. Dataful. https://dataful.in/datasets/1323"

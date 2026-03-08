@@ -1,0 +1,246 @@
+{
+  "summary": {
+    "queries": 8,
+    "avg_total_ms": 11253.76,
+    "median_total_ms": 11584.53,
+    "min_total_ms": 6865.44,
+    "max_total_ms": 14287.98,
+    "std_total_ms": 2396.59,
+    "p90_total_ms": 14408.61,
+    "p95_total_ms": 14951.47,
+    "p99_total_ms": 15385.75,
+    "avg_retrieval_ms": 18.15,
+    "median_retrieval_ms": 15.15,
+    "p95_retrieval_ms": 40.56,
+    "avg_retrieved_docs": 10,
+    "avg_sources": 9.12,
+    "coverage_rate": 100.0,
+    "unique_sources": 59,
+    "default_source_rate": 0.0,
+    "avg_response_chars": 2866.5
+  },
+  "results": [
+    {
+      "query": "Summarize key points from the Finance Bill 2025-26",
+      "retrieval_ms": 33.91350000129023,
+      "total_ms": 6865.435300000172,
+      "source_count": 10,
+      "sources": [
+        "Finance_Bill.pdf",
+        "Finance_Bill.pdf (Page 171)",
+        "Finance_Bill.pdf (Page 3)",
+        "Finance_Bill.pdf (Page 144)",
+        "Finance_Bill.pdf (Page 225)",
+        "OutcomeBudgetE2026_2027.pdf (Page 120)",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv",
+        "OutcomeBudgetE2026_2027.pdf (Page 7)",
+        "Finance_Bill.pdf (Page 9)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 157)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Finance_Bill.pdf",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "OutcomeBudgetE2026_2027.pdf",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv"
+      ],
+      "response_chars": 2208,
+      "used_default_sources": false
+    },
+    {
+      "query": "What are the benefits and eligibility of PPF?",
+      "retrieval_ms": 21.83560000048601,
+      "total_ms": 9916.669800000818,
+      "source_count": 10,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 41)",
+        "impbud2025-26.pdf (Page 43)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 44)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 52)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 70)",
+        "taxreform.pdf (Page 15)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 112)",
+        "government_schemes_2024.txt",
+        "indian_tax_laws_2024.txt",
+        "incometax2025.pdf (Page 51)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "government_schemes_2024.txt",
+        "impbud2025-26.pdf",
+        "incometax2025.pdf",
+        "indian_tax_laws_2024.txt",
+        "taxreform.pdf"
+      ],
+      "response_chars": 2601,
+      "used_default_sources": false
+    },
+    {
+      "query": "How does SCSS work and what is the interest rate?",
+      "retrieval_ms": 14.085199998589815,
+      "total_ms": 13081.635599999572,
+      "source_count": 7,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 115)",
+        "government_schemes_2024.txt",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 794)",
+        "PublicProvidentFundSchemeRule.pdf (Page 2)",
+        "incometax2025.pdf (Page 16)",
+        "SeniorCitizensSavingsSchemeRule.pdf (Page 2)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "PublicProvidentFundSchemeRule.pdf",
+        "SeniorCitizensSavingsSchemeRule.pdf",
+        "government_schemes_2024.txt",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "incometax2025.pdf",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv"
+      ],
+      "response_chars": 2689,
+      "used_default_sources": false
+    },
+    {
+      "query": "Explain Sukanya Samriddhi Account Scheme rules",
+      "retrieval_ms": 17.825900000389083,
+      "total_ms": 12889.452899999014,
+      "source_count": 9,
+      "sources": [
+        "SukanyaSamriddhiAccountSchemeRule.pdf",
+        "incometax2025.pdf (Page 500)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 50)",
+        "government_schemes_2024.txt",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 48)",
+        "PublicProvidentFundSchemeRule.pdf (Page 5)",
+        "PublicProvidentFundSchemeRule.pdf (Page 4)",
+        "Pradhan_Mantri_Jan_Dhan_Yojana.pdf (Page 6)",
+        "RECURRINGDEPOSITSCHEMERule.pdf (Page 9)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "Pradhan_Mantri_Jan_Dhan_Yojana.pdf",
+        "PublicProvidentFundSchemeRule.pdf",
+        "RECURRINGDEPOSITSCHEMERule.pdf",
+        "SukanyaSamriddhiAccountSchemeRule.pdf",
+        "government_schemes_2024.txt",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "incometax2025.pdf"
+      ],
+      "response_chars": 2918,
+      "used_default_sources": false
+    },
+    {
+      "query": "What is the latest income tax slab for FY 2025-26?",
+      "retrieval_ms": 13.345100000151433,
+      "total_ms": 9819.821999999476,
+      "source_count": 9,
+      "sources": [
+        "indian_tax_laws_2024.txt",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 610)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 452)",
+        "Finance_Bill.pdf (Page 172)",
+        "incometax2025.pdf (Page 519)",
+        "taxreform.pdf",
+        "Finance_Bill.pdf (Page 193)",
+        "Finance_Bill.pdf (Page 223)",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Finance_Bill.pdf",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "incometax2025.pdf",
+        "indian_tax_laws_2024.txt",
+        "taxreform.pdf",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv"
+      ],
+      "response_chars": 2038,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare PPF vs NSC for a salaried person",
+      "retrieval_ms": 14.68879999993078,
+      "total_ms": 12496.203400000013,
+      "source_count": 10,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 44)",
+        "impbud2025-26.pdf (Page 37)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 24)",
+        "government_schemes_2024.txt",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 41)",
+        "OutcomeBudgetE2026_2027.pdf (Page 159)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 23)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 141)",
+        "OutcomeBudgetE2026_2027.pdf (Page 137)",
+        "indian_tax_laws_2024.txt"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "OutcomeBudgetE2026_2027.pdf",
+        "government_schemes_2024.txt",
+        "impbud2025-26.pdf",
+        "indian_tax_laws_2024.txt"
+      ],
+      "response_chars": 3706,
+      "used_default_sources": false
+    },
+    {
+      "query": "What schemes are available for senior citizens?",
+      "retrieval_ms": 13.924800001404947,
+      "total_ms": 14287.97990000021,
+      "source_count": 8,
+      "sources": [
+        "SeniorCitizensSavingsSchemeRule.pdf",
+        "taxreform.pdf (Page 15)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 119)",
+        "OutcomeBudgetE2026_2027.pdf (Page 148)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 117)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 116)",
+        "government_schemes_2024.txt",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 59)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "OutcomeBudgetE2026_2027.pdf",
+        "SeniorCitizensSavingsSchemeRule.pdf",
+        "government_schemes_2024.txt",
+        "taxreform.pdf"
+      ],
+      "response_chars": 3785,
+      "used_default_sources": false
+    },
+    {
+      "query": "What are the major changes in tax reform?",
+      "retrieval_ms": 15.62029999877268,
+      "total_ms": 10672.852199999397,
+      "source_count": 10,
+      "sources": [
+        "indian_tax_laws_2024.txt",
+        "taxreform.pdf (Page 34)",
+        "Finance_Bill.pdf (Page 193)",
+        "Finance_Bill.pdf (Page 209)",
+        "Finance_Bill.pdf (Page 174)",
+        "incometax2025.pdf (Page 347)",
+        "Finance_Bill.pdf (Page 175)",
+        "incometax2025.pdf",
+        "taxreform.pdf",
+        "taxreform.pdf (Page 8)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Finance_Bill.pdf",
+        "incometax2025.pdf",
+        "indian_tax_laws_2024.txt",
+        "taxreform.pdf"
+      ],
+      "response_chars": 2987,
+      "used_default_sources": false
+    }
+  ]
+}

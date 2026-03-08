@@ -1,0 +1,42 @@
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+*.so
+
+
+# Environment
+.env
+.env.local
+venv/
+.venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ChromaDB / Vector Store (auto-regenerates from documents)
+chroma_db/
+
+# User uploads at runtime
+uploads/
+
+# Note: documents/ is NOT ignored - shared knowledge base for team
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/

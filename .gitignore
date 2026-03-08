@@ -1,0 +1,77 @@
+# ============================================
+# ARTH-MITRA - Root .gitignore
+# ============================================
+
+# ----- Environment & Secrets -----
+.env
+.env.local
+.env.*.local
+*.local
+
+__pycache__/
+*.pyc
+
+# ----- Python (Backend) -----
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.so
+venv/
+.venv/
+env/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ----- Node.js (Frontend) -----
+node_modules/
+.next/
+.vercel/
+.turbo/
+
+# ----- IDE & Editor -----
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# ----- OS Generated -----
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ----- Project Specific -----
+# Vector store - auto-regenerates from documents
+backend/chroma_db/
+
+# Database files - contain user data
+*.db
+backend/arth_mitra.db
+
+# Runtime user uploads
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# v0 runtime files
+__v0_*.js
+__v0_*.tsx
+__v0_*.ts
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+*.egg-info/
+
+# Database files
+*.db
+backend/arth_mitra.db
+backend/*.db

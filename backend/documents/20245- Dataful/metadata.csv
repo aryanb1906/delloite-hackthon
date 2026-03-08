@@ -1,0 +1,10 @@
+organisation,Ministry of Finance
+sectors,"Finance"
+updated_frequency,As and When
+granularity,"Fiscal Year, State"
+time_saved,2 hours
+source,"Economic Advisory Council to the Prime Minister (EAC-PM)"
+source_link,"https://eacpm.gov.in/wp-content/uploads/2024/09/State-GDP-Working-Paper_Final.pdf"
+time_period,"1960-61, 1970-71, 1980-81, 1990-91, 2000-01, 2010-11, 2020-21, 2023-24"
+units,"gdp_share in percentage"
+citation,"Ministry of Finance. State-wise Decadal Change of States Share in National GDP [Data set]. Dataful. https://dataful.in/datasets/20245"

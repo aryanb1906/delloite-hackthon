@@ -1,0 +1,262 @@
+# Government Financial Schemes in India - 2024
+
+## Retirement & Pension Schemes
+
+### Atal Pension Yojana (APY)
+**Eligibility:**
+- Age: 18-40 years
+- Must have a savings bank account
+- Must have Aadhaar number
+
+**Features:**
+- Guaranteed monthly pension: ₹1,000 to ₹5,000
+- Pension starts at age 60
+- Government co-contributes 50% of total contribution (max ₹1,000/year for 5 years)
+- Tax benefit available under Section 80CCD
+
+**Monthly Contribution Examples (for ₹5,000 pension at 60):**
+- Join at 18: ₹210/month
+- Join at 25: ₹376/month
+- Join at 30: ₹577/month
+- Join at 35: ₹902/month
+- Join at 40: ₹1,454/month
+
+**Death Benefit:**
+- Spouse receives same pension until death
+- After spouse's death, nominee receives corpus amount
+
+### Pradhan Mantri Vaya Vandana Yojana (PMVVY)
+**Eligibility:**
+- Age: 60 years and above
+- Senior citizens only
+
+**Features:**
+- Investment limit: ₹15 lakh per senior citizen
+- Guaranteed return: 7.4% per annum
+- Pension frequency: Monthly, quarterly, half-yearly, or yearly
+- Term: 10 years
+- Operated by LIC of India
+
+**Pension Amount:**
+- ₹15 lakh investment gives ₹9,250/month pension
+- Tax-free pension income
+- Premature exit: Available after 3 years (with 2% penalty)
+
+### National Pension System (NPS)
+**Eligibility:**
+- Age: 18-70 years
+- Indian citizens (resident and non-resident)
+
+**Account Types:**
+- Tier 1: Mandatory retirement account (with lock-in)
+- Tier 2: Voluntary savings account (no lock-in, no tax benefit)
+
+**Fund Options:**
+- Equity (E): Up to 75% allocation (50% for government employees)
+- Corporate Bonds (C)
+- Government Securities (G)
+- Alternative Investment Fund (A): Up to 5%
+
+**Returns (Historical):**
+- Equity funds: 10-12% average
+- Hybrid funds: 8-10% average
+- Government bonds: 7-9% average
+
+## Small Savings Schemes
+
+### Public Provident Fund (PPF)
+**Interest Rate:** 7.1% per annum (compounded annually)
+**Maturity:** 15 years (extendable in blocks of 5 years)
+
+**Investment Details:**
+- Minimum: ₹500/year
+- Maximum: ₹1,50,000/year
+- Can invest lump sum or up to 12 installments
+
+**Loan Facility:**
+- Available from 3rd to 6th year
+- Maximum: 25% of balance at end of 2nd preceding year
+- Interest: 1% above PPF rate
+
+**Withdrawal Rules:**
+- Partial withdrawal from 7th year
+- Maximum: 50% of balance at end of 4th preceding year
+- Premature closure: After 5 years (with 1% interest penalty)
+
+### Senior Citizen Savings Scheme (SCSS)
+**Eligibility:**
+- Age: 60 years and above
+- Age 55-60: Retired defense personnel/retired under VRS
+
+**Interest Rate:** 8.2% per annum (quarterly payout)
+
+**Investment Details:**
+- Minimum: ₹1,000
+- Maximum: ₹30 lakh (increased in Budget 2023)
+- Maturity: 5 years (extendable by 3 years)
+
+**Tax Treatment:**
+- Investment: Deduction under 80C
+- Interest: Taxable (TDS if interest > ₹50,000)
+
+### Sukanya Samriddhi Yojana (SSY)
+**Eligibility:**
+- Girl child below 10 years
+- Maximum 2 accounts per family (3 for twins/triplets)
+
+**Interest Rate:** 8.2% per annum (highest among small savings)
+
+**Investment Details:**
+- Minimum: ₹250/year
+- Maximum: ₹1,50,000/year
+- Contribution period: 15 years from account opening
+
+**Withdrawal Rules:**
+- 50% withdrawal for education/marriage after girl turns 18
+- Premature closure: For marriage after 18
+- Account matures: 21 years from opening or marriage
+
+### Post Office Monthly Income Scheme (POMIS)
+**Interest Rate:** 7.4% per annum (monthly payout)
+
+**Investment Details:**
+- Single account: Maximum ₹9 lakh
+- Joint account: Maximum ₹15 lakh
+- Maturity: 5 years
+
+**Payout:**
+- Interest paid monthly on 1st of next month
+- ₹9 lakh investment = ₹5,550/month income
+
+### National Savings Certificate (NSC)
+**Interest Rate:** 7.7% per annum (compounded annually)
+**Maturity:** 5 years
+
+**Features:**
+- Minimum: ₹1,000
+- No maximum limit
+- Interest reinvested automatically
+- Accrued interest qualifies for 80C deduction
+
+### Kisan Vikas Patra (KVP)
+**Interest Rate:** 7.5% per annum
+**Doubling Period:** 115 months (9 years 7 months)
+
+**Features:**
+- Minimum: ₹1,000
+- No maximum limit
+- Premature encashment after 2.5 years
+
+## Women-Specific Schemes
+
+### Mahila Samman Savings Certificate (MSSC)
+**Launched:** Budget 2023
+**Available:** April 2023 to March 2025
+
+**Features:**
+- Interest Rate: 7.5% per annum
+- Maturity: 2 years
+- Maximum: ₹2 lakh per person
+- Eligibility: Women or girl child
+- Partial withdrawal: 40% after 1 year
+
+### PM Jan Dhan Yojana
+**Features:**
+- Zero balance account
+- Free RuPay debit card
+- Accidental insurance: ₹2 lakh
+- Overdraft facility: Up to ₹10,000
+
+## Housing Schemes
+
+### Pradhan Mantri Awas Yojana (PMAY)
+**Eligibility (Income Categories):**
+- EWS: Annual income up to ₹3 lakh
+- LIG: Annual income ₹3-6 lakh
+- MIG-I: Annual income ₹6-12 lakh
+- MIG-II: Annual income ₹12-18 lakh
+
+**Interest Subsidy (Credit Linked Subsidy Scheme):**
+- EWS/LIG: 6.5% subsidy on ₹6 lakh loan (20 years)
+- MIG-I: 4% subsidy on ₹9 lakh loan (20 years)
+- MIG-II: 3% subsidy on ₹12 lakh loan (20 years)
+
+**Net Present Value of Subsidy:**
+- EWS/LIG: Up to ₹2.67 lakh
+- MIG-I: Up to ₹2.35 lakh
+- MIG-II: Up to ₹2.30 lakh
+
+## Insurance Schemes
+
+### Pradhan Mantri Jeevan Jyoti Bima Yojana (PMJJBY)
+**Coverage:** ₹2 lakh life insurance
+**Premium:** ₹436/year (auto-debited)
+**Eligibility:** Age 18-55 years with bank account
+
+### Pradhan Mantri Suraksha Bima Yojana (PMSBY)
+**Coverage:**
+- Death: ₹2 lakh
+- Total permanent disability: ₹2 lakh
+- Partial permanent disability: ₹1 lakh
+
+**Premium:** ₹20/year
+**Eligibility:** Age 18-70 years with bank account
+
+### Ayushman Bharat (PM-JAY)
+**Coverage:** ₹5 lakh per family per year
+**Eligibility:** Deprived rural families and identified urban workers
+**Covers:** Secondary and tertiary hospitalization
+
+## Agricultural Schemes
+
+### PM Kisan Samman Nidhi
+**Benefit:** ₹6,000/year in three installments
+**Eligibility:** All landholding farmer families
+**Exclusions:** Income tax payers, government employees
+
+### Kisan Credit Card (KCC)
+**Features:**
+- Interest rate: 7% (additional 3% subvention available)
+- Credit limit: Based on landholding and cultivation
+- Includes crop insurance and personal accident insurance
+
+## Education & Skill Schemes
+
+### PM Vidya Lakshmi Portal
+**Features:**
+- Single window for education loans
+- 126 participating banks
+- Loans from ₹4 lakh to ₹7.5 lakh without collateral
+
+### Skill India (PMKVY)
+**Features:**
+- Free skill training
+- Financial reward on certification
+- Placement assistance
+- Recognition of prior learning
+
+## Comparison: Best Schemes by Objective
+
+### For Retirement Planning:
+1. NPS (market-linked, tax benefits)
+2. PPF (guaranteed returns, tax-free)
+3. APY (guaranteed pension)
+
+### For Regular Income:
+1. SCSS (8.2%, seniors)
+2. PMVVY (7.4%, seniors)
+3. POMIS (7.4%, general)
+
+### For Short-Term Goals:
+1. NSC (5 years, 7.7%)
+2. MSSC (2 years, 7.5%)
+3. Bank FD (flexible tenure)
+
+### For Girl Child:
+1. SSY (highest return 8.2%)
+2. PPF (for general savings)
+
+### For Tax Saving:
+1. ELSS (3 year lock-in, market returns)
+2. PPF (15 years, guaranteed)
+3. NPS (additional 80CCD(1B))

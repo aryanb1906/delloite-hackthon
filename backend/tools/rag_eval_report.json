@@ -1,0 +1,182 @@
+{
+  "summary": {
+    "queries": 8,
+    "avg_total_ms": 14546.35,
+    "median_total_ms": 13754.93,
+    "min_total_ms": 8703.92,
+    "max_total_ms": 23420.5,
+    "std_total_ms": 5209.82,
+    "p90_total_ms": 23744.39,
+    "p95_total_ms": 25201.9,
+    "p99_total_ms": 26367.9,
+    "avg_retrieval_ms": 41.3,
+    "median_retrieval_ms": 30.13,
+    "p95_retrieval_ms": 151.25,
+    "avg_retrieved_docs": 5,
+    "avg_sources": 4.38,
+    "coverage_rate": 100.0,
+    "unique_sources": 32,
+    "default_source_rate": 0.0,
+    "avg_response_chars": 2712.38
+  },
+  "results": [
+    {
+      "query": "Summarize key points from the Finance Bill 2025-26",
+      "retrieval_ms": 114.9503999913577,
+      "total_ms": 9207.781499979319,
+      "source_count": 5,
+      "sources": [
+        "Finance_Bill.pdf",
+        "Finance_Bill.pdf (Page 9)",
+        "Finance_Bill.pdf (Page 171)",
+        "taxreform.pdf (Page 34)",
+        "Finance_Bill.pdf (Page 109)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "Finance_Bill.pdf",
+        "taxreform.pdf"
+      ],
+      "response_chars": 1982,
+      "used_default_sources": false
+    },
+    {
+      "query": "What are the benefits and eligibility of PPF?",
+      "retrieval_ms": 25.846200005616993,
+      "total_ms": 13754.065299988724,
+      "source_count": 4,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 41)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 112)",
+        "OutcomeBudgetE2026_2027.pdf (Page 290)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 45)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "OutcomeBudgetE2026_2027.pdf"
+      ],
+      "response_chars": 2524,
+      "used_default_sources": false
+    },
+    {
+      "query": "How does SCSS work and what is the interest rate?",
+      "retrieval_ms": 31.585699995048344,
+      "total_ms": 11020.43400000548,
+      "source_count": 2,
+      "sources": [
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 794)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "year-and-month-wise-public-provident-fund-ppf-interest-rates-since-its-inception.csv"
+      ],
+      "response_chars": 2078,
+      "used_default_sources": false
+    },
+    {
+      "query": "Explain Sukanya Samriddhi Account Scheme rules",
+      "retrieval_ms": 48.9538999972865,
+      "total_ms": 13755.798800004413,
+      "source_count": 4,
+      "sources": [
+        "SukanyaSamriddhiAccountSchemeRule.pdf",
+        "incometax2025.pdf (Page 500)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 48)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 50)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "SukanyaSamriddhiAccountSchemeRule.pdf",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "incometax2025.pdf"
+      ],
+      "response_chars": 2781,
+      "used_default_sources": false
+    },
+    {
+      "query": "What is the latest income tax slab for FY 2025-26?",
+      "retrieval_ms": 20.5677000049036,
+      "total_ms": 23420.503399975132,
+      "source_count": 5,
+      "sources": [
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 610)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 250)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 767)",
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf (Page 452)",
+        "incometax2025.pdf"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "income-tax-act-1961-as-amended-by-finance-act-2025_copy.pdf",
+        "incometax2025.pdf"
+      ],
+      "response_chars": 3252,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare PPF vs NSC for a salaried person",
+      "retrieval_ms": 31.488200009334832,
+      "total_ms": 16326.73510001041,
+      "source_count": 5,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 111)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 23)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 112)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 45)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 24)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf"
+      ],
+      "response_chars": 3437,
+      "used_default_sources": false
+    },
+    {
+      "query": "What schemes are available for senior citizens?",
+      "retrieval_ms": 28.763200010871515,
+      "total_ms": 20181.60139999236,
+      "source_count": 5,
+      "sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 119)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 115)",
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf (Page 105)",
+        "SeniorCitizensSavingsSchemeRule.pdf",
+        "taxreform.pdf (Page 15)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "NSDL_Primer_on_Personal_Finance_181024_v5.pdf",
+        "SeniorCitizensSavingsSchemeRule.pdf",
+        "taxreform.pdf"
+      ],
+      "response_chars": 3478,
+      "used_default_sources": false
+    },
+    {
+      "query": "What are the major changes in tax reform?",
+      "retrieval_ms": 28.26459999778308,
+      "total_ms": 8703.920400002971,
+      "source_count": 5,
+      "sources": [
+        "impbud2025-26.pdf (Page 67)",
+        "Finance_Bill.pdf (Page 209)",
+        "taxreform.pdf (Page 34)",
+        "Finance_Bill.pdf (Page 200)",
+        "Finance_Bill.pdf (Page 207)"
+      ],
+      "retrieved_docs": 5,
+      "retrieved_doc_sources": [
+        "Finance_Bill.pdf",
+        "impbud2025-26.pdf",
+        "taxreform.pdf"
+      ],
+      "response_chars": 2167,
+      "used_default_sources": false
+    }
+  ]
+}

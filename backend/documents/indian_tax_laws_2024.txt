@@ -1,0 +1,169 @@
+# Indian Income Tax Laws - Financial Year 2024-25
+
+## Tax Regime Options
+
+### Old Tax Regime
+The old tax regime allows various deductions and exemptions under different sections of the Income Tax Act.
+
+**Tax Slabs (Old Regime for FY 2024-25):**
+- Up to ₹2,50,000: NIL
+- ₹2,50,001 to ₹5,00,000: 5%
+- ₹5,00,001 to ₹10,00,000: 20%
+- Above ₹10,00,000: 30%
+
+**Available Deductions under Old Regime:**
+- Section 80C: Up to ₹1,50,000 (EPF, PPF, ELSS, Life Insurance, NSC, SSY, etc.)
+- Section 80CCD(1B): Additional ₹50,000 for NPS contributions
+- Section 80D: Health Insurance Premium (₹25,000 for self, ₹50,000 for senior citizen parents)
+- Section 80TTA/80TTB: Savings account interest (₹10,000/₹50,000 for senior citizens)
+- Section 24: Home Loan Interest up to ₹2,00,000
+- Standard Deduction: ₹50,000 for salaried individuals
+- HRA Exemption: Based on actual rent paid and salary structure
+
+### New Tax Regime (Default from FY 2023-24)
+The new tax regime offers lower tax rates but removes most deductions and exemptions.
+
+**Tax Slabs (New Regime for FY 2024-25):**
+- Up to ₹3,00,000: NIL
+- ₹3,00,001 to ₹7,00,000: 5%
+- ₹7,00,001 to ₹10,00,000: 10%
+- ₹10,00,001 to ₹12,00,000: 15%
+- ₹12,00,001 to ₹15,00,000: 20%
+- Above ₹15,00,000: 30%
+
+**Limited Deductions in New Regime:**
+- Standard Deduction: ₹75,000 (increased in Budget 2024)
+- NPS Employer Contribution: Section 80CCD(2) up to 14% of salary
+- Gratuity, Leave Encashment exemptions continue
+
+## Section 80C Investments
+
+### Public Provident Fund (PPF)
+- Maximum investment: ₹1,50,000 per year
+- Lock-in period: 15 years (partial withdrawal after 7 years)
+- Interest Rate: 7.1% (as of FY 2024-25, revised quarterly)
+- Tax Treatment: EEE (Exempt-Exempt-Exempt)
+- Eligibility: Indian residents only
+
+### Employee Provident Fund (EPF)
+- Employee contribution: 12% of basic salary
+- Employer contribution: 12% (3.67% to EPF, 8.33% to EPS)
+- Tax-free interest on contributions up to ₹2,50,000 per year
+
+### Equity Linked Savings Scheme (ELSS)
+- Minimum investment: ₹500
+- Lock-in period: 3 years (shortest among 80C options)
+- Returns: Market-linked (historically 12-15% average)
+- Tax on gains: 10% LTCG above ₹1,00,000
+
+### Sukanya Samriddhi Yojana (SSY)
+- Eligibility: Girl child below 10 years
+- Maximum investment: ₹1,50,000 per year
+- Interest Rate: 8.2% (highest among small savings)
+- Maturity: 21 years from account opening or marriage after 18
+
+### National Savings Certificate (NSC)
+- Lock-in period: 5 years
+- Interest Rate: 7.7%
+- Minimum investment: ₹1,000
+
+## Section 80D - Health Insurance
+
+**Premium Limits:**
+- Self, spouse, children: Up to ₹25,000 (₹50,000 if senior citizen)
+- Parents: Additional ₹25,000 (₹50,000 if senior citizen)
+- Maximum deduction: ₹1,00,000 (if both self and parents are senior citizens)
+
+**Preventive Health Checkup:**
+- Additional ₹5,000 (within overall limit)
+
+## National Pension System (NPS)
+
+### Section 80CCD(1)
+- Part of overall 80C limit of ₹1,50,000
+- Employee contribution up to 10% of salary
+
+### Section 80CCD(1B)
+- Additional deduction of ₹50,000
+- Available over and above 80C limit
+- Total tax benefit: Up to ₹2,00,000 (80C + 80CCD(1B))
+
+### Section 80CCD(2)
+- Employer contribution to NPS
+- Up to 14% of salary (Central Govt) or 10% of salary (others)
+- No upper limit in rupees
+- Available in BOTH old and new tax regime
+
+### NPS Withdrawal Rules
+- 60% can be withdrawn tax-free at retirement
+- 40% must be used to buy annuity (pension)
+- Partial withdrawal: Up to 25% for specific purposes after 3 years
+
+## Home Loan Tax Benefits
+
+### Section 24 - Interest on Home Loan
+- Self-occupied property: Up to ₹2,00,000 per year
+- Let-out property: No upper limit (entire interest is deductible)
+- Construction must be completed within 5 years
+
+### Section 80EEA - Additional Interest Benefit
+- First-time home buyers
+- Stamp duty value up to ₹45 lakh
+- Loan sanctioned between April 2019 to March 2022
+- Additional deduction: Up to ₹1,50,000
+
+### Section 80C - Principal Repayment
+- Part of overall ₹1,50,000 limit
+- Includes stamp duty and registration charges (in year of payment)
+
+## Capital Gains Tax
+
+### Short Term Capital Gains (STCG)
+- Equity (held < 12 months): 15%
+- Other assets (held < 24/36 months): As per income tax slab
+
+### Long Term Capital Gains (LTCG)
+- Equity (held > 12 months): 10% above ₹1,00,000
+- Other assets: 20% with indexation benefit
+- Property: 20% with indexation benefit
+
+### Section 54 - Exemption on Property Sale
+- Reinvest LTCG in new residential property
+- Purchase: 1 year before or 2 years after sale
+- Construction: 3 years after sale
+- Maximum exemption: Entire LTCG amount
+
+## Tax Filing Deadlines
+
+- ITR for non-audit cases: 31st July
+- ITR for audit cases: 31st October
+- Belated return: 31st December (with penalty)
+- Revised return: 31st December
+
+## TDS Rates (Key Categories)
+
+- Salary: As per slab rates
+- Bank Interest: 10% (if exceeds ₹40,000/₹50,000 for seniors)
+- Rent: 10% (if rent exceeds ₹2,40,000 per year)
+- Professional Fees: 10%
+- Property Sale: 1% (if value exceeds ₹50 lakh)
+
+## Tax Saving Tips for Different Income Levels
+
+### Income ₹10-15 Lakh
+1. Maximize 80C through PPF/ELSS: ₹1,50,000
+2. NPS 80CCD(1B): ₹50,000
+3. Health Insurance 80D: ₹25,000-₹75,000
+4. Compare old vs new regime (old often better with deductions)
+
+### Income ₹15-25 Lakh
+1. All above deductions
+2. Consider home loan for Section 24 benefit
+3. Utilize employer NPS contribution
+4. Plan long-term investments for LTCG exemption
+
+### Income Above ₹25 Lakh
+1. Maximize all available deductions
+2. Structure salary with tax-efficient components
+3. Consider HUF formation for additional benefits
+4. Plan charitable contributions under 80G
