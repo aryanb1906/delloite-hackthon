@@ -1,79 +1,96 @@
 # Arth-Mitra
 
-Arth-Mitra is an AI-powered ISO compliance copilot for comparing company policy documents against original ISO standards and generating clause-level gap analysis, evidence traceability, and remediation actions.
+Arth-Mitra is an AI-powered ISO compliance copilot that compares company policy documents against original ISO standards and produces clause-level findings, evidence traceability, and remediation actions.
 
-## What This Project Is (Current Scope)
+## Problem This Solves
 
-This repository is currently focused on compliance workflows, especially:
-- ISO 37001 (Anti-bribery management)
-- ISO 37301 (Compliance management)
-- ISO 37000 (Governance)
-- ISO 37002 (Whistleblowing)
+Compliance teams spend significant time manually mapping company documents to ISO requirements. This project reduces that effort by providing:
+- side-by-side company vs ISO comparison,
+- gap-focused findings with citations,
+- structured action plans for remediation.
 
-The app supports side-by-side company vs baseline ISO analysis using RAG, with structured output for audit and remediation.
+## Scope
 
-## Who It Is For
+Current frameworks supported:
+- ISO 37001 (Anti-bribery Management)
+- ISO 37301 (Compliance Management)
+- ISO 37000 (Governance of Organizations)
+- ISO 37002 (Whistleblowing Management)
 
-- Compliance and ethics teams
-- Internal audit and risk teams
-- Governance and policy owners
-- Consultants conducting ISO readiness assessments
+## Architecture Diagram
 
-## Core Capabilities
+```mermaid
+flowchart LR
+	U[User in Chat UI] --> F[Next.js Frontend]
+	F -->|POST /api/upload/framework| B[FastAPI Backend]
+	F -->|POST /api/chat or /api/chat/stream| B
+	B --> P[Parsing and Normalization]
+	P --> V[(Chroma Vector Store)]
+	B --> R[Retrieval and Reranking]
+	R --> V
+	R --> LLM[LLM Provider Fallback\nOpenRouter -> OpenAI -> Gemini]
+	LLM --> M[Compliance Metadata Builders]
+	M --> F
 
-- 4 framework upload slots (one company file per ISO framework)
-- Baseline ISO documents indexed from backend knowledge base
-- Document-grounded chat with source citations
-- Clause-level evidence extraction and gap detection
-- RAG retrieval metrics (company vs baseline chunk mix)
-- Clause drill-down (company snippet vs baseline snippet)
+	D[(backend/documents_new)] -->|Baseline ISO docs| P
+	C[(backend/uploads_new)] -->|Company framework uploads| P
+```
+
+## Processing Workflow
+
+```mermaid
+sequenceDiagram
+	participant User
+	participant UI as Frontend UI
+	participant API as FastAPI
+	participant RAG as Retrieval Layer
+	participant DB as ChromaDB
+	participant LLM
+
+	User->>UI: Ask compliance question
+	UI->>API: /api/chat/stream
+	API->>RAG: Detect framework and query intent
+	RAG->>DB: Retrieve company and baseline chunks
+	DB-->>RAG: Candidate evidence
+	RAG-->>API: Balanced, reranked evidence
+	API->>LLM: Build grounded prompt with context
+	LLM-->>API: Answer + reasoning text
+	API-->>UI: Tokens + sources + metadata blocks
+	UI-->>User: Final answer, gaps, drilldown, metrics
+```
+
+## Key Features
+
+- 4 framework upload slots (one company file per framework)
+- Baseline ISO documents preloaded from backend knowledge base
+- Clause-level gap analysis with grounded sources
 - Evidence trace panel with strength labels
+- Clause drill-down (company snippet vs baseline snippet)
 - Contradiction detection and freshness tracking
-- 30/60/90 remediation action plan
-- Strict "Not enough evidence" behavior when grounding is insufficient
-- Session/chat persistence and profile-aware responses
+- 30/60/90 remediation plan
+- Strict insufficient-evidence behavior (no hallucinated claims)
+- Streaming responses and metadata-rich frontend rendering
 
-## How It Works
+## How Data Is Organized
 
-1. Baseline ISO documents are loaded from `backend/documents_new/`.
-2. Company files are uploaded per framework using the chat UI (stored under `backend/uploads_new/<framework>/`).
-3. Backend parses, normalizes, chunks, and indexes docs in ChromaDB.
-4. Query routing identifies framework context and retrieves balanced company + baseline evidence.
-5. LLM generates compliance narrative + metadata blocks used by the frontend.
-6. Frontend renders answer, metrics, traceability, and remediation views.
+- `backend/documents_new/`: baseline ISO documents (knowledge base)
+- `backend/uploads_new/<framework>/`: uploaded company docs per framework slot
+- `backend/chroma_db_new/`: local vector index generated at runtime
 
-## Important UX Note
+Important UI note:
+- The `ISO Framework Uploads` panel lists company uploads only.
+- Baseline ISO files are loaded from knowledge base and are not listed in that upload panel.
 
-In the chat UI:
-- `ISO Framework Uploads` panel shows company uploads only.
-- Baseline ISO originals are preloaded from backend knowledge base and are not shown in those 4 upload slots.
+## Repository Structure
 
-## Tech Stack
-
-Frontend:
-- Next.js
-- React
-- TypeScript
-- Tailwind CSS
-
-Backend:
-- FastAPI
-- LangChain
-- ChromaDB
-- OpenRouter/OpenAI/Gemini provider fallback
-
-## Project Structure
-
-- `frontend/` - Next.js UI and chat experience
-- `backend/main.py` - FastAPI endpoints
-- `backend/bot.py` - RAG, retrieval, compliance metadata logic
-- `backend/documents_new/` - baseline knowledge documents (local)
-- `backend/uploads_new/` - uploaded company documents (local runtime)
-- `backend/chroma_db_new/` - vector index (local runtime)
+- `frontend/`: Next.js app and chat UX
+- `backend/main.py`: API endpoints and response schemas
+- `backend/bot.py`: RAG retrieval, balancing, metadata generation, compliance logic
+- `backend/tools/`: evaluation scripts and reports
 
 ## Local Setup
 
-### 1. Backend
+### Backend
 
 ```bash
 cd backend
@@ -81,9 +98,9 @@ pip install -r requirements.txt
 python run.py
 ```
 
-Backend runs on `http://127.0.0.1:8000`.
+Backend URL: `http://127.0.0.1:8000`
 
-### 2. Frontend
+### Frontend
 
 ```bash
 cd frontend
@@ -91,38 +108,36 @@ pnpm install
 pnpm run mvp
 ```
 
-Frontend runs on `http://localhost:3100`.
+Frontend URL: `http://localhost:3100`
 
-### 3. Environment
+### Frontend Environment
 
-Frontend `.env.local`:
+Create `frontend/.env.local`:
 
 ```env
 NEXT_PUBLIC_API_URL=http://localhost:8000
 ```
 
-Backend `.env` should include your model provider keys (OpenRouter/OpenAI/Gemini as configured).
+## API Endpoints
 
-## API Highlights
+- `POST /api/upload/framework`: upload company document into one framework slot
+- `POST /api/chat/stream`: streaming response with token/source/meta events
+- `POST /api/chat`: non-stream response
+- `GET /api/status`: backend health and index status
+- `DELETE /api/documents/{id}`: remove uploaded document
 
-- `POST /api/upload/framework` - upload one company document into framework slot
-- `POST /api/chat/stream` - streaming chat response with metadata events
-- `POST /api/chat` - non-stream response
-- `GET /api/status` - backend status
-- `DELETE /api/documents/{id}` - remove uploaded document
+## Behavior Guarantees
 
-## Current Behavioral Guarantees
+- Compliance answers are context-grounded.
+- Retrieval enforces balanced company + baseline evidence for broad ISO queries.
+- If evidence is insufficient, the system explicitly says so instead of guessing.
 
-- Compliance queries prefer ISO-grounded evidence.
-- Broad ISO queries enforce company+baseline balancing before conclusions.
-- If evidence is insufficient, response explicitly says so instead of guessing.
+## Contributors Notes
 
-## Notes for Contributors
-
-- Keep product name as `Arth-Mitra`.
+- Keep product name exactly `Arth-Mitra`.
 - Do not commit runtime indexes/uploads or proprietary documents.
-- Prefer metadata-rich changes that preserve citation traceability.
+- Prioritize explainability: citations, clause grounding, and actionable remediation.
 
 ## License
 
-MIT (or project license in this repository).
+MIT (or repository license file).
