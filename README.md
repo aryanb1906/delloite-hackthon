@@ -9,6 +9,30 @@ Compliance teams spend significant time manually mapping company documents to IS
 - gap-focused findings with citations,
 - structured action plans for remediation.
 
+## Use Case Description
+
+### Background
+Forensic and Financial Crime teams often run compliance assessments manually using scattered policies, spreadsheets, and document checklists. This makes ISO readiness reviews slow and difficult to scale.
+
+### Core Problem
+Organizations need quick, reliable answers to questions like:
+- "How compliant are we with ISO 37001 anti-bribery requirements?"
+- "Which clauses are weak or missing evidence?"
+- "What should be fixed first?"
+
+Today, this is usually done with manual clause mapping and subjective scoring, which leads to delays and inconsistent outcomes.
+
+### What This System Does
+Arth-Mitra converts ISO standards into an interactive AI workflow that can:
+- ingest company policy/framework documents,
+- compare them against ISO baseline text,
+- generate clause-level readiness scoring,
+- identify gaps with evidence-backed citations,
+- propose prioritized remediation actions.
+
+### Business Outcome
+This turns manual checklist reviews into a scalable, self-service compliance assessment flow. Teams get faster decision support, better traceability, and clearer remediation planning.
+
 ## Scope
 
 Current frameworks supported:
