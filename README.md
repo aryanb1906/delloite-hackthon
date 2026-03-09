@@ -178,7 +178,7 @@ flowchart LR
 	E --> F[End-to-end Avg 19,934.73 ms]
 	E --> G[End-to-end P95 32,504.58 ms]
 	F --> H[Coverage 100%]
-	G --> I[Citation Accuracy 78% | Source Hit 88%]
+	G --> I["Citation Accuracy 78% | Source Hit 88%"]
 	H --> J[Gap Detection 100%]
 	I --> J
 ```
