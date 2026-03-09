@@ -46,6 +46,8 @@ desktop.ini
 # ----- Project Specific -----
 # Vector store - auto-regenerates from documents
 backend/chroma_db/
+backend/chroma_db_new/
+backend/chroma_db_new_backup_*/
 
 # Database files - contain user data
 *.db
@@ -54,6 +56,13 @@ backend/arth_mitra.db
 # Runtime user uploads
 backend/uploads/*
 !backend/uploads/.gitkeep
+backend/uploads_new/
+
+# Local baseline/working docs (may include proprietary/copyrighted material)
+backend/documents_new/
+
+# Frontend incremental build cache
+frontend/*.tsbuildinfo
 
 # v0 runtime files
 __v0_*.js

@@ -1,0 +1,889 @@
+{
+  "summary": {
+    "queries": 25,
+    "avg_total_ms": 22763.27,
+    "median_total_ms": 21996.93,
+    "min_total_ms": 15484.49,
+    "max_total_ms": 36159.13,
+    "std_total_ms": 5215.92,
+    "p90_total_ms": 31000.25,
+    "p95_total_ms": 35513.18,
+    "p99_total_ms": 37752.49,
+    "avg_retrieval_ms": 115.23,
+    "median_retrieval_ms": 77.69,
+    "p95_retrieval_ms": 611.24,
+    "avg_retrieved_docs": 10,
+    "avg_sources": 4.68,
+    "coverage_rate": 100.0,
+    "unique_sources": 67,
+    "default_source_rate": 0.0,
+    "avg_response_chars": 5512.2,
+    "precision_at_k": 0.0,
+    "clause_recall": 0.0,
+    "citation_accuracy": 0.82,
+    "gap_detection_accuracy": 1.0
+  },
+  "results": [
+    {
+      "query": "Compare company anti-bribery policy against ISO 37001 clause 5.1 leadership commitment.",
+      "retrieval_ms": 121.84639996849,
+      "total_ms": 15484.485700028017,
+      "source_count": 2,
+      "sources": [
+        "iso37001_company_document.pdf",
+        "iso37001_company_document.pdf (Page 6)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5.1"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5135,
+      "used_default_sources": false
+    },
+    {
+      "query": "For ISO 37001 clause 8.2 due diligence, what evidence exists and what is missing?",
+      "retrieval_ms": 70.56020002346486,
+      "total_ms": 16391.766000073403,
+      "source_count": 5,
+      "sources": [
+        "iso37001_company_document.pdf (Page 4)",
+        "iso37001_company_document.pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 13)",
+        "iso37001_company_document.pdf (Page 3)",
+        "iso37001_company_document.pdf (Page 18)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37001_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 4476,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate gifts, hospitality and donations controls against ISO 37001 clause 8.7.",
+      "retrieval_ms": 77.6859000325203,
+      "total_ms": 17790.23949999828,
+      "source_count": 7,
+      "sources": [
+        "iso37001_company_document.pdf (Page 18)",
+        "iso37001_company_document.pdf (Page 10)",
+        "iso37001_company_document.pdf (Page 11)",
+        "iso37001_company_document.pdf (Page 12)",
+        "iso37001_company_document.pdf (Page 13)",
+        "iso37001_company_document.pdf",
+        "iso37001_company_document.pdf (Page 15)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "iso37001_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.7"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5447,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess whistleblowing process against ISO 37002 handling and investigation requirements.",
+      "retrieval_ms": 45.45740003231913,
+      "total_ms": 26927.070099976845,
+      "source_count": 4,
+      "sources": [
+        "iso37002_company_document.pdf (Page 2)",
+        "iso37002_company_document.pdf (Page 3)",
+        "iso37002_company_document.pdf",
+        "iso37002_company_document.pdf (Page 4)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37000_company_document.pdf",
+        "iso37001_company_document.pdf",
+        "iso37002_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.3",
+        "8.4"
+      ],
+      "expected_sources": [
+        "iso37002"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5938,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare compliance obligations tracking with ISO 37301 clause 6 planning requirements.",
+      "retrieval_ms": 84.40429996699095,
+      "total_ms": 21301.039499929175,
+      "source_count": 1,
+      "sources": [
+        "iso37301_company_document.pdf (Page 9)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "6.1",
+        "6.2"
+      ],
+      "expected_sources": [
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5643,
+      "used_default_sources": false
+    },
+    {
+      "query": "Show governance accountability mapping against ISO 37000 leadership principles.",
+      "retrieval_ms": 57.52160004340112,
+      "total_ms": 19352.52610000316,
+      "source_count": 7,
+      "sources": [
+        "iso37000_company_document.pdf (Page 2)",
+        "iso37000_company_document.pdf (Page 13)",
+        "iso37000_company_document.pdf (Page 17)",
+        "iso37000_company_document.pdf (Page 4)",
+        "iso37000_company_document.pdf (Page 5)",
+        "iso37000_company_document.pdf (Page 14)",
+        "iso37000_company_document.pdf (Page 25)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37000_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5",
+        "6"
+      ],
+      "expected_sources": [
+        "iso37000"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5466,
+      "used_default_sources": false
+    },
+    {
+      "query": "Is there evidence of anti-bribery training and awareness for employees?",
+      "retrieval_ms": 73.53599998168647,
+      "total_ms": 23194.215400028042,
+      "source_count": 1,
+      "sources": [
+        "iso37001_company_document.pdf (Page 2)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7.3"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5591,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate third-party management and contract controls for bribery risk.",
+      "retrieval_ms": 78.60909996088594,
+      "total_ms": 25787.583300028928,
+      "source_count": 3,
+      "sources": [
+        "iso37001_company_document.pdf (Page 13)",
+        "iso37001_company_document.pdf",
+        "iso37001_company_document.pdf (Page 6)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.2",
+        "8.3"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 6239,
+      "used_default_sources": false
+    },
+    {
+      "query": "Do we have monitoring and internal audit evidence for anti-bribery controls?",
+      "retrieval_ms": 60.659200069494545,
+      "total_ms": 21996.93479994312,
+      "source_count": 2,
+      "sources": [
+        "iso37001_company_document.pdf (Page 6)",
+        "iso37001_company_document.pdf (Page 14)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "9.1",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5514,
+      "used_default_sources": false
+    },
+    {
+      "query": "Provide corrective action maturity against ISO 37001 clause 10 improvement.",
+      "retrieval_ms": 69.67630004510283,
+      "total_ms": 17718.6447000131,
+      "source_count": 3,
+      "sources": [
+        "iso37001_company_document.pdf (Page 21)",
+        "iso37001_company_document.pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 18)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "10.1",
+        "10.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 3802,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare policy documentation control and versioning to ISO 37301 documented information requirements.",
+      "retrieval_ms": 689.7229000460356,
+      "total_ms": 23549.510999931954,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 21)",
+        "ISO-37002-2021.pdf (Page 13)",
+        "ISO-37301-2021.pdf (Page 14)",
+        "ISO-37301-2021.pdf (Page 11)",
+        "ISO-37002-2021.pdf (Page 3)",
+        "iso37001_company_document.pdf (Page 18)",
+        "ISO-37001.pdf (Page 10)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7.5"
+      ],
+      "expected_sources": [
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 6988,
+      "used_default_sources": false
+    },
+    {
+      "query": "Check whether reporting channels are confidential and protected from retaliation.",
+      "retrieval_ms": 428.10529994312674,
+      "total_ms": 21590.34699993208,
+      "source_count": 9,
+      "sources": [
+        "ISO-37001.pdf (Page 24)",
+        "iso37001_company_document.pdf (Page 19)",
+        "iso37301_company_document.pdf (Page 32)",
+        "iso37301_company_document.pdf (Page 18)",
+        "iso37001_company_document.pdf (Page 21)",
+        "ISO-37002-2021.pdf (Page 11)",
+        "ISO-37002-2021.pdf (Page 9)",
+        "iso37301_company_document.pdf (Page 14)",
+        "iso37001_company_document.pdf (Page 12)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37000_company_document.pdf",
+        "iso37001_company_document.pdf",
+        "iso37002_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7",
+        "8"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 6200,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess board oversight and tone-at-the-top against governance expectations.",
+      "retrieval_ms": 78.74529995024204,
+      "total_ms": 19880.030400003307,
+      "source_count": 6,
+      "sources": [
+        "iso37000_company_document.pdf (Page 19)",
+        "iso37000_company_document.pdf (Page 13)",
+        "iso37000_company_document.pdf (Page 4)",
+        "iso37000_company_document.pdf (Page 2)",
+        "iso37000_company_document.pdf (Page 10)",
+        "iso37000_company_document.pdf (Page 17)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37000_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5.1"
+      ],
+      "expected_sources": [
+        "iso37000",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5997,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate risk assessment methodology for bribery and compliance risks.",
+      "retrieval_ms": 114.42180001176894,
+      "total_ms": 28996.46049994044,
+      "source_count": 1,
+      "sources": [
+        "iso37001_company_document.pdf (Page 6)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "6.1",
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 4911,
+      "used_default_sources": false
+    },
+    {
+      "query": "Do we have a formal anti-bribery policy approved by top management?",
+      "retrieval_ms": 68.02110001444817,
+      "total_ms": 25254.06369997654,
+      "source_count": 1,
+      "sources": [
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 4755,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare speak-up intake, triage and closure workflow with ISO 37002 baseline.",
+      "retrieval_ms": 82.75750000029802,
+      "total_ms": 17039.144800044596,
+      "source_count": 8,
+      "sources": [
+        "ISO-37001.pdf (Page 3)",
+        "ISO-37002-2021.pdf (Page 4)",
+        "ISO-37001.pdf (Page 4)",
+        "ISO-37002-2021.pdf (Page 13)",
+        "ISO-37301-2021.pdf (Page 11)",
+        "ISO-37001.pdf (Page 54)",
+        "ISO-37001.pdf (Page 11)",
+        "ISO-37001.pdf (Page 24)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.2",
+        "8.3",
+        "8.4"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 4568,
+      "used_default_sources": false
+    },
+    {
+      "query": "Identify missing control owners and accountability assignments by clause.",
+      "retrieval_ms": 68.82639997638762,
+      "total_ms": 15954.277500044554,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 9)",
+        "ISO-37001.pdf (Page 36)",
+        "ISO-37001.pdf (Page 22)",
+        "ISO-37002-2021.pdf (Page 10)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37301-2021.pdf (Page 9)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37000_company_document.pdf",
+        "iso37001_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5.3",
+        "7.1"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 4191,
+      "used_default_sources": false
+    },
+    {
+      "query": "Review disciplinary framework and consequences for anti-bribery breaches.",
+      "retrieval_ms": 81.0794000281021,
+      "total_ms": 25166.568399989046,
+      "source_count": 3,
+      "sources": [
+        "iso37001_company_document.pdf (Page 6)",
+        "iso37001_company_document.pdf (Page 19)",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7.2",
+        "8.7"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5102,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess investigation case management records quality for whistleblowing cases.",
+      "retrieval_ms": 84.45299998857081,
+      "total_ms": 24943.581799976528,
+      "source_count": 4,
+      "sources": [
+        "iso37002_company_document.pdf",
+        "iso37002_company_document.pdf (Page 3)",
+        "iso37002_company_document.pdf (Page 2)",
+        "iso37002_company_document.pdf (Page 4)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37000_company_document.pdf",
+        "iso37001_company_document.pdf",
+        "iso37002_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.3"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 6327,
+      "used_default_sources": false
+    },
+    {
+      "query": "Check if compliance objectives are measurable and tracked periodically.",
+      "retrieval_ms": 74.14949999656528,
+      "total_ms": 25040.922999964096,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 50)",
+        "ISO-37301-2021.pdf (Page 14)",
+        "ISO-37301-2021.pdf (Page 15)",
+        "ISO-37301-2021.pdf (Page 10)",
+        "ISO-37301-2021.pdf (Page 12)",
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37301-2021.pdf (Page 9)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "6.2",
+        "9.1"
+      ],
+      "expected_sources": [
+        "iso37301",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5368,
+      "used_default_sources": false
+    },
+    {
+      "query": "Map available evidence to ISO 37001 clauses and state where evidence is insufficient.",
+      "retrieval_ms": 79.23869998194277,
+      "total_ms": 36159.13169994019,
+      "source_count": 5,
+      "sources": [
+        "iso37001_company_document.pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 3)",
+        "iso37001_company_document.pdf (Page 18)",
+        "iso37001_company_document.pdf (Page 4)",
+        "iso37001_company_document.pdf (Page 20)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37001_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "5.1",
+        "7.3",
+        "8.2",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 7290,
+      "used_default_sources": false
+    },
+    {
+      "query": "Generate 30/60/90 day plan to close highest anti-bribery compliance gaps.",
+      "retrieval_ms": 61.507799895480275,
+      "total_ms": 20039.022400043905,
+      "source_count": 3,
+      "sources": [
+        "iso37001_company_document.pdf",
+        "iso37001_company_document.pdf (Page 20)",
+        "iso37001_company_document.pdf (Page 14)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "10.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5352,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare due diligence controls for suppliers and agents against ISO baseline.",
+      "retrieval_ms": 90.36080003716052,
+      "total_ms": 21229.575700010173,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37001.pdf (Page 39)",
+        "ISO-37001.pdf (Page 21)",
+        "iso37001_company_document.pdf (Page 13)",
+        "ISO-37001.pdf (Page 43)",
+        "ISO-37002-2021.pdf (Page 10)",
+        "ISO-37001.pdf (Page 38)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "iso37001_company_document.pdf",
+        "iso37301_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5939,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate records retention and audit trail quality for compliance evidence.",
+      "retrieval_ms": 69.16039995849133,
+      "total_ms": 34005.94559998717,
+      "source_count": 8,
+      "sources": [
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37001.pdf (Page 25)",
+        "iso37001_company_document.pdf (Page 18)",
+        "ISO-37001.pdf (Page 11)",
+        "ISO-37002-2021.pdf (Page 12)",
+        "ISO-37001.pdf (Page 20)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37002-2021.pdf (Page 13)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37301-2021.pdf",
+        "iso37000_company_document.pdf",
+        "iso37001_company_document.pdf",
+        "iso37002_company_document.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7.5",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37301",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 6093,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess governance and ethics communication mechanisms against ISO 37000 expectations.",
+      "retrieval_ms": 70.32350008375943,
+      "total_ms": 24288.726200000383,
+      "source_count": 6,
+      "sources": [
+        "iso37000_company_document.pdf (Page 2)",
+        "iso37000_company_document.pdf (Page 23)",
+        "iso37000_company_document.pdf (Page 13)",
+        "iso37000_company_document.pdf (Page 17)",
+        "iso37000_company_document.pdf (Page 3)",
+        "iso37000_company_document.pdf (Page 38)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf"
+      ],
+      "retrieved_clauses": [],
+      "expected_clauses": [
+        "7",
+        "8"
+      ],
+      "expected_sources": [
+        "iso37000",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 5473,
+      "used_default_sources": false
+    }
+  ]
+}

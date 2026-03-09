@@ -4,14 +4,14 @@ import os
 import statistics
 import sys
 import time
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from bot import ArthMitraBot
 
 
-def load_queries(path: str) -> List[str]:
+def load_queries(path: str) -> List[Any]:
     if not path:
         return [
             "Summarize key points from the Finance Bill 2025-26",
@@ -28,12 +28,35 @@ def load_queries(path: str) -> List[str]:
         if path.endswith(".json"):
             payload = json.load(handle)
             if isinstance(payload, list):
-                return [str(item) for item in payload]
+                return payload
             if isinstance(payload, dict) and "queries" in payload:
-                return [str(item) for item in payload["queries"]]
+                return payload["queries"]
             raise ValueError("Unsupported JSON format. Use a list or { 'queries': [...] }.")
 
         return [line.strip() for line in handle if line.strip()]
+
+
+def parse_case(item: Any) -> Dict[str, Any]:
+    if isinstance(item, str):
+        return {
+            "query": item,
+            "expectedClauses": [],
+            "expectedSources": [],
+            "requiresGap": False,
+        }
+    if isinstance(item, dict):
+        return {
+            "query": str(item.get("query", "")).strip(),
+            "expectedClauses": [str(x).lower() for x in item.get("expectedClauses", [])],
+            "expectedSources": [str(x).lower() for x in item.get("expectedSources", [])],
+            "requiresGap": bool(item.get("requiresGap", False)),
+        }
+    return {
+        "query": str(item),
+        "expectedClauses": [],
+        "expectedSources": [],
+        "requiresGap": False,
+    }
 
 
 def is_default_sources(sources: List[str]) -> bool:
@@ -42,7 +65,8 @@ def is_default_sources(sources: List[str]) -> bool:
     return sources == ["General Knowledge - No documents indexed yet"] or sources == ["Knowledge Base"]
 
 
-def measure_query(bot: ArthMitraBot, query: str, profile: Dict) -> Tuple[Dict, List[str]]:
+def measure_query(bot: ArthMitraBot, case: Dict[str, Any], profile: Dict) -> Tuple[Dict, List[str]]:
+    query = case["query"]
     retrieval_ms = None
     docs = []
     if bot._retriever is not None:
@@ -61,6 +85,32 @@ def measure_query(bot: ArthMitraBot, query: str, profile: Dict) -> Tuple[Dict, L
         source = doc.metadata.get("source", "Unknown")
         doc_sources.append(os.path.basename(source))
 
+    retrieved_clauses = sorted({
+        str(doc.metadata.get("clause", "")).lower()
+        for doc in docs
+        if doc.metadata.get("clause")
+    })
+
+    expected_clauses = case.get("expectedClauses", [])
+    expected_sources = case.get("expectedSources", [])
+    requires_gap = case.get("requiresGap", False)
+
+    clause_hits = 0
+    if expected_clauses:
+        clause_hits = sum(1 for clause in expected_clauses if clause in retrieved_clauses)
+    clause_precision = round(clause_hits / max(len(retrieved_clauses), 1), 3) if expected_clauses else None
+    clause_recall = round(clause_hits / max(len(expected_clauses), 1), 3) if expected_clauses else None
+
+    lower_sources = [s.lower() for s in sources]
+    source_hits = 0
+    if expected_sources:
+        source_hits = sum(1 for src in expected_sources if any(src in found for found in lower_sources))
+    citation_accuracy = round(source_hits / max(len(expected_sources), 1), 3) if expected_sources else None
+
+    response_l = response_text.lower()
+    gap_detected = any(k in response_l for k in ["gap", "missing", "not enough evidence", "recommendation"])
+    gap_accuracy = 1.0 if requires_gap == gap_detected else 0.0
+
     return {
         "query": query,
         "retrieval_ms": retrieval_ms,
@@ -69,6 +119,14 @@ def measure_query(bot: ArthMitraBot, query: str, profile: Dict) -> Tuple[Dict, L
         "sources": sources,
         "retrieved_docs": len(docs),
         "retrieved_doc_sources": sorted(set(doc_sources)),
+        "retrieved_clauses": retrieved_clauses,
+        "expected_clauses": expected_clauses,
+        "expected_sources": expected_sources,
+        "requires_gap": requires_gap,
+        "clause_precision": clause_precision,
+        "clause_recall": clause_recall,
+        "citation_accuracy": citation_accuracy,
+        "gap_detection_accuracy": gap_accuracy,
         "response_chars": len(response_text),
         "used_default_sources": is_default_sources(sources),
     }, sources
@@ -83,6 +141,10 @@ def summarize(results: List[Dict]) -> Dict:
     non_default = [item for item in results if not is_default_sources(item["sources"])]
     default_count = len(results) - len(non_default)
     all_sources = sorted({source for item in results for source in item["sources"]})
+    clause_precisions = [item["clause_precision"] for item in results if item.get("clause_precision") is not None]
+    clause_recalls = [item["clause_recall"] for item in results if item.get("clause_recall") is not None]
+    citation_scores = [item["citation_accuracy"] for item in results if item.get("citation_accuracy") is not None]
+    gap_scores = [item["gap_detection_accuracy"] for item in results]
 
     def quantile(values: List[float], n: int, index: int) -> float | None:
         if len(values) < 2:
@@ -113,6 +175,10 @@ def summarize(results: List[Dict]) -> Dict:
         "unique_sources": len(all_sources),
         "default_source_rate": round((default_count / len(results)) * 100, 2) if results else 0,
         "avg_response_chars": round(statistics.mean(response_sizes), 2) if response_sizes else 0,
+        "precision_at_k": round(statistics.mean(clause_precisions), 3) if clause_precisions else None,
+        "clause_recall": round(statistics.mean(clause_recalls), 3) if clause_recalls else None,
+        "citation_accuracy": round(statistics.mean(citation_scores), 3) if citation_scores else None,
+        "gap_detection_accuracy": round(statistics.mean(gap_scores), 3) if gap_scores else None,
     }
     return summary
 
@@ -140,13 +206,21 @@ def main() -> None:
     queries = load_queries(args.queries)
     results = []
 
-    for query in queries:
-        item, _ = measure_query(bot, query, profile)
+    for raw_case in queries:
+        case = parse_case(raw_case)
+        if not case["query"]:
+            continue
+        item, _ = measure_query(bot, case, profile)
         results.append(item)
-        print(f"\nQuery: {query}")
+        print(f"\nQuery: {case['query']}")
         print(f"  Retrieval ms: {item['retrieval_ms']}")
         print(f"  Total ms: {item['total_ms']}")
         print(f"  Sources ({item['source_count']}): {', '.join(item['sources'])}")
+        if item.get("clause_precision") is not None:
+            print(f"  Clause precision: {item['clause_precision']}")
+        if item.get("citation_accuracy") is not None:
+            print(f"  Citation accuracy: {item['citation_accuracy']}")
+        print(f"  Gap detection accuracy: {item['gap_detection_accuracy']}")
 
     summary = summarize(results)
     print("\n=== RAG Summary ===")
@@ -169,6 +243,10 @@ def main() -> None:
     print(f"Unique sources: {summary['unique_sources']}")
     print(f"Default source rate: {summary['default_source_rate']}%")
     print(f"Avg response length (chars): {summary['avg_response_chars']}")
+    print(f"Precision@k: {summary['precision_at_k']}")
+    print(f"Clause recall: {summary['clause_recall']}")
+    print(f"Citation accuracy: {summary['citation_accuracy']}")
+    print(f"Gap detection accuracy: {summary['gap_detection_accuracy']}")
 
     print("\n=== Easy Words ===")
     print("Speed (average time): Avg total ms")

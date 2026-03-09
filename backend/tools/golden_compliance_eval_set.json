@@ -1,0 +1,286 @@
+[
+    {
+        "query": "Compare company anti-bribery policy against ISO 37001 clause 5.1 leadership commitment.",
+        "expectedClauses": [
+            "5.1"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "For ISO 37001 clause 8.2 due diligence, what evidence exists and what is missing?",
+        "expectedClauses": [
+            "8.2"
+        ],
+        "expectedSources": [
+            "iso37001"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Evaluate gifts, hospitality and donations controls against ISO 37001 clause 8.7.",
+        "expectedClauses": [
+            "8.7"
+        ],
+        "expectedSources": [
+            "iso37001"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Assess whistleblowing process against ISO 37002 handling and investigation requirements.",
+        "expectedClauses": [
+            "8.3",
+            "8.4"
+        ],
+        "expectedSources": [
+            "iso37002"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Compare compliance obligations tracking with ISO 37301 clause 6 planning requirements.",
+        "expectedClauses": [
+            "6.1",
+            "6.2"
+        ],
+        "expectedSources": [
+            "iso37301"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Show governance accountability mapping against ISO 37000 leadership principles.",
+        "expectedClauses": [
+            "5",
+            "6"
+        ],
+        "expectedSources": [
+            "iso37000"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Is there evidence of anti-bribery training and awareness for employees?",
+        "expectedClauses": [
+            "7.3"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Evaluate third-party management and contract controls for bribery risk.",
+        "expectedClauses": [
+            "8.2",
+            "8.3"
+        ],
+        "expectedSources": [
+            "iso37001"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Do we have monitoring and internal audit evidence for anti-bribery controls?",
+        "expectedClauses": [
+            "9.1",
+            "9.2"
+        ],
+        "expectedSources": [
+            "iso37001"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Provide corrective action maturity against ISO 37001 clause 10 improvement.",
+        "expectedClauses": [
+            "10.1",
+            "10.2"
+        ],
+        "expectedSources": [
+            "iso37001"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Compare policy documentation control and versioning to ISO 37301 documented information requirements.",
+        "expectedClauses": [
+            "7.5"
+        ],
+        "expectedSources": [
+            "iso37301"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Check whether reporting channels are confidential and protected from retaliation.",
+        "expectedClauses": [
+            "7",
+            "8"
+        ],
+        "expectedSources": [
+            "iso37002",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Assess board oversight and tone-at-the-top against governance expectations.",
+        "expectedClauses": [
+            "5.1"
+        ],
+        "expectedSources": [
+            "iso37000",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Evaluate risk assessment methodology for bribery and compliance risks.",
+        "expectedClauses": [
+            "6.1",
+            "8.2"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "iso37301"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Do we have a formal anti-bribery policy approved by top management?",
+        "expectedClauses": [
+            "5.2"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Compare speak-up intake, triage and closure workflow with ISO 37002 baseline.",
+        "expectedClauses": [
+            "8.2",
+            "8.3",
+            "8.4"
+        ],
+        "expectedSources": [
+            "iso37002",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Identify missing control owners and accountability assignments by clause.",
+        "expectedClauses": [
+            "5.3",
+            "7.1"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Review disciplinary framework and consequences for anti-bribery breaches.",
+        "expectedClauses": [
+            "7.2",
+            "8.7"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Assess investigation case management records quality for whistleblowing cases.",
+        "expectedClauses": [
+            "8.3"
+        ],
+        "expectedSources": [
+            "iso37002",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Check if compliance objectives are measurable and tracked periodically.",
+        "expectedClauses": [
+            "6.2",
+            "9.1"
+        ],
+        "expectedSources": [
+            "iso37301",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Map available evidence to ISO 37001 clauses and state where evidence is insufficient.",
+        "expectedClauses": [
+            "5.1",
+            "7.3",
+            "8.2",
+            "9.2"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Generate 30/60/90 day plan to close highest anti-bribery compliance gaps.",
+        "expectedClauses": [
+            "10.2"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Compare due diligence controls for suppliers and agents against ISO baseline.",
+        "expectedClauses": [
+            "8.2"
+        ],
+        "expectedSources": [
+            "iso37001",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Evaluate records retention and audit trail quality for compliance evidence.",
+        "expectedClauses": [
+            "7.5",
+            "9.2"
+        ],
+        "expectedSources": [
+            "iso37301",
+            "company"
+        ],
+        "requiresGap": true
+    },
+    {
+        "query": "Assess governance and ethics communication mechanisms against ISO 37000 expectations.",
+        "expectedClauses": [
+            "7",
+            "8"
+        ],
+        "expectedSources": [
+            "iso37000",
+            "company"
+        ],
+        "requiresGap": true
+    }
+]

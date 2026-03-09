@@ -9,7 +9,11 @@ import {
 
 export const cleanSnippetText = (text: string) =>
     text
+        .replace(/[\u200b\u200c\u200d\ufeff]/g, '')
+        .replace(/(\w)-\s+(\w)/g, '$1$2')
+        .replace(/\b(?:[A-Za-z]\s+){2,}[A-Za-z]\b/g, (m) => m.replace(/\s+/g, ''))
         .replace(/\s*#{1,6}\s*/g, ' ')
+        .replace(/all rights reserved|copyright protected document/gi, ' ')
         .replace(/\s+/g, ' ')
         .trim()
 

@@ -7,9 +7,11 @@ import os
 import profile
 import re
 import glob
+import threading
 import pandas as pd
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Tuple, List, Iterable, Any
+from collections import Counter
 from langchain_openai import ChatOpenAI
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_chroma import Chroma
@@ -29,13 +31,27 @@ import json
 from functools import lru_cache
 import time
 
+try:
+    import pdfplumber  # type: ignore
+except Exception:
+    pdfplumber = None
+
+try:
+    import pytesseract  # type: ignore
+    from pdf2image import convert_from_path  # type: ignore
+except Exception:
+    pytesseract = None
+    convert_from_path = None
+
 load_dotenv()
 
 # Configuration
-CHROMA_PERSIST_DIR = "./chroma_db"
-DOCS_DIR = "./documents"  # Pre-loaded knowledge base documents
-UPLOADS_DIR = "./uploads"  # Runtime uploaded documents
+CHROMA_PERSIST_DIR = os.getenv("CHROMA_PERSIST_DIR", "./chroma_db_new")
+DOCS_DIR = os.getenv("DOCS_DIR", "./documents_new")  # Pre-loaded knowledge base documents
+UPLOADS_DIR = os.getenv("UPLOADS_DIR", "./uploads")  # Runtime uploaded documents
 GOLD_DATA_PATH = os.path.join(DOCS_DIR, "gold_data.csv")
+FRAMEWORK_RUBRICS_PATH = os.getenv("FRAMEWORK_RUBRICS_PATH", "./framework_rubrics.json")
+FEEDBACK_LOG_PATH = os.getenv("FEEDBACK_LOG_PATH", "./response_feedback.jsonl")
 
 # Performance optimization settings
 CACHE_MEMORY_MAX = 200  # Max L1 (in-memory LRU) entries
@@ -377,19 +393,99 @@ def format_chat_history(history: Optional[List[Dict]]) -> str:
     return "\n".join(lines) if lines else "None"
 
 
-# System prompt optimized for faster token generation
-SYSTEM_PROMPT = """You are Arth-Mitra, an expert Indian financial advisor.
+# System prompt for forensic and financial crime compliance use-case
+SYSTEM_PROMPT = """You are an expert Forensic and Financial Crime Compliance Assistant.
 
 {user_profile}
 
 Recent chat: {chat_history}
 
-**Guidelines:**
-- Use ## headers, **bold** for key terms, tables for comparisons
-- Provide specific numbers, amounts, eligibility criteria
-- Reference source documents
-- If info not in context, state clearly
-- Keep responses concise and actionable
+**Your primary domain:**
+- Anti-bribery
+- Anti-corruption
+- Governance controls
+- Financial crime prevention
+- ISO 37001 readiness and related compliance frameworks
+
+**Framework scoring template (default):**
+- ISO 37001 (Anti-bribery Management Systems): 35%
+- ISO 37301 (Compliance Management Systems): 30%
+- ISO 37000 (Governance of Organizations): 20%
+- ISO 37002 (Whistleblowing Management Systems): 15%
+
+**Maturity scale for each control:**
+- 0 = Not Evidenced
+- 1 = Ad-hoc / Informal
+- 2 = Defined
+- 3 = Implemented
+- 4 = Monitored
+- 5 = Optimized
+
+**Scoring method:**
+- Control Score % = (maturity / 5) * 100
+- Framework Score % = weighted average of controls under that framework
+- Overall Readiness % = weighted sum of framework scores using the template above
+
+**Mandatory output tables:**
+1) Framework Readiness Table
+| Framework | Weight | Score | Status | Key Gaps |
+
+2) Control Gap Table
+| Framework | Clause/Requirement | Evidence Found | Maturity (0-5) | Gap | Recommendation |
+
+3) Priority Action Plan (30/60/90)
+| Priority | Timeline | Action | Owner Suggestion | Expected Outcome |
+
+**Strict output schema (JSON first, mandatory):**
+Return a valid JSON object first (before narrative) with this shape:
+{
+    "framework": "iso37001|iso37301|iso37000|iso37002|multi",
+    "company": "<company name if inferable>",
+    "scores": {
+        "overall_readiness": 0,
+        "framework_scores": [{"framework": "ISO 37001", "weight": 35, "score": 0}]
+    },
+    "strengths": [{"clause": "8.2", "evidence": "...", "reason": "..."}],
+    "gaps": [{"clause": "8.3", "missing": "...", "risk": "high|medium|low", "recommendation": "..."}],
+    "missing_evidence": [{"clause": "5.1", "required": "...", "found": "not enough evidence"}],
+    "actions_30_60_90": {
+        "d30": ["..."],
+        "d60": ["..."],
+        "d90": ["..."]
+    },
+    "citations": [{"source": "...", "clause": "...", "page": "..."}],
+    "stats": {
+        "company_chunks": 0,
+        "baseline_chunks": 0,
+        "total_chunks_used": 0,
+        "insufficient_evidence_clauses": 0
+    }
+}
+
+After JSON, provide a concise human-readable explanation and tables.
+
+**Insufficient evidence rule (mandatory):**
+For any clause with weak/missing support, explicitly write "Not enough evidence" and do not guess.
+
+**Output format (always follow this structure when applicable):**
+1. Background of the Problem
+2. What the Real Problem Is
+3. What the Problem Statement Is Asking
+4. Example of How the System Would Work (Step-by-step)
+5. Why This Problem Is Important
+6. What Makes This an AI + Agent Problem
+7. Real-World Example
+
+**Formatting rules:**
+- Use clear section headers and short bullet points.
+- Include practical examples and implementation-oriented language.
+- Add tables for scoring or gap analysis where useful.
+- Keep explanation simple, business-friendly, and actionable.
+- If context is missing, clearly say what is assumed.
+- Do not invent legal claims; stay grounded in provided context.
+- Prefer Annex guidance when available in documents and cite it in the gap/recommendation logic.
+
+{grounding_rules}
 
 **Context:** {context}
 
@@ -413,10 +509,13 @@ class ArthMitraBot:
         self._initialized = False
         self._retriever = None
         self._indexed_files = set()
+        self._index_lock = threading.RLock()
         self._response_cache = MultiLayerCache(
             memory_max=CACHE_MEMORY_MAX,
             ttl_hours=CACHE_TTL_HOURS,
         )
+        self._framework_rubrics = self._load_framework_rubrics()
+        self._feedback_log_path = FEEDBACK_LOG_PATH
 
     def _append_sources_section(self, response: str, sources: List[str]) -> str:
         """Append an explicit Sources section to the response body."""
@@ -431,6 +530,66 @@ class ArthMitraBot:
         if self.embeddings and hasattr(self.embeddings, 'clear_cache'):
             self.embeddings.clear_cache()
         print("✅ Response and embedding caches cleared")
+
+    def _load_framework_rubrics(self) -> Dict[str, Any]:
+        """Load framework-specific scoring rubrics from local JSON."""
+        try:
+            if not os.path.exists(FRAMEWORK_RUBRICS_PATH):
+                return {}
+            with open(FRAMEWORK_RUBRICS_PATH, "r", encoding="utf-8") as rubric_file:
+                data = json.load(rubric_file)
+            return data if isinstance(data, dict) else {}
+        except Exception as error:
+            print(f"⚠️ Could not load framework rubrics: {error}")
+            return {}
+
+    def _get_framework_rubric(self, framework_key: str) -> Dict[str, Any]:
+        if not framework_key:
+            return {}
+        return self._framework_rubrics.get(framework_key.lower(), {}) if self._framework_rubrics else {}
+
+    def _estimate_upload_quality(self, chunks: List[Document]) -> Dict[str, Any]:
+        if not chunks:
+            return {
+                "qualityScore": 0,
+                "qualityLabel": "poor",
+                "clauseCoverage": 0,
+                "warning": "Document parsing produced no chunks.",
+            }
+
+        clause_hits = 0
+        high_signal_chunks = 0
+        average_chars = 0.0
+        for chunk in chunks:
+            text = chunk.page_content or ""
+            average_chars += len(text)
+            if chunk.metadata.get("clause"):
+                clause_hits += 1
+            if any(token in text.lower() for token in ["shall", "must", "control", "procedure", "evidence"]):
+                high_signal_chunks += 1
+
+        average_chars = average_chars / max(len(chunks), 1)
+        clause_ratio = clause_hits / max(len(chunks), 1)
+        signal_ratio = high_signal_chunks / max(len(chunks), 1)
+        length_score = min(1.0, average_chars / 800.0)
+        quality_score = int(round((0.45 * clause_ratio + 0.35 * signal_ratio + 0.20 * length_score) * 100))
+
+        if quality_score >= 75:
+            label = "strong"
+            warning = ""
+        elif quality_score >= 45:
+            label = "medium"
+            warning = "Document parsed partially. Consider cleaner source or OCR quality check."
+        else:
+            label = "poor"
+            warning = "Low quality extraction detected. Upload a searchable PDF or clearer scan."
+
+        return {
+            "qualityScore": quality_score,
+            "qualityLabel": label,
+            "clauseCoverage": round(clause_ratio * 100, 1),
+            "warning": warning,
+        }
 
     def _invoke_llm(self, prompt: str):
         """Invoke configured LLM providers with ordered fallback."""
@@ -661,30 +820,398 @@ class ArthMitraBot:
                 | StrOutputParser()
             )
 
-    def _get_source_docs(self, query: str, source_filter: Optional[str] = None):
-        """Retrieve documents, optionally constrained to a specific source file."""
-        if not source_filter:
-            return self._retriever.invoke(query)
+    def _normalize_source_name(self, name: str) -> str:
+        source = os.path.basename((name or "").strip())
+        source = re.sub(r"\s+", " ", source)
+        return source.lower()
 
-        def normalize_source_name(name: str) -> str:
-            source = os.path.basename((name or "").strip())
-            source = re.sub(r"\s+", " ", source)
-            return source.lower()
+    def _infer_framework_from_query(self, query: str) -> Optional[str]:
+        query_l = (query or "").lower()
+        if "37001" in query_l or any(k in query_l for k in ["bribe", "bribery", "anti-bribery", "anti bribery", "corruption", "anti-corruption"]):
+            return "iso37001"
+        if "37301" in query_l or "compliance management" in query_l:
+            return "iso37301"
+        if "37000" in query_l or any(k in query_l for k in ["governance", "board", "leadership"]):
+            return "iso37000"
+        if "37002" in query_l or any(k in query_l for k in ["whistle", "speak up", "whistleblow"]):
+            return "iso37002"
+        return None
+
+    def _infer_framework_from_path(self, file_path: str, source_name: Optional[str] = None) -> Optional[str]:
+        candidates = [
+            (file_path or "").replace("\\", "/").lower(),
+            (source_name or "").lower(),
+        ]
+        for text in candidates:
+            if "37001" in text:
+                return "iso37001"
+            if "37301" in text:
+                return "iso37301"
+            if "37000" in text:
+                return "iso37000"
+            if "37002" in text:
+                return "iso37002"
+        return None
+
+    def _resolve_source_type(self, file_path: str, framework: Optional[str]) -> str:
+        normalized_path = (file_path or "").replace("\\", "/").lower()
+        docs_dir = os.path.abspath(DOCS_DIR).replace("\\", "/").lower()
+        uploads_dir = os.path.abspath(UPLOADS_DIR).replace("\\", "/").lower()
+        abs_path = os.path.abspath(file_path).replace("\\", "/").lower() if file_path else normalized_path
+
+        if framework and abs_path.startswith(docs_dir):
+            return "baseline"
+        if framework and abs_path.startswith(uploads_dir):
+            return "company"
+        return "other"
+
+    def _is_compliance_query(self, query: str, source_filter: Optional[str] = None) -> bool:
+        if self._infer_framework_from_query(query):
+            return True
+        source_l = (source_filter or "").lower()
+        if re.search(r"iso[-_ ]?37\d{3}", source_l) or "company_document" in source_l:
+            return True
+        query_l = (query or "").lower()
+        keywords = ["iso", "framework", "anti-bribery", "bribery", "compliance", "governance", "whistle", "clause", "control gap"]
+        return any(k in query_l for k in keywords)
+
+    def _extract_clause_id(self, text: str) -> Optional[str]:
+        if not text:
+            return None
+        match = re.search(r"(?m)^\s*((?:clause\s*)?\d{1,2}(?:\.\d{1,3}){0,3})\b", text.strip(), flags=re.IGNORECASE)
+        if match:
+            return match.group(1).lower().replace("clause", "").strip()
+        inline_match = re.search(r"\b(\d{1,2}(?:\.\d{1,3}){1,3})\b", text)
+        if inline_match:
+            return inline_match.group(1)
+        return None
+
+    def _extract_effective_date(self, text: str) -> Optional[str]:
+        date_patterns = [
+            r"\b\d{4}-\d{2}-\d{2}\b",
+            r"\b\d{1,2}/\d{1,2}/\d{4}\b",
+            r"\b\d{1,2}-\d{1,2}-\d{4}\b",
+            r"\b(?:jan|feb|mar|apr|may|jun|jul|aug|sep|sept|oct|nov|dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b",
+        ]
+        for pattern in date_patterns:
+            found = re.search(pattern, (text or "").lower())
+            if found:
+                return found.group(0)
+        return None
+
+    def _infer_policy_type(self, text: str) -> str:
+        t = (text or "").lower()
+        if "procedure" in t:
+            return "procedure"
+        if "code of conduct" in t or "code" in t:
+            return "code"
+        if "manual" in t:
+            return "manual"
+        if "standard operating" in t or "sop" in t:
+            return "sop"
+        if "policy" in t:
+            return "policy"
+        return "unknown"
+
+    def _infer_owner_function(self, text: str) -> str:
+        t = (text or "").lower()
+        if any(k in t for k in ["board", "audit committee", "governing body"]):
+            return "board"
+        if any(k in t for k in ["compliance", "ethics", "integrity"]):
+            return "compliance"
+        if any(k in t for k in ["human resources", "hr"]):
+            return "hr"
+        if any(k in t for k in ["finance", "accounts", "procurement"]):
+            return "finance"
+        if any(k in t for k in ["legal", "counsel"]):
+            return "legal"
+        return "unknown"
+
+    def _infer_evidence_strength(self, text: str) -> str:
+        t = (text or "").lower()
+        strong_hits = sum(1 for k in ["shall", "must", "approved", "reviewed", "monitor", "record", "audit"] if k in t)
+        weak_hits = sum(1 for k in ["may", "could", "consider", "guidance"] if k in t)
+        if strong_hits >= 3:
+            return "high"
+        if strong_hits >= 1 and weak_hits <= 2:
+            return "medium"
+        return "low"
+
+    def _build_table_documents_from_pdf(self, file_path: str, source_name: str, framework: Optional[str], source_type: str) -> List[Document]:
+        table_docs: List[Document] = []
+        if not pdfplumber:
+            return table_docs
+        try:
+            with pdfplumber.open(file_path) as pdf:
+                for page_index, page in enumerate(pdf.pages):
+                    tables = page.extract_tables() or []
+                    for table_index, table in enumerate(tables):
+                        rows = []
+                        for row in table:
+                            if not row:
+                                continue
+                            cells = [((cell or "").strip()) for cell in row]
+                            if any(cells):
+                                rows.append(" | ".join(cells))
+                        if not rows:
+                            continue
+                        content = "Table Extract:\n" + "\n".join(rows)
+                        table_docs.append(Document(
+                            page_content=content,
+                            metadata={
+                                "source": source_name,
+                                "page": page_index,
+                                "framework": framework,
+                                "source_type": source_type,
+                                "content_type": "table",
+                                "table_index": table_index,
+                            }
+                        ))
+        except Exception as error:
+            print(f"⚠️ Table parsing unavailable for {os.path.basename(file_path)}: {error}")
+        return table_docs
+
+    def _try_ocr_pdf_documents(self, file_path: str, source_name: str, framework: Optional[str], source_type: str) -> List[Document]:
+        ocr_docs: List[Document] = []
+        if not pytesseract or not convert_from_path:
+            return ocr_docs
+        try:
+            images = convert_from_path(file_path, dpi=200)
+            for index, image in enumerate(images):
+                extracted = (pytesseract.image_to_string(image) or "").strip()
+                if len(extracted) < 40:
+                    continue
+                ocr_docs.append(Document(
+                    page_content=extracted,
+                    metadata={
+                        "source": source_name,
+                        "page": index,
+                        "framework": framework,
+                        "source_type": source_type,
+                        "content_type": "ocr",
+                    }
+                ))
+        except Exception as error:
+            print(f"⚠️ OCR fallback failed for {os.path.basename(file_path)}: {error}")
+        return ocr_docs
+
+    def _load_documents_with_fallback(
+        self,
+        file_path: str,
+        file_ext: str,
+        source_name: str,
+        framework: Optional[str],
+        source_type: str,
+    ) -> List[Document]:
+        if file_ext == ".pdf":
+            base_docs = PyPDFLoader(file_path).load()
+            total_chars = sum(len((doc.page_content or "").strip()) for doc in base_docs)
+
+            table_docs = self._build_table_documents_from_pdf(file_path, source_name, framework, source_type)
+            if table_docs:
+                base_docs.extend(table_docs)
+
+            # OCR fallback for scanned/noisy PDFs.
+            if total_chars < 400:
+                ocr_docs = self._try_ocr_pdf_documents(file_path, source_name, framework, source_type)
+                if ocr_docs:
+                    base_docs.extend(ocr_docs)
+
+            return base_docs
+
+        if file_ext == ".csv":
+            return CSVLoader(file_path).load()
+        if file_ext == ".docx":
+            return Docx2txtLoader(file_path).load()
+        if file_ext in [".txt", ".md"]:
+            return TextLoader(file_path).load()
+        return []
+
+    def _rerank_documents(
+        self,
+        candidates: List[Document],
+        query: str,
+        top_k: int,
+        framework_hint: Optional[str] = None,
+    ) -> List[Document]:
+        if not candidates:
+            return []
+
+        query_terms = [w for w in re.findall(r"[a-zA-Z]{3,}", (query or "").lower())]
+        query_counter = Counter(query_terms)
+
+        scored: List[Tuple[float, Document]] = []
+        for doc in candidates:
+            content_l = (doc.page_content or "").lower()
+            doc_terms = re.findall(r"[a-zA-Z]{3,}", content_l)
+            doc_counter = Counter(doc_terms)
+
+            overlap = 0.0
+            for term, q_count in query_counter.items():
+                if term in doc_counter:
+                    overlap += min(q_count, doc_counter[term])
+
+            clause_bonus = 1.5 if self._extract_clause_id(doc.page_content or "") else 0.0
+            framework_bonus = 1.0 if framework_hint and (doc.metadata.get("framework") == framework_hint) else 0.0
+            evidence_bonus = {"high": 1.2, "medium": 0.7, "low": 0.2}.get((doc.metadata.get("evidence_strength") or "").lower(), 0.0)
+
+            total_score = overlap + clause_bonus + framework_bonus + evidence_bonus
+            scored.append((total_score, doc))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        reranked = [doc for _, doc in scored[:max(top_k, 1)]]
+        return reranked
+
+    def _get_framework_source_docs(self, query: str, framework_key: str) -> List[Document]:
+        candidate_k = max(OPTIMIZED_RETRIEVAL_K * 7, 80)
+        candidates = self.vectorstore.similarity_search(query, k=candidate_k)
+        framework_docs: List[Document] = []
+
+        for doc in candidates:
+            metadata = doc.metadata or {}
+            framework = metadata.get("framework")
+            source_name = self._normalize_source_name(metadata.get("source", ""))
+            if framework == framework_key or framework_key in source_name:
+                framework_docs.append(doc)
+
+        if framework_docs:
+            return self._rerank_documents(
+                framework_docs,
+                query,
+                top_k=OPTIMIZED_RETRIEVAL_K,
+                framework_hint=framework_key,
+            )
+        return []
+
+    def _build_prompt(self, user_profile_text: str, chat_history_text: str, context: str, query: str, strict_grounding: bool = False) -> str:
+        grounding_rules = ""
+        if strict_grounding:
+            grounding_rules = (
+                "**Strict Grounding Mode (must follow):**\n"
+                "- Use only the provided Context from selected uploaded documents.\n"
+                "- If the context does not contain the answer, explicitly say the information is not found in the uploaded documents.\n"
+                "- Do not use outside/general knowledge, assumptions, or fabricated details."
+            )
+
+        return (
+            SYSTEM_PROMPT
+            .replace("{user_profile}", user_profile_text)
+            .replace("{chat_history}", chat_history_text)
+            .replace("{grounding_rules}", grounding_rules)
+            .replace("{context}", context)
+            .replace("{question}", query)
+        )
+
+    def _filter_docs_by_sources(self, docs: List[Document], source_filters: List[str]) -> List[Document]:
+        allowed = {self._normalize_source_name(name) for name in source_filters if (name or "").strip()}
+        if not allowed:
+            return docs
+
+        filtered: List[Document] = []
+        for doc in docs:
+            source_meta = doc.metadata.get("source", "")
+            source_name = self._normalize_source_name(source_meta)
+            if source_name in allowed:
+                filtered.append(doc)
+        return filtered
+
+    def _expand_targets_with_framework_pair(self, allowed_targets: set) -> set:
+        """Expand selected source names to include paired company/baseline docs for the same framework."""
+        if not allowed_targets or not self.vectorstore:
+            return allowed_targets
+
+        expanded_targets = set(allowed_targets)
+
+        try:
+            results = self.vectorstore.get(include=['metadatas'])
+            metadatas = results.get('metadatas', []) or []
+
+            # Detect framework(s) from currently selected source target(s).
+            selected_frameworks = set()
+            for metadata in metadatas:
+                if not metadata:
+                    continue
+
+                source_name = self._normalize_source_name(metadata.get('source', ''))
+                slot_source = self._normalize_source_name(metadata.get('slot_source', ''))
+                if source_name not in allowed_targets and slot_source not in allowed_targets:
+                    continue
+
+                framework = (metadata.get('framework') or '').strip().lower()
+                if not framework:
+                    framework = self._infer_framework_from_path(
+                        metadata.get('slot_source', ''),
+                        metadata.get('source', ''),
+                    ) or ''
+                if framework:
+                    selected_frameworks.add(framework)
+
+            if not selected_frameworks:
+                return expanded_targets
+
+            # Include all sources that belong to matched frameworks.
+            for metadata in metadatas:
+                if not metadata:
+                    continue
+
+                framework = (metadata.get('framework') or '').strip().lower()
+                if not framework:
+                    framework = self._infer_framework_from_path(
+                        metadata.get('slot_source', ''),
+                        metadata.get('source', ''),
+                    ) or ''
+                if framework not in selected_frameworks:
+                    continue
+
+                source_name = self._normalize_source_name(metadata.get('source', ''))
+                if source_name:
+                    expanded_targets.add(source_name)
+
+        except Exception as error:
+            print(f"⚠️ Could not expand framework paired targets: {error}")
+
+        return expanded_targets
+
+    def _get_source_docs(self, query: str, source_filter: Optional[str] = None, source_filters: Optional[List[str]] = None):
+        """Retrieve documents, optionally constrained to one or many source files."""
+        if not source_filter and not source_filters:
+            routed_framework = self._infer_framework_from_query(query)
+            if routed_framework:
+                routed_docs = self._get_framework_source_docs(query, routed_framework)
+                if routed_docs:
+                    return routed_docs
+            candidates = self.vectorstore.similarity_search(query, k=max(OPTIMIZED_RETRIEVAL_K * 6, 60))
+            return self._rerank_documents(candidates, query, top_k=OPTIMIZED_RETRIEVAL_K, framework_hint=routed_framework)
+
+        normalized_targets: List[str] = []
+        if source_filter:
+            normalized_targets.append(self._normalize_source_name(source_filter))
+        if source_filters:
+            normalized_targets.extend([self._normalize_source_name(name) for name in source_filters if (name or "").strip()])
+        allowed_targets = set([target for target in normalized_targets if target])
+
+        # If a selected file belongs to an ISO framework, include its paired docs
+        # (company + baseline) so gap analysis can happen side-by-side.
+        allowed_targets = self._expand_targets_with_framework_pair(allowed_targets)
+
+        if not allowed_targets:
+            return self._retriever.invoke(query)
 
         # Fetch a wider candidate pool and filter by source filename to support
         # both old metadata (full path) and new metadata (basename).
-        candidates = self.vectorstore.similarity_search(query, k=max(OPTIMIZED_RETRIEVAL_K * 3, 30))
-        target = normalize_source_name(source_filter)
+        candidate_k = max(OPTIMIZED_RETRIEVAL_K * 5, 60)
+        candidates = self.vectorstore.similarity_search(query, k=candidate_k)
 
         filtered = []
         for doc in candidates:
             source_meta = doc.metadata.get("source", "")
-            source_name = normalize_source_name(source_meta)
-            if source_name == target:
+            source_name = self._normalize_source_name(source_meta)
+            if source_name in allowed_targets:
                 filtered.append(doc)
 
         if filtered:
-            return filtered[:OPTIMIZED_RETRIEVAL_K]
+            framework_hint = self._infer_framework_from_query(query)
+            return self._rerank_documents(filtered, query, top_k=OPTIMIZED_RETRIEVAL_K, framework_hint=framework_hint)
 
         # Fallback: if semantic retrieval misses, pull chunks directly from the
         # selected source so the model can still answer from that document.
@@ -697,19 +1224,26 @@ class ArthMitraBot:
             for content, metadata in zip(documents, metadatas):
                 if not metadata:
                     continue
-                source_name = normalize_source_name(metadata.get('source', ''))
-                if source_name == target:
+                source_name = self._normalize_source_name(metadata.get('source', ''))
+                if source_name in allowed_targets:
                     direct_matches.append(Document(page_content=content, metadata=metadata))
 
             direct_matches.sort(key=lambda d: d.metadata.get('chunk_index', 10**9))
             if direct_matches:
-                return direct_matches[:OPTIMIZED_RETRIEVAL_K]
+                framework_hint = self._infer_framework_from_query(query)
+                return self._rerank_documents(direct_matches, query, top_k=OPTIMIZED_RETRIEVAL_K, framework_hint=framework_hint)
         except Exception as e:
             print(f"⚠️ Source filter fallback failed: {e}")
 
         return []
     
-    def add_documents(self, file_path: str) -> Dict:
+    def add_documents(
+        self,
+        file_path: str,
+        source_name: Optional[str] = None,
+        framework: Optional[str] = None,
+        source_type: Optional[str] = None,
+    ) -> Dict:
         """Add documents to the knowledge base"""
         if not self._initialized:
             raise RuntimeError("Bot not initialized. Call initialize() first.")
@@ -717,19 +1251,27 @@ class ArthMitraBot:
         # Determine loader based on file type
         file_ext = os.path.splitext(file_path)[1].lower()
         
-        if file_ext == ".pdf":
-            loader = PyPDFLoader(file_path)
-        elif file_ext == ".csv":
-            loader = CSVLoader(file_path)
-        elif file_ext == ".docx":
-            loader = Docx2txtLoader(file_path)
-        elif file_ext in [".txt", ".md"]:
-            loader = TextLoader(file_path)
-        else:
+        if file_ext not in [".pdf", ".csv", ".docx", ".txt", ".md"]:
             return {"status": "error", "message": f"Unsupported file type: {file_ext}"}
-        
-        # Load and split documents with optimized chunk sizes
-        documents = loader.load()
+
+        slot_source = os.path.basename(file_path)
+        display_source = os.path.basename(source_name) if source_name else slot_source
+        framework_key = framework or self._infer_framework_from_path(file_path, display_source)
+        resolved_source_type = source_type or self._resolve_source_type(file_path, framework_key)
+
+        # Load with table-aware parser and OCR fallback for scanned PDFs.
+        documents = self._load_documents_with_fallback(
+            file_path,
+            file_ext,
+            display_source,
+            framework_key,
+            resolved_source_type,
+        )
+        if not documents:
+            return {"status": "error", "message": f"No parseable content found in {display_source}"}
+
+        for doc in documents:
+            doc.page_content = self._normalize_extracted_text(doc.page_content or "")
         
         # Smaller chunks = faster retrieval and less token usage
         text_splitter = RecursiveCharacterTextSplitter(
@@ -740,21 +1282,41 @@ class ArthMitraBot:
         
         splits = text_splitter.split_documents(documents)
 
+        last_clause = None
+
         # Ensure consistent source metadata for precise citations
         for index, split in enumerate(splits):
-            split.metadata["source"] = os.path.basename(file_path)
+            split_text = split.page_content or ""
+            clause = self._extract_clause_id(split_text) or last_clause
+            if clause:
+                last_clause = clause
+
+            split.metadata["source"] = display_source
+            split.metadata["slot_source"] = slot_source
             split.metadata["chunk_index"] = index
             split.metadata["file_type"] = file_ext
+            split.metadata["framework"] = framework_key
+            split.metadata["source_type"] = resolved_source_type
+            split.metadata["clause"] = clause
+            split.metadata["evidence_strength"] = self._infer_evidence_strength(split_text)
+            split.metadata["policy_type"] = self._infer_policy_type(split_text)
+            split.metadata["owner_function"] = self._infer_owner_function(split_text)
+            split.metadata["effective_date"] = self._extract_effective_date(split_text)
         
-        # Add to vector store
-        self.vectorstore.add_documents(splits)
-        
-        # Recreate RAG chain with updated vectorstore
-        self._create_rag_chain()
+        # Add to vector store and refresh retriever atomically.
+        with self._index_lock:
+            self.vectorstore.add_documents(splits)
+            self._create_rag_chain()
+
+        quality = self._estimate_upload_quality(splits)
+        quality_warning = f" | Quality: {quality['qualityLabel']} ({quality['qualityScore']}%)"
+        if quality.get("warning"):
+            quality_warning += f". {quality['warning']}"
         
         return {
             "status": "success",
-            "message": f"Indexed {len(splits)} chunks from {os.path.basename(file_path)}"
+            "message": f"Indexed {len(splits)} chunks from {display_source}{quality_warning}",
+            "quality": quality,
         }
 
     def remove_document(self, filename: str) -> dict:
@@ -763,21 +1325,24 @@ class ArthMitraBot:
             if not self.vectorstore:
                 return {"status": "error", "message": "Vector store not initialised"}
 
-            collection = self.vectorstore._collection
-            # Find all chunk IDs whose source matches the filename
-            results = collection.get(include=["metadatas"])
-            ids_to_delete = []
-            for doc_id, meta in zip(results["ids"], results["metadatas"]):
-                if meta and meta.get("source") == filename:
-                    ids_to_delete.append(doc_id)
+            with self._index_lock:
+                collection = self.vectorstore._collection
+                # Find all chunk IDs whose source OR slot source matches the filename
+                results = collection.get(include=["metadatas"])
+                ids_to_delete = []
+                for doc_id, meta in zip(results["ids"], results["metadatas"]):
+                    if not meta:
+                        continue
+                    if meta.get("source") == filename or meta.get("slot_source") == filename:
+                        ids_to_delete.append(doc_id)
 
-            if not ids_to_delete:
-                return {"status": "success", "message": f"No chunks found for {filename}", "removed": 0}
+                if not ids_to_delete:
+                    return {"status": "success", "message": f"No chunks found for {filename}", "removed": 0}
 
-            collection.delete(ids=ids_to_delete)
+                collection.delete(ids=ids_to_delete)
 
-            # Rebuild the RAG chain so it picks up the reduced collection
-            self._create_rag_chain()
+                # Rebuild the RAG chain so it picks up the reduced collection
+                self._create_rag_chain()
 
             return {
                 "status": "success",
@@ -808,6 +1373,39 @@ class ArthMitraBot:
         if hasattr(content, 'text'):
             return content.text
         return str(content) if content else ""
+
+    def _normalize_extracted_text(self, text: str) -> str:
+        """Normalize noisy OCR/PDF text to improve retrieval and readability."""
+        if not text:
+            return ""
+
+        cleaned = str(text)
+        cleaned = cleaned.replace("\x00", " ")
+        cleaned = re.sub(r"[\u200b\u200c\u200d\ufeff]", "", cleaned)
+        cleaned = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", cleaned)
+        cleaned = cleaned.replace("\r", "\n")
+
+        lines: List[str] = []
+        for raw_line in cleaned.split("\n"):
+            line = raw_line.strip()
+            if not line:
+                continue
+            if re.search(r"all rights reserved|copyright protected document", line, re.IGNORECASE):
+                continue
+            line = re.sub(r"\b(?:[A-Za-z]\s+){2,}[A-Za-z]\b", lambda m: m.group(0).replace(" ", ""), line)
+            line = re.sub(r"\s+", " ", line)
+            lines.append(line)
+
+        return "\n".join(lines).strip()
+
+    def _clean_snippet(self, text: str, max_len: int = 220) -> str:
+        """Create a readable snippet for UI cards from potentially noisy chunk text."""
+        normalized = self._normalize_extracted_text(text or "")
+        normalized = normalized.replace("\n", " ").strip()
+        normalized = re.sub(r"\s+", " ", normalized)
+        if len(normalized) > max_len:
+            normalized = normalized[:max_len].rstrip() + "..."
+        return normalized
 
     def _extract_query_terms(self, query: str) -> List[str]:
         words = re.findall(r"[a-zA-Z]{3,}", (query or "").lower())
@@ -841,10 +1439,10 @@ class ArthMitraBot:
                     pos = min(positions)
                     start = max(0, pos - 70)
                     end = min(len(content), pos + 180)
-                    snippet = content[start:end].replace("\n", " ").strip()
+                    snippet = self._clean_snippet(content[start:end])
 
             if not snippet:
-                snippet = content[:220].replace("\n", " ").strip()
+                snippet = self._clean_snippet(content[:220])
 
             if len(snippet) > 220:
                 snippet = snippet[:220].rstrip() + "..."
@@ -1053,27 +1651,50 @@ class ArthMitraBot:
             insights.append({"field": field, "value": value, "source": source})
 
         for doc in source_docs:
-            source_name = os.path.basename(doc.metadata.get("source", "Knowledge Base"))
+            metadata = doc.metadata or {}
+            source_name = os.path.basename(metadata.get("source", "Knowledge Base"))
+            source_type = (metadata.get("source_type") or "").strip().lower()
+            framework = (metadata.get("framework") or "").strip().lower()
+            clause = (metadata.get("clause") or "").strip()
+            evidence_strength = (metadata.get("evidence_strength") or "").strip().lower()
+            policy_type = (metadata.get("policy_type") or "").strip().lower()
+            owner_function = (metadata.get("owner_function") or "").strip().lower()
+            effective_date = (metadata.get("effective_date") or "").strip()
+
             text = (doc.page_content or "").replace("\n", " ")
             text_l = text.lower()
 
-            rate_match = re.search(r"(\d+(?:\.\d+)?)\s*%", text)
-            if rate_match:
-                add_insight("Interest Rate", f"{rate_match.group(1)}%", source_name)
+            # Compliance-focused insights for ISO comparisons.
+            if framework:
+                add_insight("Framework", framework.upper(), source_name)
 
-            date_match = re.search(r"\b(\d{1,2}[/-]\d{1,2}[/-]\d{2,4}|\d{1,2}\s+[A-Za-z]{3,9}\s+\d{2,4})\b", text)
-            if date_match and ("maturity" in text_l or "tenure" in text_l or "valid" in text_l):
-                add_insight("Maturity / Tenure Date", date_match.group(1), source_name)
+            if clause:
+                add_insight("Clause", clause, source_name)
 
-            if any(keyword in text_l for keyword in ["penalty", "premature", "charges", "fee"]):
-                sentence = re.search(r"([^.!?]*(penalty|premature|charges|fee)[^.!?]*[.!?])", text, re.IGNORECASE)
+            if source_type:
+                add_insight("Evidence Source", source_type.capitalize(), source_name)
+
+            if evidence_strength:
+                add_insight("Evidence Strength", evidence_strength.capitalize(), source_name)
+
+            if policy_type and policy_type != "unknown":
+                add_insight("Policy Type", policy_type.capitalize(), source_name)
+
+            if owner_function and owner_function != "unknown":
+                add_insight("Owner Function", owner_function.capitalize(), source_name)
+
+            if effective_date:
+                add_insight("Effective Date", effective_date, source_name)
+
+            if any(keyword in text_l for keyword in ["not enough evidence", "missing", "gap", "not found"]):
+                sentence = re.search(r"([^.!?]*(not enough evidence|missing|gap|not found)[^.!?]*[.!?])", text, re.IGNORECASE)
                 if sentence:
-                    add_insight("Penalties", sentence.group(1).strip()[:180], source_name)
+                    add_insight("Evidence Gap", sentence.group(1).strip()[:200], source_name)
 
-            if any(keyword in text_l for keyword in ["eligible", "eligibility", "who can", "applicable"]):
-                sentence = re.search(r"([^.!?]*(eligible|eligibility|who can|applicable)[^.!?]*[.!?])", text, re.IGNORECASE)
+            if any(keyword in text_l for keyword in ["recommend", "should", "action", "improve"]):
+                sentence = re.search(r"([^.!?]*(recommend|should|action|improve)[^.!?]*[.!?])", text, re.IGNORECASE)
                 if sentence:
-                    add_insight("Eligibility", sentence.group(1).strip()[:180], source_name)
+                    add_insight("Recommended Action", sentence.group(1).strip()[:200], source_name)
 
             if len(insights) >= max_items:
                 break
@@ -1133,11 +1754,35 @@ class ArthMitraBot:
         chunk_count = len(source_docs)
         terms = self._extract_query_terms(query)[:4]
         terms_text = ", ".join(terms) if terms else "core query intent"
+
+        company_chunks = 0
+        baseline_chunks = 0
+        for doc in source_docs:
+            source_type = (doc.metadata.get("source_type") or "").strip().lower()
+            if source_type == "company":
+                company_chunks += 1
+            elif source_type == "baseline":
+                baseline_chunks += 1
+
         if source_filter:
+            side_by_side_note = ""
+            if company_chunks > 0 and baseline_chunks > 0:
+                side_by_side_note = (
+                    " Side-by-side evaluation used both your company document and its matched ISO baseline document."
+                )
             return (
                 f"Response grounded on {chunk_count} chunks from {source_count} source(s) within selected file '{source_filter}', "
                 f"matching terms like {terms_text}. Confidence is {int(confidence * 100)}%."
+                f"{side_by_side_note}"
             )
+
+        if confidence <= 0.45:
+            return (
+                f"Response grounded on {chunk_count} retrieved chunks from {source_count} source(s), "
+                f"matching terms like {terms_text}. Confidence is {int(confidence * 100)}%. "
+                "Not enough evidence was found for some requested clauses."
+            )
+
         return (
             f"Response grounded on {chunk_count} retrieved chunks from {source_count} source(s), "
             f"matching terms like {terms_text}. Confidence is {int(confidence * 100)}%."
@@ -1197,6 +1842,615 @@ class ArthMitraBot:
             "reminders": reminders,
         }
 
+    def _classify_rag_source(self, source_name: str) -> str:
+        """Classify source into company uploads, baseline ISO docs, or other docs."""
+        name = (source_name or "").strip().lower()
+        if not name:
+            return "other"
+
+        if "_company_document" in name:
+            return "company"
+
+        if name.endswith(".pdf") and re.search(r"iso[-_ ]?37\d{3}", name):
+            return "baseline"
+
+        return "other"
+
+    def _build_rag_metrics(self, source_docs: List[Document]) -> Dict[str, Any]:
+        """Build retrieval metrics to explain company-vs-baseline evidence usage."""
+        category_source_sets: Dict[str, set] = {
+            "company": set(),
+            "baseline": set(),
+            "other": set(),
+        }
+        category_chunk_counts: Dict[str, int] = {
+            "company": 0,
+            "baseline": 0,
+            "other": 0,
+        }
+
+        for doc in source_docs:
+            source_name = os.path.basename(doc.metadata.get("source", "") or "")
+            source_type = (doc.metadata.get("source_type") or "").strip().lower()
+            if source_type in {"company", "baseline", "other"}:
+                category = source_type
+            else:
+                category = self._classify_rag_source(source_name)
+            category_chunk_counts[category] += 1
+            if source_name:
+                category_source_sets[category].add(source_name)
+
+        insufficient_evidence_clauses = len({
+            (doc.metadata.get("clause") or "unknown")
+            for doc in source_docs
+            if (doc.metadata.get("evidence_strength") or "").lower() == "low"
+        })
+
+        baseline_chunks = category_chunk_counts["baseline"]
+        company_chunks = category_chunk_counts["company"]
+        total_sources = sum(len(items) for items in category_source_sets.values())
+
+        return {
+            "totalChunks": len(source_docs),
+            "totalSources": total_sources,
+            "companyChunks": company_chunks,
+            "companySources": len(category_source_sets["company"]),
+            "baselineChunks": baseline_chunks,
+            "baselineSources": len(category_source_sets["baseline"]),
+            "otherChunks": category_chunk_counts["other"],
+            "otherSources": len(category_source_sets["other"]),
+            "companyToBaselineChunkRatio": round(company_chunks / baseline_chunks, 2) if baseline_chunks > 0 else None,
+            "insufficientEvidenceClauses": insufficient_evidence_clauses,
+        }
+
+    def _expected_clause_map(self) -> Dict[str, List[str]]:
+        return {
+            "iso37001": ["4.1", "4.5", "5.1", "5.2", "6.1", "7.2", "7.3", "8.2", "8.3", "8.7", "9.1", "9.2", "10.1", "10.2"],
+            "iso37301": ["4.1", "5.1", "6.1", "6.2", "7.5", "8.1", "9.1", "9.2", "10.2"],
+            "iso37000": ["5.1", "5.3", "6.1", "6.2", "7.1", "8.1"],
+            "iso37002": ["7.1", "8.2", "8.3", "8.4", "9.1", "10.1"],
+        }
+
+    def _build_clause_heatmap(self, source_docs: List[Document]) -> List[Dict[str, Any]]:
+        framework_buckets: Dict[str, Dict[str, Any]] = {}
+        expected = self._expected_clause_map()
+
+        for doc in source_docs:
+            metadata = doc.metadata or {}
+            framework = (metadata.get("framework") or "other").lower()
+            clause = str(metadata.get("clause") or "unknown")
+            strength = (metadata.get("evidence_strength") or "low").lower()
+
+            if framework not in framework_buckets:
+                framework_buckets[framework] = {
+                    "framework": framework,
+                    "clauses": {},
+                    "strong": 0,
+                    "medium": 0,
+                    "weak": 0,
+                }
+
+            clause_entry = framework_buckets[framework]["clauses"].setdefault(clause, {"count": 0, "strength": strength})
+            clause_entry["count"] += 1
+            clause_entry["strength"] = strength
+
+            if strength == "high":
+                framework_buckets[framework]["strong"] += 1
+            elif strength == "medium":
+                framework_buckets[framework]["medium"] += 1
+            else:
+                framework_buckets[framework]["weak"] += 1
+
+        rows: List[Dict[str, Any]] = []
+        for framework, bucket in framework_buckets.items():
+            expected_clauses = expected.get(framework, [])
+            covered_set = {clause for clause in bucket["clauses"].keys() if clause != "unknown"}
+            if expected_clauses:
+                missing_count = len([c for c in expected_clauses if c not in covered_set])
+                coverage_pct = round((len(covered_set) / len(expected_clauses)) * 100, 1)
+            else:
+                missing_count = 0
+                coverage_pct = 0.0
+
+            rows.append({
+                "framework": framework,
+                "coveragePct": coverage_pct,
+                "missingEvidenceCount": missing_count + bucket["weak"],
+                "strongEvidenceCount": bucket["strong"],
+                "mediumEvidenceCount": bucket["medium"],
+                "weakEvidenceCount": bucket["weak"],
+                "coveredClauses": sorted(list(covered_set))[:25],
+            })
+
+        rows.sort(key=lambda item: item.get("framework", ""))
+        return rows
+
+    def _build_ask_back_questions(self, source_docs: List[Document], query: str) -> List[str]:
+        metrics = self._build_rag_metrics(source_docs)
+        if metrics.get("insufficientEvidenceClauses", 0) == 0 and len(source_docs) >= 6:
+            return []
+
+        framework = self._infer_framework_from_query(query) or "selected framework"
+        return [
+            f"For {framework.upper()}, which legal entity and country scope should I assess?",
+            "Do you want strict clause-by-clause scoring (0-5) or an executive summary first?",
+            "Should I prioritize high-risk gaps only or include medium/low gaps with quick wins?",
+        ]
+
+    def _detect_contradictions(self, source_docs: List[Document], max_items: int = 6) -> List[Dict[str, str]]:
+        by_clause: Dict[str, Dict[str, List[str]]] = {}
+        for doc in source_docs:
+            metadata = doc.metadata or {}
+            clause = str(metadata.get("clause") or "unknown")
+            source_type = (metadata.get("source_type") or "other").lower()
+            text = (doc.page_content or "")[:600]
+            by_clause.setdefault(clause, {}).setdefault(source_type, []).append(text)
+
+        contradictions: List[Dict[str, str]] = []
+        for clause, bucket in by_clause.items():
+            company_text = " ".join(bucket.get("company", []))
+            baseline_text = " ".join(bucket.get("baseline", []))
+            if not company_text or not baseline_text:
+                continue
+
+            baseline_strict = any(k in baseline_text.lower() for k in [" shall ", " must ", " required "])
+            company_loose = any(k in company_text.lower() for k in [" may ", " optional ", " not required", " where applicable"])
+            semantic_conflict = self._semantic_conflict_signal(baseline_text, company_text)
+            if (baseline_strict and company_loose) or semantic_conflict:
+                contradictions.append({
+                    "clause": clause,
+                    "issue": "Company language appears weaker or contradictory to ISO baseline requirement.",
+                    "companySnippet": self._clean_snippet(company_text, max_len=180),
+                    "baselineSnippet": self._clean_snippet(baseline_text, max_len=180),
+                })
+            if len(contradictions) >= max_items:
+                break
+        return contradictions
+
+    def _build_freshness_tracker(self, source_docs: List[Document]) -> List[Dict[str, Any]]:
+        rows: Dict[str, Dict[str, Any]] = {}
+        now = datetime.now().date()
+
+        for doc in source_docs:
+            metadata = doc.metadata or {}
+            source = os.path.basename(metadata.get("source", "Unknown"))
+            source_type = (metadata.get("source_type") or "other").lower()
+            effective_date = (metadata.get("effective_date") or "").strip()
+
+            if source not in rows:
+                rows[source] = {
+                    "source": source,
+                    "sourceType": source_type,
+                    "effectiveDate": effective_date or "unknown",
+                    "stale": False,
+                    "warning": "",
+                }
+
+            if effective_date and rows[source]["effectiveDate"] == "unknown":
+                rows[source]["effectiveDate"] = effective_date
+
+        for source, row in rows.items():
+            date_text = row.get("effectiveDate", "unknown")
+            stale = False
+            warning = ""
+            parsed_date = parse_date_from_query(date_text) if isinstance(date_text, str) else None
+            if parsed_date:
+                days_old = (now - parsed_date.date()).days
+                stale = days_old > 365
+                if stale:
+                    warning = f"Evidence may be stale ({days_old} days old)."
+            row["stale"] = stale
+            row["warning"] = warning
+
+        return list(rows.values())
+
+    def _build_compliance_action_plan(self, source_docs: List[Document], max_items: int = 6) -> Dict[str, List[Dict[str, str]]]:
+        weak_docs = [doc for doc in source_docs if (doc.metadata.get("evidence_strength") or "").lower() == "low"]
+        if not weak_docs:
+            return {"d30": [], "d60": [], "d90": []}
+
+        def owner_for(doc: Document) -> str:
+            owner = (doc.metadata.get("owner_function") or "compliance").strip().lower()
+            return owner.capitalize() if owner else "Compliance"
+
+        actions_30 = []
+        actions_60 = []
+        actions_90 = []
+
+        for doc in weak_docs[:max_items]:
+            clause = str(doc.metadata.get("clause") or "unknown")
+            framework = str(doc.metadata.get("framework") or "framework").upper()
+            owner = owner_for(doc)
+
+            actions_30.append({
+                "action": f"Collect missing evidence pack for {framework} clause {clause}.",
+                "owner": owner,
+                "impact": "Improves audit evidence completeness quickly.",
+            })
+            actions_60.append({
+                "action": f"Implement control standardization and approval workflow for clause {clause}.",
+                "owner": owner,
+                "impact": "Reduces inconsistency across business units.",
+            })
+            actions_90.append({
+                "action": f"Run control effectiveness review and remediation closure for clause {clause}.",
+                "owner": owner,
+                "impact": "Raises maturity and readiness score before audit.",
+            })
+
+        return {
+            "d30": actions_30,
+            "d60": actions_60,
+            "d90": actions_90,
+        }
+
+    def _build_clause_drilldown(self, source_docs: List[Document], max_clauses: int = 8) -> List[Dict[str, Any]]:
+        grouped: Dict[str, Dict[str, List[Dict[str, str]]]] = {}
+        for doc in source_docs:
+            metadata = doc.metadata or {}
+            clause = str(metadata.get("clause") or "unknown")
+            source_type = (metadata.get("source_type") or "other").lower()
+            source_name = os.path.basename(metadata.get("source", "Unknown"))
+            evidence_strength = (metadata.get("evidence_strength") or "unknown").lower()
+            snippet = self._clean_snippet(doc.page_content or "")
+            grouped.setdefault(clause, {}).setdefault(source_type, []).append({
+                "source": source_name,
+                "snippet": snippet,
+                "evidenceStrength": evidence_strength,
+            })
+
+        rows: List[Dict[str, Any]] = []
+        for clause, bucket in grouped.items():
+            rows.append({
+                "clause": clause,
+                "company": bucket.get("company", [])[:2],
+                "baseline": bucket.get("baseline", [])[:2],
+                "other": bucket.get("other", [])[:1],
+            })
+        rows.sort(key=lambda item: item.get("clause", ""))
+        return rows[:max_clauses]
+
+    def _build_followup_prompts(self, source_docs: List[Document]) -> List[str]:
+        frameworks = sorted({(doc.metadata.get("framework") or "").lower() for doc in source_docs if doc.metadata.get("framework")})
+        fw_text = frameworks[0].upper() if frameworks else "selected framework"
+        return [
+            "Show top 5 critical gaps",
+            f"Explain clause 8.2 with citations for {fw_text}",
+            "Give quick wins for next 30 days",
+        ]
+
+    def _build_audit_ready_report(self, source_docs: List[Document], rag_metrics: Dict[str, Any]) -> Dict[str, Any]:
+        heatmap = self._build_clause_heatmap(source_docs)
+        contradictions = self._detect_contradictions(source_docs)
+        action_plan = self._build_compliance_action_plan(source_docs)
+        citations = []
+        for doc in source_docs[:20]:
+            metadata = doc.metadata or {}
+            citations.append({
+                "source": os.path.basename(metadata.get("source", "Unknown")),
+                "clause": str(metadata.get("clause") or "unknown"),
+                "framework": str(metadata.get("framework") or "unknown"),
+                "page": str(metadata.get("page") or ""),
+            })
+        return {
+            "scores": heatmap,
+            "gaps": [{"clause": c.get("clause"), "issue": c.get("issue")} for c in contradictions],
+            "citations": citations,
+            "actions": action_plan,
+            "stats": rag_metrics,
+        }
+
+    def _build_section_confidence(self, source_docs: List[Document], rag_metrics: Dict[str, Any]) -> Dict[str, float]:
+        total = max(len(source_docs), 1)
+        strong = sum(1 for doc in source_docs if (doc.metadata.get("evidence_strength") or "").lower() == "high")
+        medium = sum(1 for doc in source_docs if (doc.metadata.get("evidence_strength") or "").lower() == "medium")
+        weak = sum(1 for doc in source_docs if (doc.metadata.get("evidence_strength") or "").lower() == "low")
+
+        evidence_conf = min(1.0, (strong + 0.6 * medium + 0.25 * weak) / total)
+        gap_pressure = min(1.0, rag_metrics.get("insufficientEvidenceClauses", 0) / 8.0)
+        comparison_conf = max(0.0, evidence_conf - (0.35 * gap_pressure))
+        recommendation_conf = max(0.0, evidence_conf - (0.20 * gap_pressure))
+
+        return {
+            "evidence": round(evidence_conf, 3),
+            "comparison": round(comparison_conf, 3),
+            "recommendation": round(recommendation_conf, 3),
+        }
+
+    def _build_rubric_scores(self, source_docs: List[Document]) -> Dict[str, Any]:
+        frameworks = sorted({(doc.metadata.get("framework") or "").lower() for doc in source_docs if doc.metadata.get("framework")})
+        if not frameworks:
+            return {}
+
+        output: Dict[str, Any] = {}
+        for framework in frameworks:
+            rubric = self._get_framework_rubric(framework)
+            clause_weights = rubric.get("weightedClauses", {}) if isinstance(rubric, dict) else {}
+            if not clause_weights:
+                continue
+
+            covered_weight = 0.0
+            total_weight = 0.0
+            covered_clause_ids: set = set()
+            for clause_key, weight in clause_weights.items():
+                try:
+                    numeric_weight = float(weight)
+                except Exception:
+                    numeric_weight = 0.0
+                total_weight += numeric_weight
+
+                for doc in source_docs:
+                    if (doc.metadata.get("framework") or "").lower() != framework:
+                        continue
+                    clause_text = str(doc.metadata.get("clause") or "").lower()
+                    if clause_key.lower() in clause_text:
+                        covered_clause_ids.add(clause_key)
+                        break
+
+            for clause_key in covered_clause_ids:
+                try:
+                    covered_weight += float(clause_weights.get(clause_key, 0))
+                except Exception:
+                    pass
+
+            coverage = round((covered_weight / total_weight) * 100, 1) if total_weight > 0 else 0.0
+            output[framework] = {
+                "title": rubric.get("title", framework.upper()),
+                "coverageWeightedPct": coverage,
+                "coveredClauses": sorted(list(covered_clause_ids)),
+                "totalRubricWeight": total_weight,
+            }
+
+        return output
+
+    def _build_evidence_trace(self, source_docs: List[Document], limit: int = 15) -> List[Dict[str, Any]]:
+        trace: List[Dict[str, Any]] = []
+        for doc in source_docs[:limit]:
+            meta = doc.metadata or {}
+            trace.append({
+                "framework": str(meta.get("framework") or "unknown").upper(),
+                "clause": str(meta.get("clause") or "unknown"),
+                "sourceType": str(meta.get("source_type") or "other"),
+                "source": os.path.basename(meta.get("source", "Unknown")),
+                "evidenceStrength": str(meta.get("evidence_strength") or "unknown"),
+                "snippet": self._clean_snippet(doc.page_content or ""),
+            })
+        return trace
+
+    def _doc_source_category(self, doc: Document) -> str:
+        meta = doc.metadata or {}
+        source_type = (meta.get("source_type") or "").strip().lower()
+        if source_type in {"company", "baseline", "other"}:
+            return source_type
+        source_name = os.path.basename(meta.get("source", "") or "")
+        return self._classify_rag_source(source_name)
+
+    def _ensure_compliance_evidence_balance(
+        self,
+        source_docs: List[Document],
+        query: str,
+        framework_hint: Optional[str] = None,
+        minimum_company: int = 2,
+        minimum_baseline: int = 2,
+    ) -> List[Document]:
+        """Augment retrieval so compliance analysis has both company and baseline evidence."""
+        if not source_docs or not self.vectorstore:
+            return source_docs
+
+        company_count = sum(1 for doc in source_docs if self._doc_source_category(doc) == "company")
+        baseline_count = sum(1 for doc in source_docs if self._doc_source_category(doc) == "baseline")
+        if company_count >= minimum_company and baseline_count >= minimum_baseline:
+            return source_docs
+
+        def doc_key(doc: Document) -> str:
+            meta = doc.metadata or {}
+            return "|".join([
+                str(meta.get("source", "")),
+                str(meta.get("chunk_index", "")),
+                str(meta.get("page", "")),
+            ])
+
+        existing_keys = {doc_key(doc) for doc in source_docs}
+        augmented: List[Document] = list(source_docs)
+
+        def framework_matches(doc: Document) -> bool:
+            if not framework_hint:
+                return True
+            meta = doc.metadata or {}
+            framework = (meta.get("framework") or "").strip().lower()
+            source = (meta.get("source") or "").strip().lower()
+            return framework == framework_hint or framework_hint in source
+
+        candidate_k = max(OPTIMIZED_RETRIEVAL_K * 8, 120)
+        try:
+            candidates = self.vectorstore.similarity_search(query, k=candidate_k)
+        except Exception:
+            candidates = []
+
+        for required_type, current_count, target_count in [
+            ("company", company_count, minimum_company),
+            ("baseline", baseline_count, minimum_baseline),
+        ]:
+            needed = max(0, target_count - current_count)
+            if needed <= 0:
+                continue
+
+            for candidate in candidates:
+                if needed <= 0:
+                    break
+                if not framework_matches(candidate):
+                    continue
+                if self._doc_source_category(candidate) != required_type:
+                    continue
+                key = doc_key(candidate)
+                if key in existing_keys:
+                    continue
+                augmented.append(candidate)
+                existing_keys.add(key)
+                needed -= 1
+
+        # Last-resort backfill directly from store if semantic retrieval misses one side.
+        remaining_company = max(0, minimum_company - sum(1 for doc in augmented if self._doc_source_category(doc) == "company"))
+        remaining_baseline = max(0, minimum_baseline - sum(1 for doc in augmented if self._doc_source_category(doc) == "baseline"))
+
+        if remaining_company > 0 or remaining_baseline > 0:
+            try:
+                raw = self.vectorstore.get(include=["documents", "metadatas"])
+                docs = raw.get("documents", []) or []
+                metas = raw.get("metadatas", []) or []
+                for content, meta in zip(docs, metas):
+                    if not meta:
+                        continue
+                    d = Document(page_content=content, metadata=meta)
+                    if not framework_matches(d):
+                        continue
+                    category = self._doc_source_category(d)
+                    if category == "company" and remaining_company > 0:
+                        key = doc_key(d)
+                        if key not in existing_keys:
+                            augmented.append(d)
+                            existing_keys.add(key)
+                            remaining_company -= 1
+                    elif category == "baseline" and remaining_baseline > 0:
+                        key = doc_key(d)
+                        if key not in existing_keys:
+                            augmented.append(d)
+                            existing_keys.add(key)
+                            remaining_baseline -= 1
+                    if remaining_company <= 0 and remaining_baseline <= 0:
+                        break
+            except Exception as error:
+                print(f"⚠️ Could not backfill balanced evidence: {error}")
+
+        # Keep mandatory evidence and then fill with best-ranked docs.
+        reranked = self._rerank_documents(augmented, query, top_k=max(OPTIMIZED_RETRIEVAL_K * 2, 16), framework_hint=framework_hint)
+
+        mandatory_company = [doc for doc in augmented if self._doc_source_category(doc) == "company"][:minimum_company]
+        mandatory_baseline = [doc for doc in augmented if self._doc_source_category(doc) == "baseline"][:minimum_baseline]
+        final_docs: List[Document] = []
+        final_keys = set()
+        for doc in mandatory_company + mandatory_baseline + reranked:
+            key = doc_key(doc)
+            if key in final_keys:
+                continue
+            final_docs.append(doc)
+            final_keys.add(key)
+            if len(final_docs) >= max(OPTIMIZED_RETRIEVAL_K, 12):
+                break
+
+        return final_docs
+
+    def _semantic_conflict_signal(self, text_a: str, text_b: str) -> bool:
+        if not self.embeddings:
+            return False
+        try:
+            vectors = self.embeddings.embed_documents([text_a[:500], text_b[:500]])
+            if len(vectors) != 2:
+                return False
+            v1, v2 = vectors
+            dot = sum(a * b for a, b in zip(v1, v2))
+            norm1 = sum(a * a for a in v1) ** 0.5
+            norm2 = sum(b * b for b in v2) ** 0.5
+            if norm1 == 0 or norm2 == 0:
+                return False
+            cosine = dot / (norm1 * norm2)
+
+            strict_terms = ["shall", "must", "required", "mandatory"]
+            permissive_terms = ["may", "optional", "where applicable", "not required"]
+            a_strict = any(term in text_a.lower() for term in strict_terms)
+            b_perm = any(term in text_b.lower() for term in permissive_terms)
+            b_strict = any(term in text_b.lower() for term in strict_terms)
+            a_perm = any(term in text_a.lower() for term in permissive_terms)
+
+            polarity_conflict = (a_strict and b_perm) or (b_strict and a_perm)
+            return cosine > 0.72 and polarity_conflict
+        except Exception:
+            return False
+
+    def _validate_clause_grounding(self, response_text: str, source_docs: List[Document]) -> Dict[str, Any]:
+        clause_mentions = re.findall(r"clause\s+(\d+(?:\.\d+)*)", response_text or "", flags=re.IGNORECASE)
+        normalized_mentions = sorted(set(clause_mentions))
+        if not normalized_mentions:
+            return {"isValid": True, "unsupportedClauses": [], "message": "No explicit clause references in narrative."}
+
+        supported = set(str(doc.metadata.get("clause") or "") for doc in source_docs)
+        unsupported = [clause for clause in normalized_mentions if clause not in supported]
+        return {
+            "isValid": len(unsupported) == 0,
+            "unsupportedClauses": unsupported,
+            "message": "Some clause claims are not directly grounded in retrieved evidence." if unsupported else "All referenced clauses are grounded in retrieved chunks.",
+        }
+
+    def _has_minimum_evidence(self, source_docs: List[Document], minimum_company: int = 2, minimum_baseline: int = 2) -> bool:
+        company = sum(1 for doc in source_docs if (doc.metadata.get("source_type") or "").lower() == "company")
+        baseline = sum(1 for doc in source_docs if (doc.metadata.get("source_type") or "").lower() == "baseline")
+        return company >= minimum_company and baseline >= minimum_baseline
+
+    def _build_multi_pass_prompt(self, query: str, context: str, strict_scope: bool) -> str:
+        strict_rules = (
+            "Use only provided context. If insufficient evidence, state exactly 'Not enough evidence in uploaded documents.'"
+            if strict_scope else
+            "Prefer context-first reasoning with explicit source-backed claims."
+        )
+        return (
+            "You are an ISO compliance analyst. Perform two-stage reasoning.\n"
+            "Stage 1: extract key clause evidence from context in concise bullets.\n"
+            "Stage 2: produce final answer with clause-backed findings, gaps, and actions.\n"
+            f"Rules: {strict_rules}\n\n"
+            f"Context:\n{context}\n\n"
+            f"Question:\n{query}\n"
+        )
+
+    def _multi_pass_response(self, query: str, context: str, strict_scope: bool) -> str:
+        first_pass_prompt = self._build_multi_pass_prompt(query, context, strict_scope)
+        first_pass = self._extract_text(self._invoke_llm(first_pass_prompt).content)
+        second_pass_prompt = (
+            "Refine the analysis below into a concise final response with prioritized gaps and actions. "
+            "Do not add claims without evidence from the analysis.\n\n"
+            f"Analysis:\n{first_pass}\n"
+        )
+        second_pass = self._extract_text(self._invoke_llm(second_pass_prompt).content)
+        return second_pass or first_pass
+
+    def log_response_feedback(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        try:
+            os.makedirs(os.path.dirname(self._feedback_log_path) or ".", exist_ok=True)
+            record = {
+                "timestamp": datetime.utcnow().isoformat() + "Z",
+                **payload,
+            }
+            with open(self._feedback_log_path, "a", encoding="utf-8") as log_file:
+                log_file.write(json.dumps(record, ensure_ascii=True) + "\n")
+            return {"status": "success", "message": "Feedback recorded"}
+        except Exception as error:
+            return {"status": "error", "message": f"Failed to record feedback: {error}"}
+
+    def _is_compliance_source_context(self, source_docs: List[Document]) -> bool:
+        """Detect if retrieved evidence is primarily ISO compliance docs."""
+        if not source_docs:
+            return False
+
+        compliance_hits = 0
+        for doc in source_docs:
+            metadata = doc.metadata or {}
+            source_name = os.path.basename(metadata.get("source", "") or "").lower()
+            framework = (metadata.get("framework") or "").strip().lower()
+            source_type = (metadata.get("source_type") or "").strip().lower()
+            if framework in {"iso37001", "iso37301", "iso37000", "iso37002"} or source_type in {"company", "baseline"} or re.search(r"iso[-_ ]?37\d{3}", source_name):
+                compliance_hits += 1
+
+        return compliance_hits > 0
+
+    def _has_finance_intent(self, query: str) -> bool:
+        """Return True only when user is explicitly asking finance/tax planning."""
+        query_l = (query or "").lower()
+        finance_keywords = [
+            "tax", "itr", "deduction", "80c", "80d", "refund", "regime",
+            "pension", "retire", "retirement", "investment", "ppf", "nps",
+            "elss", "income tax", "financial plan", "wealth", "sip",
+        ]
+        return any(keyword in query_l for keyword in finance_keywords)
+
     def _build_response_metadata(
         self,
         query: str,
@@ -1205,17 +2459,43 @@ class ArthMitraBot:
         source_filter: Optional[str] = None,
     ) -> Dict[str, Any]:
         confidence, confidence_label = self._calculate_confidence(source_docs, query, source_filter)
-        schemes = self._build_scheme_rankings(profile, query)
-        compare = self._build_compare_mode(query, schemes)
+        rag_metrics = self._build_rag_metrics(source_docs)
+        compliance_mode = self._is_compliance_query(query, source_filter) or self._is_compliance_source_context(source_docs)
+
+        ask_back_questions = self._build_ask_back_questions(source_docs, query) if compliance_mode else []
+        clause_heatmap = self._build_clause_heatmap(source_docs) if compliance_mode else []
+        contradictions = self._detect_contradictions(source_docs) if compliance_mode else []
+        freshness_tracker = self._build_freshness_tracker(source_docs) if compliance_mode else []
+        action_plan_30_60_90 = self._build_compliance_action_plan(source_docs) if compliance_mode else {"d30": [], "d60": [], "d90": []}
+        clause_drilldown = self._build_clause_drilldown(source_docs) if compliance_mode else []
+        followup_prompts = self._build_followup_prompts(source_docs) if compliance_mode else []
+        audit_ready_report = self._build_audit_ready_report(source_docs, rag_metrics) if compliance_mode else {}
+        section_confidence = self._build_section_confidence(source_docs, rag_metrics) if compliance_mode else {}
+        rubric_scores = self._build_rubric_scores(source_docs) if compliance_mode else {}
+        evidence_trace = self._build_evidence_trace(source_docs) if compliance_mode else []
+        clause_validation = {"isValid": True, "unsupportedClauses": [], "message": "Validation pending."}
+
         return {
             "confidence": confidence,
             "confidenceLabel": confidence_label,
             "highlights": self._build_source_highlights(source_docs, query),
             "whyThisAnswer": self._build_why_this_answer(query, source_docs, confidence, source_filter),
-            "schemes": schemes,
-            "comparison": compare,
+            "comparison": None,
             "documentInsights": self._extract_document_insights(source_docs),
-            "actionPlan": self._build_tax_action_plan(profile, query),
+            "ragMetrics": rag_metrics,
+            "clauseHeatmap": clause_heatmap,
+            "askBackQuestions": ask_back_questions,
+            "contradictions": contradictions,
+            "freshnessTracker": freshness_tracker,
+            "actionPlan306090": action_plan_30_60_90,
+            "clauseDrilldown": clause_drilldown,
+            "followupPrompts": followup_prompts,
+            "auditReadyReport": audit_ready_report,
+            "sectionConfidence": section_confidence,
+            "rubricScores": rubric_scores,
+            "evidenceTrace": evidence_trace,
+            "clauseValidation": clause_validation,
+            "strictNoEvidenceMode": compliance_mode,
         }
     
     def _handle_gold_price_query(self, query: str) -> Optional[Dict]:
@@ -1269,8 +2549,6 @@ If you have any questions about investing in gold (like Sovereign Gold Bonds, Go
                 "confidence": 0.95,
                 "confidenceLabel": "high",
                 "highlights": [{"source": "gold_data.csv", "snippet": f"Gold price for {requested_date_str} is {price_data['price']} (USD/oz)."}],
-                "schemes": [],
-                "actionPlan": None,
                 "cached": False,
             }
 
@@ -1302,8 +2580,6 @@ If you need information about gold investment options available in India, such a
                 "confidence": 0.82,
                 "confidenceLabel": "high",
                 "highlights": [{"source": "gold_data.csv", "snippet": f"Nearest available gold price date is {nearest_data['date']} with price {nearest_data['price']} (USD/oz)."}],
-                "schemes": [],
-                "actionPlan": None,
                 "cached": False,
             }
 
@@ -1324,18 +2600,25 @@ If you have questions about current gold investment options in India or tax impl
             "confidence": 0.45,
             "confidenceLabel": "low",
             "highlights": [{"source": "gold_data.csv", "snippet": "Requested date not available in the current dataset."}],
-            "schemes": [],
-            "actionPlan": None,
             "cached": False,
         }
         
-    def get_response(self, query: str, profile: Optional[Dict] = None, history: Optional[List[Dict]] = None, source_filter: Optional[str] = None) -> Dict:
+    def get_response(
+        self,
+        query: str,
+        profile: Optional[Dict] = None,
+        history: Optional[List[Dict]] = None,
+        source_filter: Optional[str] = None,
+        source_filters: Optional[List[str]] = None,
+    ) -> Dict:
         """Get AI response for a user query with caching"""
         if not self._initialized:
             raise RuntimeError("Bot not initialized. Call initialize() first.")
         
-        # Check cache first (skip for gold queries which need real-time data)
-        if not source_filter and not is_gold_price_query(query):
+        compliance_query = self._infer_framework_from_query(query) is not None
+
+        # Check cache first (skip for gold or compliance queries requiring fresh evidence)
+        if not source_filter and not is_gold_price_query(query) and not compliance_query:
             cached_response = self._response_cache.get(query, profile)
             if cached_response:
                 print("⚡ Cache hit - returning cached response")
@@ -1360,9 +2643,21 @@ If you have questions about current gold investment options in India or tax impl
         except:
             doc_count = 0
         
-        # If no documents indexed, use direct LLM response
+        strict_scope = bool(source_filter or (source_filters and len(source_filters) > 0))
+
+        # If no documents indexed, use direct LLM response unless strict doc scope is requested
         if self.rag_chain is None or doc_count == 0:
-            prompt = SYSTEM_PROMPT.replace("{user_profile}", user_profile_text).replace("{chat_history}", chat_history_text).replace("{context}", "No specific documents available.").replace("{question}", query)
+            if strict_scope:
+                no_doc_message = "I could not answer from the selected uploaded documents because no indexed document content is currently available in that scope."
+                metadata = self._build_response_metadata(query, profile, [], source_filter)
+                return {
+                    "response": no_doc_message,
+                    "sources": source_filters or ([source_filter] if source_filter else ["Selected Uploaded Documents"]),
+                    **metadata,
+                    "cached": False,
+                }
+
+            prompt = self._build_prompt(user_profile_text, chat_history_text, "No specific documents available.", query, strict_grounding=False)
             response = self._invoke_llm(prompt)
             sources = ["General Knowledge - No documents indexed yet"]
             metadata = self._build_response_metadata(query, profile, [], source_filter)
@@ -1377,29 +2672,57 @@ If you have questions about current gold investment options in India or tax impl
                 "cached": False,
             }
         
-        # Get source documents for citation
-        source_docs = self._get_source_docs(query, source_filter=source_filter)
+        inferred_framework = self._infer_framework_from_query(query)
 
-        if source_filter and not source_docs:
+        # Get source documents for citation
+        if not strict_scope:
+            source_docs = self._get_framework_source_docs(query, inferred_framework) if inferred_framework else []
+            if not source_docs:
+                source_docs = self._get_source_docs(query, source_filter=source_filter, source_filters=source_filters)
+        else:
+            source_docs = self._get_source_docs(query, source_filter=source_filter, source_filters=source_filters)
+
+        if not strict_scope and self._is_compliance_query(query, source_filter):
+            source_docs = self._ensure_compliance_evidence_balance(source_docs, query, inferred_framework)
+
+        if strict_scope and not source_docs:
+            scope_label = source_filter or "selected uploaded documents"
             response_text = (
-                f"I could not find relevant content in **{source_filter}** for this question. "
-                "Please verify the filename and try a more specific query."
+                f"I could not find relevant content in **{scope_label}** for this question. "
+                "Please try a more specific query or upload additional evidence in the same scope."
             )
             metadata = self._build_response_metadata(query, profile, [], source_filter)
             return {
                 "response": response_text,
-                "sources": [source_filter],
+                "sources": source_filters or ([source_filter] if source_filter else ["Selected Uploaded Documents"]),
+                **metadata,
+                "cached": False,
+            }
+
+        compliance_context = self._is_compliance_query(query, source_filter) or self._is_compliance_source_context(source_docs)
+        if compliance_context and not self._has_minimum_evidence(source_docs):
+            metadata = self._build_response_metadata(query, profile, source_docs, source_filter)
+            metadata["clauseValidation"] = {
+                "isValid": False,
+                "unsupportedClauses": [],
+                "message": "Not enough balanced company/baseline evidence to produce a reliable compliance answer.",
+            }
+            return {
+                "response": "Not enough evidence in uploaded documents. Please upload both company and baseline ISO material for the same framework before requesting clause-level conclusions.",
+                "sources": [os.path.basename((doc.metadata or {}).get("source", "Unknown")) for doc in source_docs[:6]],
                 **metadata,
                 "cached": False,
             }
         
         # Create a custom prompt with profile
         context = "\n\n".join([doc.page_content for doc in source_docs])
-        prompt = SYSTEM_PROMPT.replace("{user_profile}", user_profile_text).replace("{chat_history}", chat_history_text).replace("{context}", context).replace("{question}", query)
+        prompt = self._build_prompt(user_profile_text, chat_history_text, context, query, strict_grounding=strict_scope)
         
-        # PARALLEL: Submit LLM invocation to thread pool
-        # While LLM processes (~2-10s), extract sources and build metadata
-        future_llm = _executor.submit(self._invoke_llm, prompt)
+        # PARALLEL: Submit single-pass LLM invocation only for non-compliance queries.
+        # Compliance queries run a dedicated multi-pass flow.
+        future_llm = None
+        if not compliance_context:
+            future_llm = _executor.submit(self._invoke_llm, prompt)
         
         # Extract sources while LLM is running
         sources = []
@@ -1418,11 +2741,17 @@ If you have questions about current gold investment options in India or tax impl
         
         # Wait for LLM result
         try:
-            response = future_llm.result()
-            result = self._extract_text(response.content)
+            if compliance_context:
+                result = self._multi_pass_response(query, context, strict_scope)
+            else:
+                response = future_llm.result() if future_llm else self._invoke_llm(prompt)
+                result = self._extract_text(response.content)
         except Exception as e:
             print(f"⚠️ LLM invocation failed, returning grounded fallback: {e}")
             result = "I am facing a temporary model issue. I am sharing grounded details from the retrieved documents instead."
+
+        clause_validation = self._validate_clause_grounding(result, source_docs) if compliance_context else {"isValid": True, "unsupportedClauses": [], "message": "Not a compliance query."}
+        metadata["clauseValidation"] = clause_validation
         
         response_data = {
             "response": self._append_sources_section(result, final_sources),
@@ -1431,13 +2760,20 @@ If you have questions about current gold investment options in India or tax impl
             "cached": False,
         }
         
-        # Cache the response for future queries
-        if not source_filter:
+        # Cache final narrative only for non-compliance/general queries.
+        if not source_filter and not compliance_context:
             self._response_cache.set(query, response_data, profile)
         
         return response_data
 
-    def stream_response(self, query: str, profile: Optional[Dict] = None, history: Optional[List[Dict]] = None, source_filter: Optional[str] = None) -> Tuple[Iterable[str], List[str], Dict[str, Any]]:
+    def stream_response(
+        self,
+        query: str,
+        profile: Optional[Dict] = None,
+        history: Optional[List[Dict]] = None,
+        source_filter: Optional[str] = None,
+        source_filters: Optional[List[str]] = None,
+    ) -> Tuple[Iterable[str], List[str], Dict[str, Any]]:
         """Stream AI response tokens for a user query."""
         if not self._initialized:
             raise RuntimeError("Bot not initialized. Call initialize() first.")
@@ -1451,10 +2787,9 @@ If you have questions about current gold investment options in India or tax impl
                 "confidenceLabel": gold_response.get("confidenceLabel", "medium"),
                 "whyThisAnswer": "Response is based on direct lookup from gold_data.csv date-indexed records.",
                 "highlights": gold_response.get("highlights", []),
-                "schemes": gold_response.get("schemes", []),
                 "comparison": None,
                 "documentInsights": [],
-                "actionPlan": gold_response.get("actionPlan"),
+                "ragMetrics": self._build_rag_metrics([]),
                 "cached": False,
             }
 
@@ -1466,8 +2801,19 @@ If you have questions about current gold investment options in India or tax impl
         except:
             doc_count = 0
 
+        strict_scope = bool(source_filter or (source_filters and len(source_filters) > 0))
+
         if self.rag_chain is None or doc_count == 0:
-            prompt = SYSTEM_PROMPT.replace("{user_profile}", user_profile_text).replace("{chat_history}", chat_history_text).replace("{context}", "No specific documents available.").replace("{question}", query)
+            if strict_scope:
+                metadata = self._build_response_metadata(query, profile, [], source_filter)
+                metadata["cached"] = False
+
+                def no_doc_stream_strict():
+                    yield "I could not answer from the selected uploaded documents because no indexed document content is currently available in that scope."
+
+                return no_doc_stream_strict(), source_filters or ([source_filter] if source_filter else ["Selected Uploaded Documents"]), metadata
+
+            prompt = self._build_prompt(user_profile_text, chat_history_text, "No specific documents available.", query, strict_grounding=False)
             sources = ["General Knowledge - No documents indexed yet"]
             metadata = self._build_response_metadata(query, profile, [], source_filter)
             metadata["cached"] = False
@@ -1480,19 +2826,46 @@ If you have questions about current gold investment options in India or tax impl
 
             return no_doc_stream(), sources, metadata
 
-        source_docs = self._get_source_docs(query, source_filter=source_filter)
+        inferred_framework = self._infer_framework_from_query(query)
 
-        if source_filter and not source_docs:
+        if not strict_scope:
+            source_docs = self._get_framework_source_docs(query, inferred_framework) if inferred_framework else []
+            if not source_docs:
+                source_docs = self._get_source_docs(query, source_filter=source_filter, source_filters=source_filters)
+        else:
+            source_docs = self._get_source_docs(query, source_filter=source_filter, source_filters=source_filters)
+
+        if not strict_scope and self._is_compliance_query(query, source_filter):
+            source_docs = self._ensure_compliance_evidence_balance(source_docs, query, inferred_framework)
+
+        if strict_scope and not source_docs:
             metadata = self._build_response_metadata(query, profile, [], source_filter)
             metadata["cached"] = False
 
             def no_match_stream():
+                scope_label = source_filter or "selected uploaded documents"
                 yield (
-                    f"I could not find relevant content in **{source_filter}** for this question. "
-                    "Please verify the filename and try a more specific query."
+                    f"I could not find relevant content in **{scope_label}** for this question. "
+                    "Please try a more specific query or upload additional evidence in the same scope."
                 )
 
-            return no_match_stream(), [source_filter], metadata
+            return no_match_stream(), source_filters or ([source_filter] if source_filter else ["Selected Uploaded Documents"]), metadata
+
+        compliance_context = self._is_compliance_query(query, source_filter) or self._is_compliance_source_context(source_docs)
+        if compliance_context and not self._has_minimum_evidence(source_docs):
+            metadata = self._build_response_metadata(query, profile, source_docs, source_filter)
+            metadata["clauseValidation"] = {
+                "isValid": False,
+                "unsupportedClauses": [],
+                "message": "Not enough balanced company/baseline evidence to produce a reliable compliance answer.",
+            }
+            metadata["cached"] = False
+
+            def threshold_stream():
+                yield "Not enough evidence in uploaded documents. Please upload both company and baseline ISO material for the same framework before requesting clause-level conclusions."
+
+            threshold_sources = [os.path.basename((doc.metadata or {}).get("source", "Unknown")) for doc in source_docs[:6]]
+            return threshold_stream(), threshold_sources, metadata
 
         # PARALLEL: Submit metadata computation to thread pool while building prompt
         future_meta = _executor.submit(
@@ -1500,7 +2873,7 @@ If you have questions about current gold investment options in India or tax impl
         )
 
         context = "\n\n".join([doc.page_content for doc in source_docs])
-        prompt = SYSTEM_PROMPT.replace("{user_profile}", user_profile_text).replace("{chat_history}", chat_history_text).replace("{context}", context).replace("{question}", query)
+        prompt = self._build_prompt(user_profile_text, chat_history_text, context, query, strict_grounding=strict_scope)
 
         sources = []
         for doc in source_docs:
@@ -1517,6 +2890,12 @@ If you have questions about current gold investment options in India or tax impl
         metadata["cached"] = False
 
         def doc_stream():
+            if compliance_context:
+                response_text = self._multi_pass_response(query, context, strict_scope)
+                metadata["clauseValidation"] = self._validate_clause_grounding(response_text, source_docs)
+                yield response_text
+                return
+
             for chunk in self._stream_llm(prompt):
                 text = self._extract_text(chunk.content)
                 if text:

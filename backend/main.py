@@ -49,15 +49,6 @@ class SourceHighlight(BaseModel):
     snippet: str
 
 
-class SchemeRecommendation(BaseModel):
-    name: str
-    score: int
-    reason: str
-    eligibility: str
-    nextStep: str
-    missingCriteria: List[str] = []
-
-
 class CompareScheme(BaseModel):
     name: str
     score: int
@@ -78,17 +69,97 @@ class DocumentInsight(BaseModel):
     source: str
 
 
-class ReminderItem(BaseModel):
-    title: str
-    dueDate: str
-    frequency: str
-    category: str
+class RagMetrics(BaseModel):
+    totalChunks: int = 0
+    totalSources: int = 0
+    companyChunks: int = 0
+    companySources: int = 0
+    baselineChunks: int = 0
+    baselineSources: int = 0
+    otherChunks: int = 0
+    otherSources: int = 0
+    companyToBaselineChunkRatio: Optional[float] = None
+    insufficientEvidenceClauses: int = 0
 
 
-class ActionPlan(BaseModel):
-    title: str
-    steps: List[str]
-    reminders: List[ReminderItem]
+class ClauseValidation(BaseModel):
+    isValid: bool = True
+    unsupportedClauses: List[str] = []
+    message: str = ""
+
+
+class UploadQuality(BaseModel):
+    qualityScore: int = 0
+    qualityLabel: str = "unknown"
+    clauseCoverage: float = 0.0
+    warning: str = ""
+
+
+class EvidenceTraceItem(BaseModel):
+    framework: str
+    clause: str
+    sourceType: str
+    source: str
+    evidenceStrength: str
+    snippet: str
+
+
+class ClauseHeatmapRow(BaseModel):
+    framework: str
+    coveragePct: float
+    missingEvidenceCount: int
+    strongEvidenceCount: int
+    mediumEvidenceCount: int
+    weakEvidenceCount: int
+    coveredClauses: List[str] = []
+
+
+class ContradictionItem(BaseModel):
+    clause: str
+    issue: str
+    companySnippet: str
+    baselineSnippet: str
+
+
+class FreshnessItem(BaseModel):
+    source: str
+    sourceType: str
+    effectiveDate: str
+    stale: bool
+    warning: str
+
+
+class ActionItem(BaseModel):
+    action: str
+    owner: str
+    impact: str
+
+
+class ActionPlan306090(BaseModel):
+    d30: List[ActionItem] = []
+    d60: List[ActionItem] = []
+    d90: List[ActionItem] = []
+
+
+class DrilldownSnippet(BaseModel):
+    source: str
+    snippet: str
+    evidenceStrength: Optional[str] = None
+
+
+class ClauseDrilldownRow(BaseModel):
+    clause: str
+    company: List[DrilldownSnippet] = []
+    baseline: List[DrilldownSnippet] = []
+    other: List[DrilldownSnippet] = []
+
+
+class AuditReadyReport(BaseModel):
+    scores: List[ClauseHeatmapRow] = []
+    gaps: List[dict] = []
+    citations: List[dict] = []
+    actions: ActionPlan306090 = ActionPlan306090()
+    stats: Optional[RagMetrics] = None
 
 class ChatResponse(BaseModel):
     response: str
@@ -97,16 +168,41 @@ class ChatResponse(BaseModel):
     confidenceLabel: Optional[str] = None
     whyThisAnswer: Optional[str] = None
     highlights: List[SourceHighlight] = []
-    schemes: List[SchemeRecommendation] = []
     comparison: Optional[ComparisonMode] = None
     documentInsights: List[DocumentInsight] = []
-    actionPlan: Optional[ActionPlan] = None
+    ragMetrics: Optional[RagMetrics] = None
+    clauseHeatmap: List[ClauseHeatmapRow] = []
+    askBackQuestions: List[str] = []
+    contradictions: List[ContradictionItem] = []
+    freshnessTracker: List[FreshnessItem] = []
+    actionPlan306090: ActionPlan306090 = ActionPlan306090()
+    clauseDrilldown: List[ClauseDrilldownRow] = []
+    followupPrompts: List[str] = []
+    auditReadyReport: Optional[AuditReadyReport] = None
+    sectionConfidence: dict = {}
+    rubricScores: dict = {}
+    evidenceTrace: List[EvidenceTraceItem] = []
+    clauseValidation: ClauseValidation = ClauseValidation()
+    strictNoEvidenceMode: bool = False
     cached: bool = False
 
 class UploadResponse(BaseModel):
     status: str
     message: str
     document_id: Optional[str] = None
+    framework: Optional[str] = None
+    filename: Optional[str] = None
+    quality: Optional[UploadQuality] = None
+
+
+class ResponseFeedbackRequest(BaseModel):
+    userId: Optional[str] = None
+    sessionId: Optional[str] = None
+    messageId: str
+    score: int
+    sentiment: str
+    reason: Optional[str] = None
+    query: Optional[str] = None
 
 class StatusResponse(BaseModel):
     initialized: bool
@@ -221,8 +317,15 @@ app.add_middleware(
 )
 
 # Upload directory
-UPLOAD_DIR = "./uploads"
+UPLOAD_DIR = os.getenv("UPLOADS_DIR", "./uploads")
 os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+FRAMEWORK_LABELS = {
+    "iso37001": "ISO 37001",
+    "iso37301": "ISO 37301",
+    "iso37000": "ISO 37000",
+    "iso37002": "ISO 37002",
+}
 
 
 @app.get("/ping")
@@ -295,10 +398,22 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
             confidenceLabel=result.get("confidenceLabel"),
             whyThisAnswer=result.get("whyThisAnswer"),
             highlights=result.get("highlights", []),
-            schemes=result.get("schemes", []),
             comparison=result.get("comparison"),
             documentInsights=result.get("documentInsights", []),
-            actionPlan=result.get("actionPlan"),
+            ragMetrics=result.get("ragMetrics"),
+            clauseHeatmap=result.get("clauseHeatmap", []),
+            askBackQuestions=result.get("askBackQuestions", []),
+            contradictions=result.get("contradictions", []),
+            freshnessTracker=result.get("freshnessTracker", []),
+            actionPlan306090=result.get("actionPlan306090", {"d30": [], "d60": [], "d90": []}),
+            clauseDrilldown=result.get("clauseDrilldown", []),
+            followupPrompts=result.get("followupPrompts", []),
+            auditReadyReport=result.get("auditReadyReport"),
+            sectionConfidence=result.get("sectionConfidence", {}),
+            rubricScores=result.get("rubricScores", {}),
+            evidenceTrace=result.get("evidenceTrace", []),
+            clauseValidation=result.get("clauseValidation", {"isValid": True, "unsupportedClauses": [], "message": ""}),
+            strictNoEvidenceMode=result.get("strictNoEvidenceMode", False),
             cached=result.get("cached", False),
         )
     except RuntimeError as e:
@@ -311,6 +426,33 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
+
+
+@app.post("/api/feedback")
+def submit_response_feedback(request: ResponseFeedbackRequest):
+    """Store lightweight response quality feedback for future tuning."""
+    try:
+        bot = get_bot()
+        if not bot._initialized:
+            bot.initialize(auto_index=False)
+
+        payload = {
+            "userId": request.userId,
+            "sessionId": request.sessionId,
+            "messageId": request.messageId,
+            "score": request.score,
+            "sentiment": request.sentiment,
+            "reason": request.reason,
+            "query": request.query,
+        }
+        result = bot.log_response_feedback(payload)
+        if result.get("status") == "error":
+            raise HTTPException(status_code=500, detail=result.get("message", "Failed to store feedback"))
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Feedback submission failed: {str(e)}")
 
 
 @app.post("/api/chat/stream")
@@ -413,12 +555,112 @@ async def upload_document(file: UploadFile = File(...), user_id: Optional[str] =
         return UploadResponse(
             status=result["status"],
             message=result["message"],
-            document_id=doc_record.id if doc_record else None
+            document_id=doc_record.id if doc_record else None,
+            filename=file.filename,
+            quality=result.get("quality"),
         )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
+@app.post("/api/upload/framework", response_model=UploadResponse)
+async def upload_framework_document(
+    file: UploadFile = File(...),
+    framework: str = Form(...),
+    user_id: Optional[str] = Form(None),
+    db: Session = Depends(get_db),
+):
+    """Upload and index a framework-specific company document (one file per framework)."""
+    try:
+        framework_key = framework.strip().lower()
+        if framework_key not in FRAMEWORK_LABELS:
+            raise HTTPException(status_code=400, detail="Invalid framework. Use: iso37001, iso37301, iso37000, iso37002")
+
+        bot = get_bot()
+        if not bot._initialized:
+            bot.initialize(auto_index=False)
+
+        allowed_extensions = [".pdf", ".csv", ".txt", ".md", ".docx"]
+        file_ext = os.path.splitext(file.filename)[1].lower()
+
+        if file_ext not in allowed_extensions:
+            raise HTTPException(status_code=400, detail=f"Unsupported file type. Allowed: {allowed_extensions}")
+
+        framework_dir = os.path.join(UPLOAD_DIR, framework_key)
+        os.makedirs(framework_dir, exist_ok=True)
+
+        # Keep exactly one document per framework slot by removing previously indexed files in this slot.
+        for existing_name in os.listdir(framework_dir):
+            existing_path = os.path.join(framework_dir, existing_name)
+            if os.path.isfile(existing_path):
+                try:
+                    bot.remove_document(existing_name)
+                except Exception:
+                    pass
+                try:
+                    os.remove(existing_path)
+                except Exception:
+                    pass
+
+        original_filename = os.path.basename(file.filename)
+        slot_filename = f"{framework_key}_company_document{file_ext}"
+        file_path = os.path.join(framework_dir, slot_filename)
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+
+        file_size = os.path.getsize(file_path)
+        result = bot.add_documents(
+            file_path,
+            source_name=original_filename,
+            framework=framework_key,
+            source_type="company",
+        )
+        bot.clear_cache()
+
+        chunks_indexed = 0
+        if "Indexed" in result["message"]:
+            import re
+            match = re.search(r'Indexed (\d+) chunks', result["message"])
+            if match:
+                chunks_indexed = int(match.group(1))
+
+        doc_record = None
+        if user_id:
+            try:
+                # Remove old DB records for the same framework slot to keep one active row.
+                existing_docs = crud.get_user_documents(db, user_id)
+                for existing_doc in existing_docs:
+                    existing_path = (existing_doc.file_path or "").replace("\\", "/").lower()
+                    if f"/{framework_key}/" in existing_path:
+                        crud.delete_document(db, existing_doc.id)
+
+                doc_record = crud.create_document(
+                    db, user_id, original_filename, file_path,
+                    file_ext, file_size, chunks_indexed
+                )
+                crud.log_event(db, user_id, "upload", {
+                    "filename": original_filename,
+                    "file_type": file_ext,
+                    "chunks": chunks_indexed,
+                    "framework": framework_key,
+                })
+            except Exception as e:
+                print(f"⚠️ Failed to log framework document to database: {e}")
+
+        return UploadResponse(
+            status=result["status"],
+            message=f"{FRAMEWORK_LABELS[framework_key]} upload complete. {result['message']}",
+            document_id=doc_record.id if doc_record else None,
+            framework=framework_key,
+            filename=original_filename,
+            quality=result.get("quality"),
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Framework upload failed: {str(e)}")
 
 
 @app.get("/api/status", response_model=StatusResponse)
@@ -722,6 +964,8 @@ def delete_document(document_id: str, db: Session = Depends(get_db)):
             bot = get_bot()
             if bot._initialized:
                 bot.remove_document(filename)
+                if file_path:
+                    bot.remove_document(os.path.basename(file_path))
         except Exception as e:
             print(f"\u26a0\ufe0f Failed to remove chunks from vector store: {e}")
 

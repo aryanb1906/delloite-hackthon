@@ -73,6 +73,70 @@ export interface ChatResponse {
       category: string;
     }[];
   } | null;
+  ragMetrics?: {
+    totalChunks: number;
+    totalSources: number;
+    companyChunks: number;
+    companySources: number;
+    baselineChunks: number;
+    baselineSources: number;
+    otherChunks: number;
+    otherSources: number;
+    companyToBaselineChunkRatio?: number | null;
+    insufficientEvidenceClauses?: number;
+  };
+  clauseHeatmap?: {
+    framework: string;
+    coveragePct: number;
+    missingEvidenceCount: number;
+    strongEvidenceCount: number;
+    mediumEvidenceCount: number;
+    weakEvidenceCount: number;
+    coveredClauses: string[];
+  }[];
+  askBackQuestions?: string[];
+  contradictions?: {
+    clause: string;
+    issue: string;
+    companySnippet: string;
+    baselineSnippet: string;
+  }[];
+  freshnessTracker?: {
+    source: string;
+    sourceType: string;
+    effectiveDate: string;
+    stale: boolean;
+    warning: string;
+  }[];
+  actionPlan306090?: {
+    d30: { action: string; owner: string; impact: string }[];
+    d60: { action: string; owner: string; impact: string }[];
+    d90: { action: string; owner: string; impact: string }[];
+  };
+  clauseDrilldown?: {
+    clause: string;
+    company: { source: string; snippet: string; evidenceStrength?: string }[];
+    baseline: { source: string; snippet: string; evidenceStrength?: string }[];
+    other: { source: string; snippet: string; evidenceStrength?: string }[];
+  }[];
+  followupPrompts?: string[];
+  auditReadyReport?: Record<string, any>;
+  sectionConfidence?: Record<string, number>;
+  rubricScores?: Record<string, { title: string; coverageWeightedPct: number; coveredClauses: string[]; totalRubricWeight: number }>;
+  evidenceTrace?: {
+    framework: string;
+    clause: string;
+    sourceType: string;
+    source: string;
+    evidenceStrength: string;
+    snippet: string;
+  }[];
+  clauseValidation?: {
+    isValid: boolean;
+    unsupportedClauses: string[];
+    message: string;
+  };
+  strictNoEvidenceMode?: boolean;
   cached?: boolean;
 }
 
@@ -164,7 +228,27 @@ export interface UploadResponse {
   status: string;
   message: string;
   document_id?: string;
+  framework?: string;
+  filename?: string;
+  quality?: {
+    qualityScore: number;
+    qualityLabel: string;
+    clauseCoverage: number;
+    warning: string;
+  };
 }
+
+export interface ResponseFeedbackRequest {
+  userId?: string;
+  sessionId?: string;
+  messageId: string;
+  score: number;
+  sentiment: 'positive' | 'negative';
+  reason?: string;
+  query?: string;
+}
+
+export type FrameworkKey = 'iso37001' | 'iso37301' | 'iso37000' | 'iso37002';
 
 export interface StatusResponse {
   initialized: boolean;
@@ -374,6 +458,37 @@ export async function sendMessageStream(
   sessionId?: string,
   sourceFilter?: string
 ): Promise<void> {
+  const emitFallback = async () => {
+    const fallback = await sendMessage(message, profile, history, userId, sessionId, sourceFilter);
+    onToken(fallback.response);
+    onSources(fallback.sources || []);
+    onMeta?.({
+      confidence: fallback.confidence,
+      confidenceLabel: fallback.confidenceLabel,
+      whyThisAnswer: fallback.whyThisAnswer,
+      highlights: fallback.highlights,
+      schemes: fallback.schemes,
+      comparison: fallback.comparison,
+      documentInsights: fallback.documentInsights,
+      actionPlan: fallback.actionPlan,
+      ragMetrics: fallback.ragMetrics,
+      clauseHeatmap: fallback.clauseHeatmap,
+      askBackQuestions: fallback.askBackQuestions,
+      contradictions: fallback.contradictions,
+      freshnessTracker: fallback.freshnessTracker,
+      actionPlan306090: fallback.actionPlan306090,
+      clauseDrilldown: fallback.clauseDrilldown,
+      followupPrompts: fallback.followupPrompts,
+      auditReadyReport: fallback.auditReadyReport,
+      sectionConfidence: fallback.sectionConfidence,
+      rubricScores: fallback.rubricScores,
+      evidenceTrace: fallback.evidenceTrace,
+      clauseValidation: fallback.clauseValidation,
+      strictNoEvidenceMode: fallback.strictNoEvidenceMode,
+      cached: fallback.cached,
+    });
+  };
+
   try {
     const response = await fetch(`${API_BASE_URL}/api/chat/stream`, {
       method: 'POST',
@@ -397,6 +512,7 @@ export async function sendMessageStream(
     const reader = response.body.getReader();
     const decoder = new TextDecoder('utf-8');
     let buffer = '';
+    let receivedToken = false;
 
     while (true) {
       const { done, value } = await reader.read();
@@ -422,7 +538,12 @@ export async function sendMessageStream(
         if (!data) continue;
 
         if (event === 'token') {
-          onToken(JSON.parse(data));
+          const parsedToken = JSON.parse(data);
+          const tokenText = typeof parsedToken === 'string' ? parsedToken : String(parsedToken ?? '');
+          if (tokenText) {
+            receivedToken = true;
+            onToken(tokenText);
+          }
         } else if (event === 'sources') {
           onSources(JSON.parse(data));
         } else if (event === 'meta') {
@@ -430,25 +551,19 @@ export async function sendMessageStream(
         } else if (event === 'error') {
           throw new Error(JSON.parse(data));
         } else if (event === 'done') {
+          if (!receivedToken) {
+            await emitFallback();
+          }
           return;
         }
       }
     }
+
+    if (!receivedToken) {
+      await emitFallback();
+    }
   } catch (error) {
-    const fallback = await sendMessage(message, profile, history, userId, sessionId, sourceFilter);
-    onToken(fallback.response);
-    onSources(fallback.sources || []);
-    onMeta?.({
-      confidence: fallback.confidence,
-      confidenceLabel: fallback.confidenceLabel,
-      whyThisAnswer: fallback.whyThisAnswer,
-      highlights: fallback.highlights,
-      schemes: fallback.schemes,
-      comparison: fallback.comparison,
-      documentInsights: fallback.documentInsights,
-      actionPlan: fallback.actionPlan,
-      cached: fallback.cached,
-    });
+    await emitFallback();
   }
 }
 
@@ -481,6 +596,46 @@ export async function uploadDocument(file: File, userId?: string): Promise<Uploa
 
   const { data } = await uploadApi.post<UploadResponse>('/api/upload', formData);
 
+  return data;
+}
+
+export async function uploadFrameworkDocument(
+  file: File,
+  framework: FrameworkKey,
+  userId?: string
+): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('framework', framework);
+  if (userId) {
+    formData.append('user_id', userId);
+  }
+
+  const uploadApi = axios.create({
+    baseURL: API_BASE_URL,
+  });
+
+  uploadApi.interceptors.response.use(
+    response => response,
+    error => {
+      console.error('Framework Upload Error Details:', {
+        message: error.message,
+        code: error.code,
+        baseURL: error.config?.baseURL,
+        url: error.config?.url,
+        status: error.response?.status,
+        data: error.response?.data,
+      });
+      return Promise.reject(error);
+    }
+  );
+
+  const { data } = await uploadApi.post<UploadResponse>('/api/upload/framework', formData);
+  return data;
+}
+
+export async function sendResponseFeedback(payload: ResponseFeedbackRequest): Promise<{ status: string; message: string }> {
+  const { data } = await api.post('/api/feedback', payload);
   return data;
 }
 

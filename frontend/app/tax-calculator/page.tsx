@@ -226,6 +226,18 @@ export default function TaxCalculatorPage() {
         }).format(value)
     }
 
+    const toChartNumber = (value: unknown): number => {
+        if (typeof value === 'number') return value
+        if (typeof value === 'string') {
+            const parsed = Number(value.replace(/,/g, ''))
+            return Number.isFinite(parsed) ? parsed : 0
+        }
+        if (Array.isArray(value) && value.length > 0) {
+            return toChartNumber(value[0])
+        }
+        return 0
+    }
+
     // ── Register data with assistant context ──
     const taxVisuals = useMemo(() => {
         if (!taxResult) return [];
@@ -471,7 +483,7 @@ export default function TaxCalculatorPage() {
                                             <XAxis dataKey="name" />
                                             <YAxis />
                                             <Tooltip
-                                                formatter={(value) => formatCurrency(value)}
+                                                formatter={(value) => formatCurrency(toChartNumber(value))}
                                                 contentStyle={{ backgroundColor: '#f5f5f5', border: '1px solid #ddd' }}
                                             />
                                             <Legend />
@@ -498,7 +510,7 @@ export default function TaxCalculatorPage() {
                                             <XAxis dataKey="name" />
                                             <YAxis />
                                             <Tooltip
-                                                formatter={(value) => `${value.toFixed(2)}%`}
+                                                formatter={(value) => `${toChartNumber(value).toFixed(2)}%`}
                                                 contentStyle={{ backgroundColor: '#f5f5f5', border: '1px solid #ddd' }}
                                             />
                                             <Legend />
@@ -532,7 +544,7 @@ export default function TaxCalculatorPage() {
                                                 <Cell fill="#f97316" />
                                                 <Cell fill="#fca5a5" />
                                             </Pie>
-                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Tooltip formatter={(value) => formatCurrency(toChartNumber(value))} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Card>
@@ -558,7 +570,7 @@ export default function TaxCalculatorPage() {
                                                 <Cell fill="#10b981" />
                                                 <Cell fill="#86efac" />
                                             </Pie>
-                                            <Tooltip formatter={(value) => formatCurrency(value)} />
+                                            <Tooltip formatter={(value) => formatCurrency(toChartNumber(value))} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Card>
@@ -728,7 +740,7 @@ export default function TaxCalculatorPage() {
                                             <XAxis dataKey="name" />
                                             <YAxis />
                                             <Tooltip
-                                                formatter={(value) => formatCurrency(value)}
+                                                formatter={(value) => formatCurrency(toChartNumber(value))}
                                                 contentStyle={{ backgroundColor: '#f5f5f5', border: '1px solid #ddd' }}
                                             />
                                             <Legend />
@@ -755,7 +767,7 @@ export default function TaxCalculatorPage() {
                                             <XAxis dataKey="name" />
                                             <YAxis />
                                             <Tooltip
-                                                formatter={(value) => `${value.toFixed(2)}%`}
+                                                formatter={(value) => `${toChartNumber(value).toFixed(2)}%`}
                                                 contentStyle={{ backgroundColor: '#f5f5f5', border: '1px solid #ddd' }}
                                             />
                                             <Legend />

@@ -7,6 +7,7 @@ from sqlalchemy import Column, Integer, String, Text, DateTime, Float, Boolean, 
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
+import os
 import uuid
 
 Base = declarative_base()
@@ -154,6 +155,16 @@ class Document(Base):
     user = relationship("User", back_populates="documents")
     
     def to_dict(self):
+        framework = None
+        try:
+            normalized = (self.file_path or "").replace("\\", "/").lower()
+            for key in ["iso37001", "iso37301", "iso37000", "iso37002"]:
+                if f"/{key}/" in normalized:
+                    framework = key
+                    break
+        except Exception:
+            framework = None
+
         return {
             "id": self.id,
             "userId": self.user_id,
@@ -162,6 +173,8 @@ class Document(Base):
             "fileSize": self.file_size,
             "chunksIndexed": self.chunks_indexed,
             "isIndexed": self.is_indexed,
+            "framework": framework,
+            "storedFilename": os.path.basename(self.file_path) if self.file_path else None,
             "uploadedAt": self.uploaded_at.isoformat()
         }
 

@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { ArrowLeft, ArrowDown, Send, Bookmark, Clock, User, Wallet, Plus, MoreVertical, RefreshCw, MessageSquare, Zap, AlertCircle, Upload, FileText, Edit2, ChevronLeft, ChevronRight, BarChart2, Download, Pin, X, Pencil, Check, Copy, Shuffle } from 'lucide-react'
-import { sendMessageStream, uploadDocument, type ChatHistoryMessage, createChatSession, getChatSessions, getChatMessages, deleteChatSession, getProfile, updateProfile as updateUserProfile, updateChatSessionTitle, getUserDocuments, deleteUserDocument, addSessionMessages } from '@/lib/api'
+import { ArrowLeft, ArrowDown, Send, Bookmark, Clock, User, Wallet, Plus, MoreVertical, RefreshCw, MessageSquare, Zap, AlertCircle, Upload, FileText, Edit2, ChevronLeft, ChevronRight, BarChart2, Download, Pin, X, Pencil, Check, Copy, Shuffle, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { sendMessageStream, uploadFrameworkDocument, type ChatHistoryMessage, type FrameworkKey, createChatSession, getChatSessions, getChatMessages, deleteChatSession, getProfile, updateProfile as updateUserProfile, updateChatSessionTitle, getUserDocuments, deleteUserDocument, addSessionMessages, sendResponseFeedback } from '@/lib/api'
 import { MarkdownMessage } from '@/components/markdown-message'
 import { UserMenu } from '@/components/user-menu'
 import { useAuth } from '@/components/auth-provider'
@@ -103,6 +103,69 @@ interface Message {
       category: string
     }[]
   } | null
+  ragMetrics?: {
+    totalChunks: number
+    totalSources: number
+    companyChunks: number
+    companySources: number
+    baselineChunks: number
+    baselineSources: number
+    otherChunks: number
+    otherSources: number
+    companyToBaselineChunkRatio?: number | null
+    insufficientEvidenceClauses?: number
+  }
+  clauseHeatmap?: {
+    framework: string
+    coveragePct: number
+    missingEvidenceCount: number
+    strongEvidenceCount: number
+    mediumEvidenceCount: number
+    weakEvidenceCount: number
+    coveredClauses: string[]
+  }[]
+  askBackQuestions?: string[]
+  contradictions?: {
+    clause: string
+    issue: string
+    companySnippet: string
+    baselineSnippet: string
+  }[]
+  freshnessTracker?: {
+    source: string
+    sourceType: string
+    effectiveDate: string
+    stale: boolean
+    warning: string
+  }[]
+  actionPlan306090?: {
+    d30: { action: string; owner: string; impact: string }[]
+    d60: { action: string; owner: string; impact: string }[]
+    d90: { action: string; owner: string; impact: string }[]
+  }
+  clauseDrilldown?: {
+    clause: string
+    company: { source: string; snippet: string; evidenceStrength?: string }[]
+    baseline: { source: string; snippet: string; evidenceStrength?: string }[]
+    other: { source: string; snippet: string; evidenceStrength?: string }[]
+  }[]
+  followupPrompts?: string[]
+  sectionConfidence?: Record<string, number>
+  rubricScores?: Record<string, { title: string; coverageWeightedPct: number; coveredClauses: string[]; totalRubricWeight: number }>
+  evidenceTrace?: {
+    framework: string
+    clause: string
+    sourceType: string
+    source: string
+    evidenceStrength: string
+    snippet: string
+  }[]
+  clauseValidation?: {
+    isValid: boolean
+    unsupportedClauses: string[]
+    message: string
+  }
+  strictNoEvidenceMode?: boolean
   cached?: boolean
   queryScope?: 'all' | 'selected'
   queryDocument?: string
@@ -138,13 +201,27 @@ interface ChartSnapshot {
   unit: string
 }
 
+interface UploadedDocument {
+  id: string
+  filename: string
+  framework?: FrameworkKey
+  storedFilename?: string
+}
+
 const suggestedQueries = [
-  { text: 'How can I save tax on ₹15 lakh income?', category: 'tax' as const },
-  { text: 'What\'s the best pension plan for me?', category: 'pension' as const },
-  { text: 'Safe investment options for ₹5 lakh', category: 'investment' as const },
-  { text: 'How to file income tax return online?', category: 'tax' as const },
-  { text: 'Schemes for senior citizens 60+', category: 'pension' as const },
-  { text: 'ELSS vs PPF vs FD comparison', category: 'investment' as const }
+  { text: 'Compare my ISO 37001 company document with the original standard and list key gaps', category: 'tax' as const },
+  { text: 'Generate readiness score for ISO 37301 with evidence-backed findings', category: 'pension' as const },
+  { text: 'Show clause-wise gaps for ISO 37000 from company doc vs baseline', category: 'investment' as const },
+  { text: 'For ISO 37002, identify missing whistleblowing controls and next actions', category: 'tax' as const },
+  { text: 'Create a 30-60-90 day remediation plan for all uploaded ISO frameworks', category: 'pension' as const },
+  { text: 'Summarize strongest and weakest evidence from my uploaded compliance files', category: 'investment' as const }
+]
+
+const FRAMEWORK_UPLOAD_SLOTS: { key: FrameworkKey; label: string; helper: string }[] = [
+  { key: 'iso37001', label: 'ISO 37001', helper: 'Upload company anti-bribery document' },
+  { key: 'iso37301', label: 'ISO 37301', helper: 'Upload company compliance-management document' },
+  { key: 'iso37000', label: 'ISO 37000', helper: 'Upload company governance document' },
+  { key: 'iso37002', label: 'ISO 37002', helper: 'Upload company whistleblowing document' },
 ]
 
 export default function ChatPage() {
@@ -154,7 +231,7 @@ export default function ChatPage() {
   const buildWelcomeMessage = (): Message => ({
     id: '1',
     type: 'ai',
-    content: 'नमस्ते! 👋 Welcome to Arth-Mitra. I\'m here to help you understand Indian taxes, government schemes, and financial planning.\n\nTell me about your situation and I\'ll provide personalized guidance.',
+    content: 'Welcome to Arth-Mitra ISO Compliance Assistant.\n\nUpload your company documents into the 4 ISO slots, then ask for clause mapping, readiness scores, gap analysis, and remediation plans against baseline ISO documents.',
     timestamp: new Date(),
     sources: []
   })
@@ -163,9 +240,13 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [streamingMessageId, setStreamingMessageId] = useState<string | null>(null)
-  const [isUploading, setIsUploading] = useState(false)
+  const [uploadingFrameworks, setUploadingFrameworks] = useState<Partial<Record<FrameworkKey, boolean>>>({})
+  const [uploadingFrameworkNames, setUploadingFrameworkNames] = useState<Partial<Record<FrameworkKey, string>>>({})
+  const isUploading = useMemo(() => Object.values(uploadingFrameworks).some(Boolean), [uploadingFrameworks])
   const [lastUploadedFile, setLastUploadedFile] = useState<string>('')
-  const [uploadedDocuments, setUploadedDocuments] = useState<{id: string; filename: string}[]>([])
+  const [uploadedDocuments, setUploadedDocuments] = useState<UploadedDocument[]>([])
+  const [frameworkUploads, setFrameworkUploads] = useState<Partial<Record<FrameworkKey, string>>>({})
+  const [showUploadPanel, setShowUploadPanel] = useState(false)
   const [documentOnlyMode, setDocumentOnlyMode] = useState(false)
   const [selectedDocumentFilter, setSelectedDocumentFilter] = useState<string>('')
   const messagesContainerRef = useRef<HTMLDivElement>(null)
@@ -173,12 +254,13 @@ export default function ChatPage() {
   const shouldAutoScrollRef = useRef(true)
   const lastScrollTopRef = useRef(0)
   const [showJumpToLatest, setShowJumpToLatest] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const frameworkInputRefs = useRef<Partial<Record<FrameworkKey, HTMLInputElement | null>>>({})
   const inputFieldRef = useRef<HTMLInputElement>(null)
   const [bookmarks, setBookmarks] = useState<string[]>([])
   const [pinnedMessageIds, setPinnedMessageIds] = useState<string[]>([])
   const [copiedSourcesMessageId, setCopiedSourcesMessageId] = useState<string | null>(null)
   const [expandedSnippets, setExpandedSnippets] = useState<Record<string, boolean>>({})
+  const [showLowEvidenceByMessage, setShowLowEvidenceByMessage] = useState<Record<string, boolean>>({})
   const [comparisonSortByMessage, setComparisonSortByMessage] = useState<Record<string, ComparisonSort>>({})
   const [chartData, setChartData] = useState<ChartDatum[]>([])
   const [chartType, setChartType] = useState<ChartType>('bar')
@@ -214,6 +296,8 @@ export default function ChatPage() {
   const [showSuggestions, setShowSuggestions] = useState(true)
   const [visibleSuggestions, setVisibleSuggestions] = useState(suggestedQueries)
   const [copiedMessageId, setCopiedMessageId] = useState<string | null>(null)
+  const [feedbackByMessage, setFeedbackByMessage] = useState<Record<string, 'positive' | 'negative'>>({})
+  const [feedbackLoading, setFeedbackLoading] = useState<Record<string, boolean>>({})
 
   // Sidebar collapse states
   const [isLeftSidebarOpen, setIsLeftSidebarOpen] = useState(true)
@@ -782,10 +866,21 @@ export default function ChatPage() {
                 confidenceLabel: meta.confidenceLabel,
                 whyThisAnswer: meta.whyThisAnswer,
                 highlights: meta.highlights || [],
-                schemes: meta.schemes || [],
                 comparison: meta.comparison,
                 documentInsights: meta.documentInsights || [],
-                actionPlan: meta.actionPlan,
+                ragMetrics: meta.ragMetrics,
+                clauseHeatmap: meta.clauseHeatmap || [],
+                askBackQuestions: meta.askBackQuestions || [],
+                contradictions: meta.contradictions || [],
+                freshnessTracker: meta.freshnessTracker || [],
+                actionPlan306090: meta.actionPlan306090,
+                clauseDrilldown: meta.clauseDrilldown || [],
+                followupPrompts: meta.followupPrompts || [],
+                sectionConfidence: meta.sectionConfidence || {},
+                rubricScores: meta.rubricScores || {},
+                evidenceTrace: meta.evidenceTrace || [],
+                clauseValidation: meta.clauseValidation,
+                strictNoEvidenceMode: meta.strictNoEvidenceMode,
                 cached: meta.cached,
               }
               : msg
@@ -820,11 +915,43 @@ export default function ChatPage() {
     )
   }
 
+  const handleFeedback = async (messageId: string, sentiment: 'positive' | 'negative') => {
+    if (feedbackLoading[messageId]) return
+    const targetMessage = messages.find(msg => msg.id === messageId)
+    if (!targetMessage || targetMessage.type !== 'ai') return
+
+    setFeedbackLoading(prev => ({ ...prev, [messageId]: true }))
+    try {
+      await sendResponseFeedback({
+        userId: userId || undefined,
+        sessionId: sessionId || undefined,
+        messageId,
+        score: sentiment === 'positive' ? 1 : -1,
+        sentiment,
+        query: messages.filter(m => m.type === 'user').slice(-1)[0]?.content,
+      })
+      setFeedbackByMessage(prev => ({ ...prev, [messageId]: sentiment }))
+    } catch (error) {
+      console.error('Failed to submit feedback', error)
+    } finally {
+      setFeedbackLoading(prev => ({ ...prev, [messageId]: false }))
+    }
+  }
+
   const handleSuggestedQuery = (query: string) => {
     setInput(query)
     setTimeout(() => {
       const event = new KeyboardEvent('keydown', { key: 'Enter' })
       document.querySelector('input')?.dispatchEvent(event)
+    }, 0)
+  }
+
+  const handleFollowupPrompt = (prompt: string) => {
+    setInput(prompt)
+    setTimeout(() => {
+      if (inputFieldRef.current) {
+        inputFieldRef.current.focus()
+      }
     }, 0)
   }
 
@@ -885,6 +1012,15 @@ export default function ChatPage() {
     setExpandedSnippets(prev => ({
       ...prev,
       [key]: !prev[key],
+    }))
+  }
+
+  const isLowEvidence = (strength?: string) => (strength || '').toLowerCase() === 'low'
+
+  const toggleLowEvidence = (messageId: string) => {
+    setShowLowEvidenceByMessage(prev => ({
+      ...prev,
+      [messageId]: !prev[messageId],
     }))
   }
 
@@ -1074,14 +1210,35 @@ export default function ChatPage() {
           `
           : ''
 
-        const actionPlanBlock = message.type === 'ai' && message.actionPlan
+        const heatmapBlock = message.type === 'ai' && message.clauseHeatmap && message.clauseHeatmap.length > 0
           ? `
             <div class="meta-block">
-              <p class="meta-title"><strong>${escapeHtml(message.actionPlan.title || 'Action Plan')}</strong></p>
-              <ul class="md-ul">${message.actionPlan.steps.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ul>
-              ${message.actionPlan.reminders.length > 0
-            ? `<p class="meta-title"><strong>Upcoming Reminders</strong></p><ul class="md-ul">${message.actionPlan.reminders.map(reminder => `<li>${escapeHtml(`${reminder.title} — ${reminder.dueDate}`)}</li>`).join('')}</ul>`
-            : ''}
+              <p class="meta-title"><strong>Clause Coverage Heatmap</strong></p>
+              <ul class="md-ul">${message.clauseHeatmap
+            .map(row => `<li>${escapeHtml(`${row.framework}: coverage ${row.coveragePct}%, missing ${row.missingEvidenceCount}`)}</li>`)
+            .join('')}</ul>
+            </div>
+          `
+          : ''
+
+        const contradictionBlock = message.type === 'ai' && message.contradictions && message.contradictions.length > 0
+          ? `
+            <div class="meta-block">
+              <p class="meta-title"><strong>Contradictions</strong></p>
+              <ul class="md-ul">${message.contradictions
+            .map(item => `<li>${escapeHtml(`Clause ${item.clause}: ${item.issue}`)}</li>`)
+            .join('')}</ul>
+            </div>
+          `
+          : ''
+
+        const action306090Block = message.type === 'ai' && message.actionPlan306090
+          ? `
+            <div class="meta-block">
+              <p class="meta-title"><strong>30/60/90 Action Plan</strong></p>
+              <p><strong>30d:</strong> ${escapeHtml((message.actionPlan306090.d30 || []).map(a => a.action).slice(0, 3).join('; ') || 'N/A')}</p>
+              <p><strong>60d:</strong> ${escapeHtml((message.actionPlan306090.d60 || []).map(a => a.action).slice(0, 3).join('; ') || 'N/A')}</p>
+              <p><strong>90d:</strong> ${escapeHtml((message.actionPlan306090.d90 || []).map(a => a.action).slice(0, 3).join('; ') || 'N/A')}</p>
             </div>
           `
           : ''
@@ -1091,10 +1248,13 @@ export default function ChatPage() {
             <div class="meta">
               ${typeof message.confidence === 'number' ? `<p><strong>Confidence:</strong> ${Math.round(message.confidence * 100)}% (${escapeHtml(String(message.confidenceLabel || 'n/a'))})</p>` : ''}
               ${message.sources?.length ? `<p><strong>Sources:</strong> ${message.sources.map(escapeHtml).join(', ')}</p>` : ''}
+              ${message.ragMetrics ? `<p><strong>RAG metrics:</strong> company chunks ${message.ragMetrics.companyChunks}, baseline chunks ${message.ragMetrics.baselineChunks}, total chunks ${message.ragMetrics.totalChunks}</p>` : ''}
               ${message.whyThisAnswer ? `<p><strong>Why this answer:</strong> ${escapeHtml(message.whyThisAnswer)}</p>` : ''}
               ${comparisonBlock}
               ${insightsBlock}
-              ${actionPlanBlock}
+              ${heatmapBlock}
+              ${contradictionBlock}
+              ${action306090Block}
             </div>
           `
           : ''
@@ -1396,33 +1556,54 @@ export default function ChatPage() {
     }
   }
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const frameworkDocBySlot = useMemo(() => {
+    const map: Partial<Record<FrameworkKey, UploadedDocument>> = {}
+    for (const slot of FRAMEWORK_UPLOAD_SLOTS) {
+      const match = uploadedDocuments.find(doc =>
+        doc.framework === slot.key ||
+        (doc.storedFilename || '').toLowerCase().startsWith(`${slot.key}_company_document`)
+      )
+      if (match) {
+        map[slot.key] = match
+      }
+    }
+    return map
+  }, [uploadedDocuments])
+
+  const handleFrameworkUpload = async (framework: FrameworkKey, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    setIsUploading(true)
+    setUploadingFrameworks(prev => ({ ...prev, [framework]: true }))
+    setUploadingFrameworkNames(prev => ({ ...prev, [framework]: file.name }))
     setLastUploadedFile(file.name)
+
+    const frameworkLabel = FRAMEWORK_UPLOAD_SLOTS.find(slot => slot.key === framework)?.label || framework
 
     // Add system message about upload
     const uploadingMessage: Message = {
       id: Date.now().toString(),
       type: 'ai',
-      content: `📄 Uploading and indexing: **${file.name}**...`,
+      content: `📄 Uploading ${frameworkLabel} company document: **${file.name}**...`,
       timestamp: new Date(),
       sources: []
     }
     setMessages(prev => [...prev, uploadingMessage])
 
     try {
-      const response = await uploadDocument(file, userId || undefined)
+      const response = await uploadFrameworkDocument(file, framework, userId || undefined)
+
+      const sourceFilename = response.filename || file.name
 
       const docId = response.document_id || ''
       setUploadedDocuments(prev => {
-        if (prev.some(d => d.filename === file.name)) return prev
-        return [{ id: docId, filename: file.name }, ...prev]
+        const filtered = prev.filter(d => d.framework !== framework)
+        return [{ id: docId, filename: sourceFilename, framework }, ...filtered]
       })
 
-      setSelectedDocumentFilter(file.name)
+      setFrameworkUploads(prev => ({ ...prev, [framework]: sourceFilename }))
+
+      setSelectedDocumentFilter(sourceFilename)
       setDocumentOnlyMode(true)
 
       // Reload from DB to ensure we have real IDs for all docs
@@ -1431,9 +1612,12 @@ export default function ChatPage() {
       }
 
       // Update the message with success
+      const qualityText = response.quality
+        ? `\n\nParse quality: **${response.quality.qualityLabel}** (${response.quality.qualityScore}%) | Clause coverage ${response.quality.clauseCoverage}%${response.quality.warning ? `\n${response.quality.warning}` : ''}`
+        : ''
       setMessages(prev => prev.map(msg =>
         msg.id === uploadingMessage.id
-          ? { ...msg, content: `✅ ${response.message}\n\nYou can now ask questions about the uploaded document. You can also enable Document-only mode below the chat box.` }
+          ? { ...msg, content: `✅ ${response.message}\n\nFramework scope is now set to **${frameworkLabel}** (${sourceFilename}).${qualityText}` }
           : msg
       ))
 
@@ -1447,15 +1631,20 @@ export default function ChatPage() {
       console.error('Upload error:', error)
       setMessages(prev => prev.map(msg =>
         msg.id === uploadingMessage.id
-          ? { ...msg, content: `❌ Failed to upload ${file.name}. Please try again.` }
+          ? { ...msg, content: `❌ Failed to upload ${frameworkLabel} document (${file.name}). Please try again.` }
           : msg
       ))
       setLastUploadedFile('')
     } finally {
-      setIsUploading(false)
+      setUploadingFrameworks(prev => ({ ...prev, [framework]: false }))
+      setUploadingFrameworkNames(prev => {
+        const next = { ...prev }
+        delete next[framework]
+        return next
+      })
       // Reset file input
-      if (fileInputRef.current) {
-        fileInputRef.current.value = ''
+      if (frameworkInputRefs.current[framework]) {
+        frameworkInputRefs.current[framework]!.value = ''
       }
     }
   }
@@ -1463,12 +1652,17 @@ export default function ChatPage() {
   const loadUploadedDocuments = async (uid: string) => {
     try {
       const docs = (await getUserDocuments(uid))
-        .filter((doc: any) => !!doc?.filename)
-        .map((doc: any) => ({ id: doc.id as string, filename: doc.filename as string }))
+        .filter((doc: any) => !!doc?.filename && !!doc?.framework)
+        .map((doc: any) => ({
+          id: doc.id as string,
+          filename: doc.filename as string,
+          framework: doc.framework as FrameworkKey,
+          storedFilename: (doc.storedFilename || '') as string,
+        }))
 
       // Deduplicate by filename
       const seen = new Set<string>()
-      const uniqueDocs: {id: string; filename: string}[] = []
+      const uniqueDocs: UploadedDocument[] = []
       for (const d of docs) {
         if (!seen.has(d.filename)) {
           seen.add(d.filename)
@@ -1479,6 +1673,9 @@ export default function ChatPage() {
 
       if (uniqueDocs.length > 0 && !selectedDocumentFilter) {
         setSelectedDocumentFilter(uniqueDocs[0].filename)
+      }
+      if (selectedDocumentFilter && !uniqueDocs.some(doc => doc.filename === selectedDocumentFilter)) {
+        setSelectedDocumentFilter(uniqueDocs[0]?.filename || '')
       }
     } catch (error) {
       console.error('Failed to load uploaded documents:', error)
@@ -1493,6 +1690,15 @@ export default function ChatPage() {
     try {
       await deleteUserDocument(documentId)
       setUploadedDocuments(prev => prev.filter(d => d.id !== documentId))
+      setFrameworkUploads(prev => {
+        const next = { ...prev }
+        for (const [key, value] of Object.entries(next)) {
+          if (value === filename) {
+            delete next[key as FrameworkKey]
+          }
+        }
+        return next
+      })
       // If the deleted doc was the selected filter, reset
       if (selectedDocumentFilter === filename) {
         setSelectedDocumentFilter('')
@@ -1508,6 +1714,21 @@ export default function ChatPage() {
     if (!userId) return
     loadUploadedDocuments(userId)
   }, [userId])
+
+  useEffect(() => {
+    setFrameworkUploads(prev => {
+      const next: Partial<Record<FrameworkKey, string>> = { ...prev }
+      for (const slot of FRAMEWORK_UPLOAD_SLOTS) {
+        const current = frameworkDocBySlot[slot.key]
+        if (current) {
+          next[slot.key] = current.filename
+        } else {
+          delete next[slot.key]
+        }
+      }
+      return next
+    })
+  }, [frameworkDocBySlot])
 
   const pinnedMessages = pinnedMessageIds
     .map(id => messages.find(message => message.id === id && message.type === 'ai'))
@@ -2225,6 +2446,11 @@ export default function ChatPage() {
                                   Confidence: {Math.round(message.confidence * 100)}%
                                 </span>
                               )}
+                              {message.ragMetrics && (
+                                <span className="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-blue-50 text-blue-700">
+                                  RAG chunks: C {message.ragMetrics.companyChunks} | O {message.ragMetrics.baselineChunks}
+                                </span>
+                              )}
                             </div>
                           )}
                           {message.type === 'user' ? (
@@ -2264,6 +2490,217 @@ export default function ChatPage() {
                           <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
                             <p className="font-semibold text-foreground mb-1">Why this answer</p>
                             <p className="text-muted-foreground leading-relaxed">{message.whyThisAnswer}</p>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.ragMetrics && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">RAG retrieval metrics</p>
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                              <div className="rounded bg-muted/60 p-2"><span className="text-muted-foreground">Company chunks</span><p className="font-semibold">{message.ragMetrics.companyChunks}</p></div>
+                              <div className="rounded bg-muted/60 p-2"><span className="text-muted-foreground">Original ISO chunks</span><p className="font-semibold">{message.ragMetrics.baselineChunks}</p></div>
+                              <div className="rounded bg-muted/60 p-2"><span className="text-muted-foreground">Total chunks</span><p className="font-semibold">{message.ragMetrics.totalChunks}</p></div>
+                              <div className="rounded bg-muted/60 p-2"><span className="text-muted-foreground">Chunk ratio C:O</span><p className="font-semibold">{message.ragMetrics.companyToBaselineChunkRatio ?? 'n/a'}</p></div>
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.clauseValidation && (
+                          <div className={`mt-2 rounded-xl border p-3 text-sm ${message.clauseValidation.isValid ? 'border-emerald-200 bg-emerald-50/60' : 'border-amber-200 bg-amber-50/70'}`}>
+                            <p className="font-semibold text-foreground mb-1">Clause grounding validator</p>
+                            <p className="text-xs text-muted-foreground">{message.clauseValidation.message}</p>
+                            {!message.clauseValidation.isValid && message.clauseValidation.unsupportedClauses.length > 0 && (
+                              <p className="text-xs text-amber-700 mt-1">Unsupported clauses: {message.clauseValidation.unsupportedClauses.join(', ')}</p>
+                            )}
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.sectionConfidence && Object.keys(message.sectionConfidence).length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Section confidence</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                              {Object.entries(message.sectionConfidence).map(([section, score]) => (
+                                <div key={section} className="rounded bg-muted/60 p-2">
+                                  <p className="text-muted-foreground capitalize">{section}</p>
+                                  <p className="font-semibold">{Math.round((score || 0) * 100)}%</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.rubricScores && Object.keys(message.rubricScores).length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Framework rubric coverage</p>
+                            <div className="space-y-2">
+                              {Object.entries(message.rubricScores).map(([framework, rubric]) => (
+                                <div key={framework} className="rounded-md bg-muted/60 p-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="text-xs font-semibold uppercase">{framework}</p>
+                                    <span className="text-xs text-muted-foreground">Weighted coverage {rubric.coverageWeightedPct}%</span>
+                                  </div>
+                                  <p className="text-xs text-muted-foreground mt-1">{rubric.title}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.evidenceTrace && message.evidenceTrace.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <p className="font-semibold text-foreground">Evidence trace panel</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-[11px]"
+                                onClick={() => toggleLowEvidence(message.id)}
+                              >
+                                {showLowEvidenceByMessage[message.id] ? 'Hide low-quality' : 'Show low-quality'}
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              {message.evidenceTrace
+                                .filter(item => showLowEvidenceByMessage[message.id] || !isLowEvidence(item.evidenceStrength))
+                                .slice(0, 8)
+                                .map((item, idx) => (
+                                <div key={`${message.id}-trace-${idx}`} className="rounded-md bg-muted/60 p-2">
+                                  <p className="text-xs font-semibold">{item.framework} Clause {item.clause} • {item.sourceType}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">{item.source} • Strength: {item.evidenceStrength}</p>
+                                  <p className="text-xs mt-1 text-foreground/90">{cleanSnippetText(item.snippet)}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.clauseHeatmap && message.clauseHeatmap.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Clause coverage heatmap</p>
+                            <div className="space-y-2">
+                              {message.clauseHeatmap.map((row) => (
+                                <div key={row.framework} className="rounded-md bg-muted/60 p-2">
+                                  <div className="flex items-center justify-between gap-2">
+                                    <p className="font-semibold uppercase text-xs">{row.framework}</p>
+                                    <span className="text-xs text-muted-foreground">Coverage {row.coveragePct}%</span>
+                                  </div>
+                                  <div className="mt-1 h-2 w-full rounded bg-muted">
+                                    <div className="h-2 rounded bg-emerald-500" style={{ width: `${Math.max(0, Math.min(100, row.coveragePct))}%` }} />
+                                  </div>
+                                  <p className="mt-1 text-xs text-muted-foreground">Missing evidence: {row.missingEvidenceCount} | Strong: {row.strongEvidenceCount} | Medium: {row.mediumEvidenceCount} | Weak: {row.weakEvidenceCount}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.askBackQuestions && message.askBackQuestions.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-amber-300/70 bg-amber-50 p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Need clarifications before final scoring</p>
+                            <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
+                              {message.askBackQuestions.slice(0, 3).map((q, idx) => (
+                                <li key={`${message.id}-ask-${idx}`}>{q}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.contradictions && message.contradictions.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-red-200 bg-red-50/70 p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Contradiction detector</p>
+                            <div className="space-y-2">
+                              {message.contradictions.slice(0, 4).map((item, idx) => (
+                                <div key={`${item.clause}-${idx}`} className="rounded-md bg-white p-2 border border-red-100">
+                                  <p className="text-xs font-semibold text-red-700">Clause {item.clause}</p>
+                                  <p className="text-xs text-muted-foreground mt-1">{item.issue}</p>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.freshnessTracker && message.freshnessTracker.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Version and freshness tracker</p>
+                            <div className="space-y-1 text-xs text-muted-foreground">
+                              {message.freshnessTracker.slice(0, 6).map((item, idx) => (
+                                <p key={`${item.source}-${idx}`}>
+                                  {item.source} ({item.sourceType}) - {item.effectiveDate || 'unknown'} {item.stale ? ' - stale' : ''}
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.actionPlan306090 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">30/60/90 action plan</p>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
+                              <div className="rounded bg-muted/60 p-2">
+                                <p className="font-semibold mb-1">30 days</p>
+                                {(message.actionPlan306090.d30 || []).slice(0, 3).map((a, i) => <p key={`d30-${i}`}>• {a.action}</p>)}
+                              </div>
+                              <div className="rounded bg-muted/60 p-2">
+                                <p className="font-semibold mb-1">60 days</p>
+                                {(message.actionPlan306090.d60 || []).slice(0, 3).map((a, i) => <p key={`d60-${i}`}>• {a.action}</p>)}
+                              </div>
+                              <div className="rounded bg-muted/60 p-2">
+                                <p className="font-semibold mb-1">90 days</p>
+                                {(message.actionPlan306090.d90 || []).slice(0, 3).map((a, i) => <p key={`d90-${i}`}>• {a.action}</p>)}
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.clauseDrilldown && message.clauseDrilldown.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <div className="mb-2 flex items-center justify-between gap-2">
+                              <p className="font-semibold text-foreground">Clause drill-down (company vs ISO)</p>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-[11px]"
+                                onClick={() => toggleLowEvidence(message.id)}
+                              >
+                                {showLowEvidenceByMessage[message.id] ? 'Hide low-quality' : 'Show low-quality'}
+                              </Button>
+                            </div>
+                            <div className="space-y-2">
+                              {message.clauseDrilldown.slice(0, 5).map((row) => (
+                                <div key={row.clause} className="rounded-md bg-muted/60 p-2">
+                                  <p className="text-xs font-semibold mb-1">Clause {row.clause}</p>
+                                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                    <div>
+                                      <p className="text-[11px] font-semibold text-emerald-700">Company</p>
+                                      {(row.company || [])
+                                        .filter(s => showLowEvidenceByMessage[message.id] || !isLowEvidence(s.evidenceStrength))
+                                        .slice(0, 1)
+                                        .map((s, i) => <p key={`c-${i}`} className="text-xs text-muted-foreground">{cleanSnippetText(s.snippet)}</p>)}
+                                    </div>
+                                    <div>
+                                      <p className="text-[11px] font-semibold text-blue-700">Baseline ISO</p>
+                                      {(row.baseline || [])
+                                        .filter(s => showLowEvidenceByMessage[message.id] || !isLowEvidence(s.evidenceStrength))
+                                        .slice(0, 1)
+                                        .map((s, i) => <p key={`b-${i}`} className="text-xs text-muted-foreground">{cleanSnippetText(s.snippet)}</p>)}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && message.followupPrompts && message.followupPrompts.length > 0 && (
+                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">Suggested follow-up prompts</p>
+                            <div className="flex flex-wrap gap-2">
+                              {message.followupPrompts.slice(0, 3).map((prompt, idx) => (
+                                <Button key={`${message.id}-follow-${idx}`} variant="outline" size="sm" onClick={() => handleFollowupPrompt(prompt)}>
+                                  {prompt}
+                                </Button>
+                              ))}
+                            </div>
                           </div>
                         )}
 
@@ -2321,29 +2758,6 @@ export default function ChatPage() {
                           </div>
                         )}
 
-                        {message.type === 'ai' && message.schemes && message.schemes.length > 0 && (
-                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
-                            <p className="font-semibold text-foreground mb-2">Top eligible schemes</p>
-                            <div className="space-y-2">
-                              {message.schemes.slice(0, 3).map((scheme) => (
-                                <div key={scheme.name} className="rounded-md bg-muted/60 p-2">
-                                  <div className="flex items-center justify-between gap-2">
-                                    <p className="font-semibold text-foreground">{scheme.name}</p>
-                                    <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">
-                                      {scheme.score}/100
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-muted-foreground">{scheme.reason}</p>
-                                  {scheme.missingCriteria && scheme.missingCriteria.length > 0 && (
-                                    <p className="mt-1 text-sm text-amber-700">
-                                      Missing criteria: {scheme.missingCriteria.join(', ')}
-                                    </p>
-                                  )}
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                        )}
 
                         {message.type === 'ai' && message.comparison && (
                           <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
@@ -2397,28 +2811,6 @@ export default function ChatPage() {
                           </div>
                         )}
 
-                        {message.type === 'ai' && message.actionPlan && (
-                          <div className="mt-2 rounded-xl border border-border/40 bg-background p-3 text-sm">
-                            <p className="font-semibold text-foreground mb-2">{message.actionPlan.title}</p>
-                            <ul className="list-disc pl-4 space-y-1 text-muted-foreground">
-                              {message.actionPlan.steps.slice(0, 4).map((step, idx) => (
-                                <li key={idx}>{step}</li>
-                              ))}
-                            </ul>
-                            {message.actionPlan.reminders.length > 0 && (
-                              <div className="mt-2 border-t border-border/40 pt-2">
-                                <p className="font-semibold text-foreground mb-1">Upcoming reminders</p>
-                                <div className="space-y-1 text-muted-foreground">
-                                  {message.actionPlan.reminders.slice(0, 4).map((reminder, idx) => (
-                                    <p key={`${reminder.title}-${idx}`}>
-                                      • {reminder.title} — {reminder.dueDate}
-                                    </p>
-                                  ))}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-                        )}
                       </div>
 
                       {message.type === 'ai' && (
@@ -2458,6 +2850,22 @@ export default function ChatPage() {
                                 : 'text-muted-foreground'
                                 }`}
                             />
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(message.id, 'positive')}
+                            className="flex-shrink-0 p-2 hover:bg-muted rounded-lg transition-colors"
+                            title="Helpful answer"
+                            disabled={!!feedbackLoading[message.id]}
+                          >
+                            <ThumbsUp className={`w-4 h-4 ${feedbackByMessage[message.id] === 'positive' ? 'text-emerald-600 fill-emerald-500/20' : 'text-muted-foreground'}`} />
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(message.id, 'negative')}
+                            className="flex-shrink-0 p-2 hover:bg-muted rounded-lg transition-colors"
+                            title="Needs improvement"
+                            disabled={!!feedbackLoading[message.id]}
+                          >
+                            <ThumbsDown className={`w-4 h-4 ${feedbackByMessage[message.id] === 'negative' ? 'text-red-600 fill-red-500/20' : 'text-muted-foreground'}`} />
                           </button>
                         </div>
                       )}
@@ -2529,27 +2937,98 @@ export default function ChatPage() {
                   Document-only mode is OFF. Answers may use all indexed documents, not just the selected file.
                 </div>
               )}
+              <div className="max-w-4xl mx-auto mb-2 rounded-xl border border-border/60 bg-white p-2 shadow-sm">
+                <div className="mb-2 flex items-center justify-between gap-2">
+                  <div>
+                    <h3 className="text-sm font-semibold">ISO Framework Uploads</h3>
+                    <p className="text-[11px] text-muted-foreground">4 slots, one company file per framework</p>
+                    <p className="text-[11px] text-muted-foreground">Baseline ISO originals are preloaded from backend knowledge base and are not listed in these upload slots.</p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="h-7 px-2.5 text-xs"
+                    onClick={() => setShowUploadPanel(prev => !prev)}
+                  >
+                    {showUploadPanel ? 'Hide' : 'Show'}
+                  </Button>
+                </div>
+                {showUploadPanel && (
+                  <div className="space-y-1">
+                    {FRAMEWORK_UPLOAD_SLOTS.map((slot) => (
+                      <div key={slot.key} className="rounded-lg border border-border/50 bg-slate-50/40 p-1">
+                        <div className="flex flex-col gap-1.5 md:flex-row md:items-center md:gap-2">
+                          <div className="w-full md:w-32">
+                            <p className="text-sm font-medium">{slot.label}</p>
+                            <p className="text-[11px] text-muted-foreground">Framework slot</p>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            {frameworkUploads[slot.key] ? (
+                              <div className="space-y-0.5">
+                                <span className="inline-flex items-center rounded-full bg-emerald-100 px-2 py-0.5 text-[10px] font-semibold text-emerald-700">
+                                  Uploaded
+                                </span>
+                                <p className="text-xs font-medium text-foreground truncate" title={frameworkUploads[slot.key]}>
+                                  {frameworkUploads[slot.key]}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="space-y-0.5">
+                                <span className="inline-flex items-center rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+                                  Empty
+                                </span>
+                                <p className="text-xs text-muted-foreground truncate">{slot.helper}</p>
+                              </div>
+                            )}
+                          </div>
+                          <input
+                            type="file"
+                            ref={(el) => { frameworkInputRefs.current[slot.key] = el }}
+                            onChange={(e) => handleFrameworkUpload(slot.key, e)}
+                            accept=".pdf,.csv,.txt,.md,.docx"
+                            className="hidden"
+                          />
+                          <div className="flex items-center gap-1.5 md:justify-end">
+                            {frameworkDocBySlot[slot.key]?.id && (
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() => requestDeleteDocument(frameworkDocBySlot[slot.key]!.id, frameworkDocBySlot[slot.key]!.filename)}
+                                disabled={!!uploadingFrameworks[slot.key]}
+                                className="h-8 text-red-600 border-red-200 hover:bg-red-50"
+                              >
+                                <X className="w-3.5 h-3.5 mr-1.5" />
+                                Remove
+                              </Button>
+                            )}
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => frameworkInputRefs.current[slot.key]?.click()}
+                              disabled={isLoading || !!uploadingFrameworks[slot.key]}
+                              className="h-8 max-w-[13rem]"
+                              title={uploadingFrameworkNames[slot.key] || frameworkUploads[slot.key] || 'Upload file'}
+                            >
+                              <Upload className="w-3.5 h-3.5 mr-1.5" />
+                              {!!uploadingFrameworks[slot.key] ? (
+                                <span className="inline-block max-w-[9rem] truncate">{uploadingFrameworkNames[slot.key] || 'Uploading...'}</span>
+                              ) : frameworkUploads[slot.key] ? (
+                                <span className="inline-block max-w-[9rem] truncate">{frameworkUploads[slot.key]}</span>
+                              ) : (
+                                'Upload'
+                              )}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
               <div className="max-w-4xl mx-auto flex gap-3">
-                {/* Hidden file input */}
-                <input
-                  type="file"
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                  accept=".pdf,.csv,.txt,.md,.docx"
-                  className="hidden"
-                />
-                {/* Upload button */}
-                <Button
-                  data-assistant-id="file-upload"
-                  variant="outline"
-                  size="lg"
-                  className="rounded-full"
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isLoading || isUploading}
-                  title="Upload PDF, CSV, TXT, MD, or DOCX file"
-                >
-                  <Upload className="w-4 h-4" />
-                </Button>
                 <Input
                   data-assistant-id="chat-input"
                   ref={inputFieldRef}
@@ -2561,7 +3040,7 @@ export default function ChatPage() {
                       handleSendMessage()
                     }
                   }}
-                  placeholder={lastUploadedFile ? `Ask about ${lastUploadedFile}...` : "Ask about taxes, schemes, investments..."}
+                  placeholder={lastUploadedFile ? `Ask about ${lastUploadedFile}...` : "Ask about ISO 37001/37301/37000/37002 compliance..."}
                   className="flex-1 text-base px-4 py-2 rounded-full border-border/40 focus:ring-2 focus:ring-primary/20"
                   disabled={isLoading || isUploading}
                 />
@@ -2588,7 +3067,7 @@ export default function ChatPage() {
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground mt-3 text-center">
-                💡 This is informational guidance based on public government data. Consult a professional for financial advice.
+                Evidence-based ISO compliance guidance using your uploaded company files and baseline ISO documents.
               </p>
             </div>
           </div>
