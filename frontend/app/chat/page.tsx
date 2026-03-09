@@ -2455,6 +2455,11 @@ export default function ChatPage() {
                                   RAG chunks: C {message.ragMetrics.companyChunks} | O {message.ragMetrics.baselineChunks}
                                 </span>
                               )}
+                              {message.strictNoEvidenceMode && (
+                                <span className="ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold bg-indigo-50 text-indigo-700">
+                                  Comparison Mode: Company vs ISO baseline (RAG grounded)
+                                </span>
+                              )}
                             </div>
                           )}
                           {message.type === 'user' ? (
