@@ -137,6 +137,8 @@ export interface ChatResponse {
     message: string;
   };
   strictNoEvidenceMode?: boolean;
+  missingDetails?: string[];
+  improvementSuggestions?: string[];
   cached?: boolean;
 }
 
@@ -485,6 +487,8 @@ export async function sendMessageStream(
       evidenceTrace: fallback.evidenceTrace,
       clauseValidation: fallback.clauseValidation,
       strictNoEvidenceMode: fallback.strictNoEvidenceMode,
+      missingDetails: fallback.missingDetails,
+      improvementSuggestions: fallback.improvementSuggestions,
       cached: fallback.cached,
     });
   };

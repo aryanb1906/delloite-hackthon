@@ -184,6 +184,8 @@ class ChatResponse(BaseModel):
     evidenceTrace: List[EvidenceTraceItem] = []
     clauseValidation: ClauseValidation = ClauseValidation()
     strictNoEvidenceMode: bool = False
+    missingDetails: List[str] = []
+    improvementSuggestions: List[str] = []
     cached: bool = False
 
 class UploadResponse(BaseModel):
@@ -414,6 +416,8 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
             evidenceTrace=result.get("evidenceTrace", []),
             clauseValidation=result.get("clauseValidation", {"isValid": True, "unsupportedClauses": [], "message": ""}),
             strictNoEvidenceMode=result.get("strictNoEvidenceMode", False),
+            missingDetails=result.get("missingDetails", []),
+            improvementSuggestions=result.get("improvementSuggestions", []),
             cached=result.get("cached", False),
         )
     except RuntimeError as e:

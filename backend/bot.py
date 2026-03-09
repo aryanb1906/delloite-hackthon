@@ -2474,6 +2474,16 @@ class ArthMitraBot:
         rubric_scores = self._build_rubric_scores(source_docs) if compliance_mode else {}
         evidence_trace = self._build_evidence_trace(source_docs) if compliance_mode else []
         clause_validation = {"isValid": True, "unsupportedClauses": [], "message": "Validation pending."}
+        missing_details, improvement_suggestions = self._build_missing_improvement_details(
+            source_docs=source_docs,
+            rag_metrics=rag_metrics,
+            clause_heatmap=clause_heatmap,
+            contradictions=contradictions,
+            action_plan=action_plan_30_60_90,
+            ask_back_questions=ask_back_questions,
+            query=query,
+            compliance_mode=compliance_mode,
+        )
 
         return {
             "confidence": confidence,
@@ -2496,7 +2506,110 @@ class ArthMitraBot:
             "evidenceTrace": evidence_trace,
             "clauseValidation": clause_validation,
             "strictNoEvidenceMode": compliance_mode,
+            "missingDetails": missing_details,
+            "improvementSuggestions": improvement_suggestions,
         }
+
+    def _build_missing_improvement_details(
+        self,
+        source_docs: List[Document],
+        rag_metrics: Dict[str, Any],
+        clause_heatmap: List[Dict[str, Any]],
+        contradictions: List[Dict[str, str]],
+        action_plan: Dict[str, List[Dict[str, str]]],
+        ask_back_questions: List[str],
+        query: str,
+        compliance_mode: bool,
+    ) -> Tuple[List[str], List[str]]:
+        missing_details: List[str] = []
+        improvement_suggestions: List[str] = []
+
+        if not source_docs:
+            missing_details.append("No relevant document chunks were retrieved for this query.")
+            improvement_suggestions.append("Upload or select the exact policy/SOP file for this question.")
+            return missing_details, improvement_suggestions
+
+        insufficient_count = int(rag_metrics.get("insufficientEvidenceClauses", 0) or 0)
+        if insufficient_count > 0:
+            missing_details.append(
+                f"Insufficient evidence for {insufficient_count} clause(s) in retrieved content."
+            )
+
+        if compliance_mode and clause_heatmap:
+            weak_rows = sorted(
+                [row for row in clause_heatmap if row.get("missingEvidenceCount", 0) > 0],
+                key=lambda row: row.get("missingEvidenceCount", 0),
+                reverse=True,
+            )
+            for row in weak_rows[:3]:
+                framework = str(row.get("framework", "framework")).upper()
+                missing_count = int(row.get("missingEvidenceCount", 0) or 0)
+                coverage = row.get("coveragePct", 0)
+                missing_details.append(
+                    f"{framework}: {missing_count} missing/weak evidence signals (coverage {coverage}%)."
+                )
+
+        if contradictions:
+            contradiction_clauses = sorted({str(item.get("clause", "unknown")) for item in contradictions if item.get("clause")})
+            if contradiction_clauses:
+                clause_list = ", ".join(contradiction_clauses[:4])
+                missing_details.append(f"Potential contradiction between company and baseline evidence at clause(s): {clause_list}.")
+
+        d30_actions = (action_plan or {}).get("d30", []) if isinstance(action_plan, dict) else []
+        for item in d30_actions[:3]:
+            action = (item or {}).get("action")
+            if action:
+                improvement_suggestions.append(str(action))
+
+        if compliance_mode and not d30_actions:
+            framework = (self._infer_framework_from_query(query) or "selected framework").upper()
+            improvement_suggestions.append(
+                f"Provide mapped evidence for high-priority clauses in {framework} before requesting final scoring."
+            )
+
+        for question in (ask_back_questions or [])[:2]:
+            if question:
+                improvement_suggestions.append(f"Clarify scope: {question}")
+
+        if not improvement_suggestions:
+            improvement_suggestions.append("Ask a narrower clause-level question and include target framework and entity scope.")
+
+        # Deduplicate while preserving order.
+        missing_details = list(dict.fromkeys(missing_details))[:6]
+        improvement_suggestions = list(dict.fromkeys(improvement_suggestions))[:6]
+        return missing_details, improvement_suggestions
+
+    def _append_quality_guidance(
+        self,
+        response_text: str,
+        missing_details: List[str],
+        improvement_suggestions: List[str],
+    ) -> str:
+        text = (response_text or "").strip()
+        if not text:
+            return text
+
+        lower_text = text.lower()
+        if "what is missing" in lower_text and "how to improve" in lower_text:
+            return text
+
+        if not missing_details and not improvement_suggestions:
+            return text
+
+        lines = [text, "", "### What Is Missing"]
+        if missing_details:
+            lines.extend([f"- {item}" for item in missing_details[:4]])
+        else:
+            lines.append("- No major evidence gaps detected in current retrieval.")
+
+        lines.append("")
+        lines.append("### How To Improve")
+        if improvement_suggestions:
+            lines.extend([f"- {item}" for item in improvement_suggestions[:4]])
+        else:
+            lines.append("- Provide more specific evidence or narrower scope for higher confidence.")
+
+        return "\n".join(lines)
     
     def _handle_gold_price_query(self, query: str) -> Optional[Dict]:
         """
@@ -2752,6 +2865,11 @@ If you have questions about current gold investment options in India or tax impl
 
         clause_validation = self._validate_clause_grounding(result, source_docs) if compliance_context else {"isValid": True, "unsupportedClauses": [], "message": "Not a compliance query."}
         metadata["clauseValidation"] = clause_validation
+        result = self._append_quality_guidance(
+            result,
+            metadata.get("missingDetails", []),
+            metadata.get("improvementSuggestions", []),
+        )
         
         response_data = {
             "response": self._append_sources_section(result, final_sources),
@@ -2893,6 +3011,11 @@ If you have questions about current gold investment options in India or tax impl
             if compliance_context:
                 response_text = self._multi_pass_response(query, context, strict_scope)
                 metadata["clauseValidation"] = self._validate_clause_grounding(response_text, source_docs)
+                response_text = self._append_quality_guidance(
+                    response_text,
+                    metadata.get("missingDetails", []),
+                    metadata.get("improvementSuggestions", []),
+                )
                 yield response_text
                 return
 

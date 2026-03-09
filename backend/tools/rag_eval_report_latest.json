@@ -1,0 +1,1228 @@
+{
+  "summary": {
+    "queries": 25,
+    "avg_total_ms": 20482.28,
+    "median_total_ms": 19975.75,
+    "min_total_ms": 26.81,
+    "max_total_ms": 31412.87,
+    "std_total_ms": 6304.96,
+    "p90_total_ms": 30265.04,
+    "p95_total_ms": 31134.21,
+    "p99_total_ms": 32100.21,
+    "avg_retrieval_ms": 74.12,
+    "median_retrieval_ms": 65.7,
+    "p95_retrieval_ms": 242.73,
+    "avg_retrieved_docs": 10,
+    "avg_sources": 8.56,
+    "coverage_rate": 100.0,
+    "unique_sources": 104,
+    "default_source_rate": 0.0,
+    "avg_response_chars": 2157.6,
+    "precision_at_k": 0.052,
+    "clause_recall": 0.32,
+    "citation_accuracy": 0.78,
+    "gap_detection_accuracy": 1.0
+  },
+  "results": [
+    {
+      "query": "Compare company anti-bribery policy against ISO 37001 clause 5.1 leadership commitment.",
+      "retrieval_ms": 298.8308999920264,
+      "total_ms": 20325.60709991958,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 15)",
+        "ISO-37001.pdf (Page 14)",
+        "ISO-37001.pdf (Page 19)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "ISO-37001.pdf (Page 17)",
+        "ISO-37001.pdf (Page 22)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "13.1.2",
+        "3.1",
+        "3.2",
+        "5",
+        "5.2",
+        "6",
+        "6.2",
+        "7.3",
+        "8.1",
+        "9.3.2"
+      ],
+      "expected_clauses": [
+        "5.1"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2060,
+      "used_default_sources": false
+    },
+    {
+      "query": "For ISO 37001 clause 8.2 due diligence, what evidence exists and what is missing?",
+      "retrieval_ms": 97.93610009364784,
+      "total_ms": 12648.088300018571,
+      "source_count": 10,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 4)",
+        "iso37001_company_document.pdf (Page 4)",
+        "ISO-37001.pdf (Page 12)",
+        "ISO-37001.pdf (Page 39)",
+        "ISO-37001.pdf (Page 43)",
+        "ISO-37001.pdf (Page 35)",
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37001.pdf (Page 21)",
+        "ISO-37001.pdf (Page 11)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "11",
+        "17",
+        "3",
+        "3.1",
+        "3.13",
+        "3.5.1.3",
+        "4",
+        "6",
+        "6.8.3",
+        "8.2"
+      ],
+      "expected_clauses": [
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.1,
+      "clause_recall": 1.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 1800,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate gifts, hospitality and donations controls against ISO 37001 clause 8.7.",
+      "retrieval_ms": 73.9668000023812,
+      "total_ms": 17044.110900023952,
+      "source_count": 9,
+      "sources": [
+        "ISO-37001.pdf (Page 23)",
+        "ISO-37001.pdf (Page 47)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 18)",
+        "iso37001_company_document.pdf (Page 18)",
+        "ISO-37001.pdf (Page 22)",
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37001.pdf (Page 13)",
+        "ISO-37001.pdf (Page 45)",
+        "ISO-37001.pdf (Page 3)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "10",
+        "11",
+        "8.2",
+        "8.7"
+      ],
+      "expected_clauses": [
+        "8.7"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.2,
+      "clause_recall": 1.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2126,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess whistleblowing process against ISO 37002 handling and investigation requirements.",
+      "retrieval_ms": 80.66450001206249,
+      "total_ms": 31412.865700083785,
+      "source_count": 8,
+      "sources": [
+        "Infosys Whistleblower Policy.pdf (Page 4)",
+        "iso37002_company_document.pdf (Page 4)",
+        "ISO-37002-2021.pdf (Page 12)",
+        "ISO-37002-2021.pdf (Page 10)",
+        "ISO-37002-2021.pdf (Page 6)",
+        "ISO-37002-2021.pdf (Page 13)",
+        "ISO-37002-2021.pdf (Page 9)",
+        "ISO-37002-2021.pdf (Page 11)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "Infosys Whistleblower Policy.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "16",
+        "18.6",
+        "2",
+        "3.10",
+        "3.14",
+        "9.2",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "8.3",
+        "8.4"
+      ],
+      "expected_sources": [
+        "iso37002"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2563,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare compliance obligations tracking with ISO 37301 clause 6 planning requirements.",
+      "retrieval_ms": 68.00600001588464,
+      "total_ms": 19975.747999968007,
+      "source_count": 10,
+      "sources": [
+        "Tata Code Of Conduct.pdf (Page 9)",
+        "iso37301_company_document.pdf (Page 9)",
+        "ISO-37301-2021.pdf (Page 14)",
+        "ISO-37301-2021.pdf (Page 12)",
+        "ISO-37301-2021.pdf (Page 9)",
+        "ISO-37301-2021.pdf (Page 6)",
+        "ISO-37301-2021.pdf (Page 13)",
+        "ISO-37301-2021.pdf (Page 7)",
+        "ISO-37301-2021.pdf",
+        "ISO-37301-2021.pdf (Page 15)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37000-2021.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "17",
+        "21",
+        "3",
+        "3.13",
+        "3.16",
+        "3.2.3",
+        "4.4",
+        "4.5",
+        "4.6",
+        "9.3.2"
+      ],
+      "expected_clauses": [
+        "6.1",
+        "6.2"
+      ],
+      "expected_sources": [
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2248,
+      "used_default_sources": false
+    },
+    {
+      "query": "Show governance accountability mapping against ISO 37000 leadership principles.",
+      "retrieval_ms": 73.70229996740818,
+      "total_ms": 22474.13200000301,
+      "source_count": 9,
+      "sources": [
+        "ISO-37000-2021.pdf (Page 12)",
+        "ISO-37000-2021.pdf (Page 9)",
+        "Infosys Corporate Governance Report.pdf (Page 2)",
+        "iso37000_company_document.pdf (Page 2)",
+        "Infosys Corporate Governance Report.pdf (Page 13)",
+        "iso37000_company_document.pdf (Page 13)",
+        "ISO-37000-2021.pdf (Page 4)",
+        "Infosys Corporate Governance Report.pdf (Page 17)",
+        "iso37000_company_document.pdf (Page 17)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Infosys Corporate Governance Report.pdf"
+      ],
+      "retrieved_clauses": [
+        "2",
+        "25",
+        "3.5",
+        "46",
+        "5",
+        "6.11.1",
+        "6.2"
+      ],
+      "expected_clauses": [
+        "5",
+        "6"
+      ],
+      "expected_sources": [
+        "iso37000"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.143,
+      "clause_recall": 0.5,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2667,
+      "used_default_sources": false
+    },
+    {
+      "query": "Is there evidence of anti-bribery training and awareness for employees?",
+      "retrieval_ms": 39.066099910996854,
+      "total_ms": 16839.31140007917,
+      "source_count": 7,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "ISO-37001.pdf (Page 19)",
+        "ISO-37001.pdf (Page 37)",
+        "ISO-37001.pdf (Page 18)",
+        "ISO-37001.pdf (Page 47)",
+        "ISO-37001.pdf (Page 49)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "iso37001_company_document.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "2",
+        "3.2",
+        "4.5",
+        "7.2.2.1",
+        "7.3",
+        "9.1",
+        "9.3.2",
+        "9.5",
+        "9.8"
+      ],
+      "expected_clauses": [
+        "7.3"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.1,
+      "clause_recall": 1.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2054,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate third-party management and contract controls for bribery risk.",
+      "retrieval_ms": 46.20690003503114,
+      "total_ms": 30484.02159998659,
+      "source_count": 10,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 13)",
+        "iso37001_company_document.pdf (Page 13)",
+        "ISO-37001.pdf (Page 12)",
+        "ISO-37001.pdf (Page 41)",
+        "ISO-37001.pdf (Page 45)",
+        "ISO-37001.pdf (Page 13)",
+        "ISO-37001.pdf (Page 22)",
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37001.pdf (Page 16)",
+        "ISO-37001.pdf (Page 26)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "13.1",
+        "13.1.2",
+        "26",
+        "3",
+        "3.28",
+        "4.3",
+        "6",
+        "8.3",
+        "8.4",
+        "9.3.2"
+      ],
+      "expected_clauses": [
+        "8.2",
+        "8.3"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.1,
+      "clause_recall": 0.5,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 3080,
+      "used_default_sources": false
+    },
+    {
+      "query": "Do we have monitoring and internal audit evidence for anti-bribery controls?",
+      "retrieval_ms": 54.67310000676662,
+      "total_ms": 20364.93669997435,
+      "source_count": 9,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 2)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf (Page 25)",
+        "ISO-37001.pdf (Page 47)",
+        "ISO-37001.pdf (Page 49)",
+        "ISO-37001.pdf (Page 26)",
+        "ISO-37001.pdf (Page 50)",
+        "ISO-37001.pdf (Page 16)",
+        "ISO-37001.pdf (Page 22)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "16.4",
+        "16.6",
+        "18.9",
+        "2",
+        "4.5",
+        "7.2.2.1",
+        "8.5.2",
+        "9.4"
+      ],
+      "expected_clauses": [
+        "9.1",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2051,
+      "used_default_sources": false
+    },
+    {
+      "query": "Provide corrective action maturity against ISO 37001 clause 10 improvement.",
+      "retrieval_ms": 58.75349999405444,
+      "total_ms": 19342.697700019926,
+      "source_count": 8,
+      "sources": [
+        "ISO-37001.pdf (Page 4)",
+        "ISO-37001.pdf (Page 27)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 21)",
+        "iso37001_company_document.pdf (Page 21)",
+        "ISO-37001.pdf (Page 49)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37001.pdf (Page 18)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37000-2021.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "17",
+        "2",
+        "3.13",
+        "3.19",
+        "3.7",
+        "4",
+        "5.1.3",
+        "6.1",
+        "6.11.1",
+        "9.2"
+      ],
+      "expected_clauses": [
+        "10.1",
+        "10.2"
+      ],
+      "expected_sources": [
+        "iso37001"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2473,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare policy documentation control and versioning to ISO 37301 documented information requirements.",
+      "retrieval_ms": 67.14890000876039,
+      "total_ms": 18901.967699988745,
+      "source_count": 8,
+      "sources": [
+        "Tata Code Of Conduct.pdf (Page 27)",
+        "iso37301_company_document.pdf (Page 27)",
+        "ISO-37301-2021.pdf (Page 14)",
+        "ISO-37301-2021.pdf (Page 11)",
+        "ISO-37301-2021.pdf (Page 12)",
+        "ISO-37301-2021.pdf (Page 9)",
+        "ISO-37301-2021.pdf (Page 5)",
+        "ISO-37301-2021.pdf (Page 13)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "3.1",
+        "3.10",
+        "3.16",
+        "3.19",
+        "7.5.2",
+        "8",
+        "9.2",
+        "9.3.2",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "7.5"
+      ],
+      "expected_sources": [
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2054,
+      "used_default_sources": false
+    },
+    {
+      "query": "Check whether reporting channels are confidential and protected from retaliation.",
+      "retrieval_ms": 37.1399000287056,
+      "total_ms": 26.810599956661463,
+      "source_count": 6,
+      "sources": [
+        "ISO-37001.pdf",
+        "Tata Code Of Conduct.pdf",
+        "iso37301_company_document.pdf",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "Infosys Whistleblower Policy.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "16",
+        "3.10",
+        "30",
+        "6",
+        "8.9"
+      ],
+      "expected_clauses": [
+        "7",
+        "8"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 162,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess board oversight and tone-at-the-top against governance expectations.",
+      "retrieval_ms": 45.32590007875115,
+      "total_ms": 15853.654299979098,
+      "source_count": 10,
+      "sources": [
+        "Infosys Corporate Governance Report.pdf (Page 13)",
+        "iso37000_company_document.pdf (Page 13)",
+        "ISO-37000-2021.pdf (Page 7)",
+        "ISO-37000-2021.pdf (Page 6)",
+        "Infosys Corporate Governance Report.pdf (Page 3)",
+        "iso37000_company_document.pdf (Page 3)",
+        "Infosys Corporate Governance Report.pdf (Page 2)",
+        "iso37000_company_document.pdf (Page 2)",
+        "Infosys Corporate Governance Report.pdf (Page 4)",
+        "iso37000_company_document.pdf (Page 4)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "2",
+        "5.1",
+        "51",
+        "6.11.1"
+      ],
+      "expected_clauses": [
+        "5.1"
+      ],
+      "expected_sources": [
+        "iso37000",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.2,
+      "clause_recall": 1.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2379,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate risk assessment methodology for bribery and compliance risks.",
+      "retrieval_ms": 75.40390000212938,
+      "total_ms": 23577.943700016476,
+      "source_count": 11,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 6)",
+        "iso37001_company_document.pdf (Page 6)",
+        "ISO-37001.pdf (Page 31)",
+        "ISO-37001.pdf (Page 13)",
+        "ISO-37001.pdf (Page 19)",
+        "ISO-37001.pdf (Page 18)",
+        "ISO-37001.pdf (Page 22)",
+        "ISO-37001.pdf (Page 37)",
+        "ISO-37001.pdf (Page 38)",
+        "ISO-37001.pdf (Page 43)",
+        "ISO-37001.pdf (Page 33)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "26",
+        "3.4",
+        "4.1",
+        "4.3",
+        "4.5",
+        "7.3",
+        "8.2",
+        "9.3.2"
+      ],
+      "expected_clauses": [
+        "6.1",
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "iso37301"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.111,
+      "clause_recall": 0.5,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2424,
+      "used_default_sources": false
+    },
+    {
+      "query": "Do we have a formal anti-bribery policy approved by top management?",
+      "retrieval_ms": 63.62749997060746,
+      "total_ms": 24848.570599919185,
+      "source_count": 9,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "ISO-37001.pdf (Page 14)",
+        "ISO-37001.pdf (Page 15)",
+        "ISO-37001.pdf (Page 16)",
+        "ISO-37001.pdf (Page 19)",
+        "ISO-37001.pdf (Page 34)",
+        "ISO-37001.pdf (Page 47)",
+        "ISO-37001.pdf (Page 18)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "3.2",
+        "4.5",
+        "5",
+        "5.1.2",
+        "5.2",
+        "6",
+        "7.2.2.1",
+        "7.3",
+        "9.3",
+        "9.3.2"
+      ],
+      "expected_clauses": [
+        "5.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.1,
+      "clause_recall": 1.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 1798,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare speak-up intake, triage and closure workflow with ISO 37002 baseline.",
+      "retrieval_ms": 52.9942000284791,
+      "total_ms": 18294.562799972482,
+      "source_count": 7,
+      "sources": [
+        "Infosys Whistleblower Policy.pdf",
+        "ISO-37002-2021.pdf (Page 4)",
+        "ISO-37002-2021.pdf (Page 13)",
+        "ISO-37002-2021.pdf (Page 5)",
+        "ISO-37002-2021.pdf (Page 6)",
+        "ISO-37002-2021.pdf (Page 3)",
+        "ISO-37002-2021.pdf (Page 9)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "2",
+        "3.10",
+        "5.3.2",
+        "6.11.1",
+        "9",
+        "9.1",
+        "9.3.2",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "8.2",
+        "8.3",
+        "8.4"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2182,
+      "used_default_sources": false
+    },
+    {
+      "query": "Identify missing control owners and accountability assignments by clause.",
+      "retrieval_ms": 65.70230005308986,
+      "total_ms": 19019.69859993551,
+      "source_count": 7,
+      "sources": [
+        "ISO-37001.pdf (Page 36)",
+        "ISO-37001.pdf (Page 22)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37001.pdf (Page 9)",
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37002-2021.pdf (Page 10)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "13.3.4",
+        "2",
+        "20",
+        "3",
+        "3.6",
+        "5.3",
+        "7"
+      ],
+      "expected_clauses": [
+        "5.3",
+        "7.1"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.125,
+      "clause_recall": 0.5,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2025,
+      "used_default_sources": false
+    },
+    {
+      "query": "Review disciplinary framework and consequences for anti-bribery breaches.",
+      "retrieval_ms": 111.83430009987205,
+      "total_ms": 17808.02080000285,
+      "source_count": 10,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "ISO-37001.pdf (Page 15)",
+        "ISO-37001.pdf (Page 49)",
+        "ISO-37001.pdf (Page 26)",
+        "ISO-37001.pdf (Page 13)",
+        "ISO-37001.pdf (Page 14)",
+        "ISO-37001.pdf (Page 35)",
+        "ISO-37001.pdf (Page 18)",
+        "ISO-37001.pdf (Page 27)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "2",
+        "3.1",
+        "7.3",
+        "8.3",
+        "8.4.2",
+        "9.3.2",
+        "9.4"
+      ],
+      "expected_clauses": [
+        "7.2",
+        "8.7"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2157,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess investigation case management records quality for whistleblowing cases.",
+      "retrieval_ms": 79.77079995907843,
+      "total_ms": 20810.441500041634,
+      "source_count": 6,
+      "sources": [
+        "Infosys Whistleblower Policy.pdf (Page 3)",
+        "Infosys Whistleblower Policy.pdf (Page 4)",
+        "ISO-37002-2021.pdf (Page 9)",
+        "ISO-37002-2021.pdf (Page 12)",
+        "ISO-37002-2021.pdf (Page 3)",
+        "ISO-37002-2021.pdf (Page 6)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "Infosys Whistleblower Policy.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "16",
+        "18.6",
+        "2",
+        "20",
+        "3.10",
+        "3.14",
+        "6",
+        "8.9",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "8.3"
+      ],
+      "expected_sources": [
+        "iso37002",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2417,
+      "used_default_sources": false
+    },
+    {
+      "query": "Check if compliance objectives are measurable and tracked periodically.",
+      "retrieval_ms": 60.65689993556589,
+      "total_ms": 21153.537500067614,
+      "source_count": 8,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 21)",
+        "iso37001_company_document.pdf (Page 21)",
+        "ISO-37001.pdf (Page 50)",
+        "ISO-37301-2021.pdf (Page 14)",
+        "ISO-37301-2021.pdf (Page 15)",
+        "ISO-37301-2021.pdf (Page 10)",
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37301-2021.pdf (Page 13)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf",
+        "ISO-37301-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "3.13",
+        "3.6",
+        "4.4",
+        "4.6",
+        "5.1.2",
+        "9",
+        "9.1.4",
+        "9.3.2",
+        "9.4"
+      ],
+      "expected_clauses": [
+        "6.2",
+        "9.1"
+      ],
+      "expected_sources": [
+        "iso37301",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2111,
+      "used_default_sources": false
+    },
+    {
+      "query": "Map available evidence to ISO 37001 clauses and state where evidence is insufficient.",
+      "retrieval_ms": 63.21569997817278,
+      "total_ms": 19359.673600061797,
+      "source_count": 10,
+      "sources": [
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37001.pdf (Page 11)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37001.pdf (Page 18)",
+        "ISO-37001.pdf (Page 30)",
+        "ISO-37001.pdf (Page 15)",
+        "ISO-37001.pdf (Page 10)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 3)",
+        "iso37001_company_document.pdf (Page 3)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "ISO-37301-2021.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "11",
+        "17",
+        "20",
+        "3.13",
+        "3.14",
+        "3.16",
+        "3.5.1.3",
+        "42",
+        "6.8.3",
+        "8.1"
+      ],
+      "expected_clauses": [
+        "5.1",
+        "7.3",
+        "8.2",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 1633,
+      "used_default_sources": false
+    },
+    {
+      "query": "Generate 30/60/90 day plan to close highest anti-bribery compliance gaps.",
+      "retrieval_ms": 84.22640000935644,
+      "total_ms": 30119.045400060713,
+      "source_count": 10,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "iso37001_company_document.pdf",
+        "ISO-37001.pdf (Page 27)",
+        "ISO-37001.pdf (Page 19)",
+        "ISO-37001.pdf (Page 15)",
+        "ISO-37001.pdf (Page 23)",
+        "ISO-37001.pdf (Page 16)",
+        "ISO-37001.pdf (Page 50)",
+        "ISO-37001.pdf (Page 18)",
+        "ISO-37001.pdf (Page 26)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37001.pdf"
+      ],
+      "retrieved_clauses": [
+        "10",
+        "13.1",
+        "18.2",
+        "3.2",
+        "5.2",
+        "6.2",
+        "7.3",
+        "8.3",
+        "9.4"
+      ],
+      "expected_clauses": [
+        "10.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2588,
+      "used_default_sources": false
+    },
+    {
+      "query": "Compare due diligence controls for suppliers and agents against ISO baseline.",
+      "retrieval_ms": 68.08529992122203,
+      "total_ms": 24590.075200074352,
+      "source_count": 8,
+      "sources": [
+        "ISO-37001.pdf (Page 40)",
+        "ISO-37001.pdf (Page 21)",
+        "ISO-37001.pdf (Page 39)",
+        "ISO-37001.pdf (Page 43)",
+        "ISO-37002-2021.pdf (Page 10)",
+        "Tata Code Of Conduct.pdf (Page 25)",
+        "iso37301_company_document.pdf (Page 25)",
+        "ISO-37301-2021.pdf (Page 13)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf",
+        "Tata Code Of Conduct.pdf"
+      ],
+      "retrieved_clauses": [
+        "2",
+        "23",
+        "3",
+        "3.16",
+        "6",
+        "8.2",
+        "9.3.2",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "8.2"
+      ],
+      "expected_sources": [
+        "iso37001",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.125,
+      "clause_recall": 1.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2242,
+      "used_default_sources": false
+    },
+    {
+      "query": "Evaluate records retention and audit trail quality for compliance evidence.",
+      "retrieval_ms": 49.83090003952384,
+      "total_ms": 19584.85910005402,
+      "source_count": 9,
+      "sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 18)",
+        "iso37001_company_document.pdf (Page 18)",
+        "ISO-37001.pdf (Page 48)",
+        "ISO-37001.pdf (Page 25)",
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf (Page 17)",
+        "iso37001_company_document.pdf (Page 17)",
+        "ISO-37001.pdf (Page 36)",
+        "ISO-37001.pdf (Page 11)",
+        "ISO-37002-2021.pdf (Page 12)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "Anti\u2011Bribery and Anti\u2011Corruption Policy (Tata).pdf",
+        "ISO-37001.pdf",
+        "ISO-37301-2021.pdf",
+        "Infosys Corporate Governance Report.pdf",
+        "iso37002_company_document.pdf"
+      ],
+      "retrieved_clauses": [
+        "1",
+        "12",
+        "16",
+        "17",
+        "3.20",
+        "42",
+        "9.1.4",
+        "9.2.2",
+        "9.3.2",
+        "9.4"
+      ],
+      "expected_clauses": [
+        "7.5",
+        "9.2"
+      ],
+      "expected_sources": [
+        "iso37301",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 0.5,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2269,
+      "used_default_sources": false
+    },
+    {
+      "query": "Assess governance and ethics communication mechanisms against ISO 37000 expectations.",
+      "retrieval_ms": 36.315999925136566,
+      "total_ms": 27196.65439997334,
+      "source_count": 8,
+      "sources": [
+        "ISO-37000-2021.pdf (Page 12)",
+        "ISO-37000-2021.pdf (Page 6)",
+        "ISO-37000-2021.pdf (Page 9)",
+        "ISO-37000-2021.pdf (Page 13)",
+        "Infosys Corporate Governance Report.pdf (Page 23)",
+        "iso37000_company_document.pdf (Page 23)",
+        "ISO-37000-2021.pdf (Page 4)",
+        "Infosys Corporate Governance Report.pdf (Page 2)"
+      ],
+      "retrieved_docs": 10,
+      "retrieved_doc_sources": [
+        "ISO-37000-2021.pdf",
+        "ISO-37001.pdf",
+        "ISO-37002-2021.pdf"
+      ],
+      "retrieved_clauses": [
+        "2",
+        "3.2.8",
+        "3.7",
+        "6.11.1",
+        "6.8.3",
+        "9.3.2",
+        "9.3.3"
+      ],
+      "expected_clauses": [
+        "7",
+        "8"
+      ],
+      "expected_sources": [
+        "iso37000",
+        "company"
+      ],
+      "requires_gap": true,
+      "clause_precision": 0.0,
+      "clause_recall": 0.0,
+      "citation_accuracy": 1.0,
+      "gap_detection_accuracy": 1.0,
+      "response_chars": 2377,
+      "used_default_sources": false
+    }
+  ]
+}

@@ -71,6 +71,64 @@ sequenceDiagram
 - Strict insufficient-evidence behavior (no hallucinated claims)
 - Streaming responses and metadata-rich frontend rendering
 
+## Evaluation Metrics (Latest Run)
+
+Snapshot date: `2026-03-09`
+
+Run command:
+
+```bash
+cd backend
+python tools/rag_eval.py --queries tools/golden_compliance_eval_set.json --out tools/rag_eval_report_latest.json
+```
+
+Metrics summary (golden set):
+
+| Metric | Value |
+|---|---:|
+| Queries | 25 |
+| Documents indexed | 940 |
+| Avg total latency | 20,482.28 ms |
+| Median total latency | 19,975.75 ms |
+| P95 total latency | 31,134.21 ms |
+| Avg retrieval latency | 74.12 ms |
+| P95 retrieval latency | 242.73 ms |
+| Avg retrieved docs/query | 10.00 |
+| Avg cited sources/answer | 8.56 |
+| Coverage rate (real doc-backed answers) | 100.0% |
+| Default source rate | 0.0% |
+| Unique sources cited | 104 |
+| Precision@k | 0.052 |
+| Clause recall | 0.320 |
+| Citation accuracy | 0.780 |
+| Gap detection accuracy | 1.000 |
+
+### Quick Visual Summary
+
+```mermaid
+flowchart LR
+	A[25 Golden Queries] --> B[Retriever]
+	B --> C[Avg 74.12 ms]
+	B --> D[P95 242.73 ms]
+	C --> E[LLM + Reasoning]
+	D --> E
+	E --> F[End-to-end Avg 20,482.28 ms]
+	E --> G[End-to-end P95 31,134.21 ms]
+	F --> H[Coverage 100%]
+	G --> I[Citation Accuracy 78%]
+	H --> J[Gap Detection 100%]
+	I --> J
+```
+
+```mermaid
+pie showData
+	title Source Grounding Quality
+	"Real document-backed responses" : 100
+	"Default/no-doc responses" : 0
+```
+
+Detailed report JSON: `backend/tools/rag_eval_report_latest.json`
+
 ## How Data Is Organized
 
 - `backend/documents_new/`: baseline ISO documents (knowledge base)

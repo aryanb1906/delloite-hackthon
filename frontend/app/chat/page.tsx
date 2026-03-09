@@ -166,6 +166,8 @@ interface Message {
     message: string
   }
   strictNoEvidenceMode?: boolean
+  missingDetails?: string[]
+  improvementSuggestions?: string[]
   cached?: boolean
   queryScope?: 'all' | 'selected'
   queryDocument?: string
@@ -881,6 +883,8 @@ export default function ChatPage() {
                 evidenceTrace: meta.evidenceTrace || [],
                 clauseValidation: meta.clauseValidation,
                 strictNoEvidenceMode: meta.strictNoEvidenceMode,
+                missingDetails: meta.missingDetails || [],
+                improvementSuggestions: meta.improvementSuggestions || [],
                 cached: meta.cached,
               }
               : msg
@@ -2564,12 +2568,12 @@ export default function ChatPage() {
                                 .filter(item => showLowEvidenceByMessage[message.id] || !isLowEvidence(item.evidenceStrength))
                                 .slice(0, 8)
                                 .map((item, idx) => (
-                                <div key={`${message.id}-trace-${idx}`} className="rounded-md bg-muted/60 p-2">
-                                  <p className="text-xs font-semibold">{item.framework} Clause {item.clause} • {item.sourceType}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{item.source} • Strength: {item.evidenceStrength}</p>
-                                  <p className="text-xs mt-1 text-foreground/90">{cleanSnippetText(item.snippet)}</p>
-                                </div>
-                              ))}
+                                  <div key={`${message.id}-trace-${idx}`} className="rounded-md bg-muted/60 p-2">
+                                    <p className="text-xs font-semibold">{item.framework} Clause {item.clause} • {item.sourceType}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{item.source} • Strength: {item.evidenceStrength}</p>
+                                    <p className="text-xs mt-1 text-foreground/90">{cleanSnippetText(item.snippet)}</p>
+                                  </div>
+                                ))}
                             </div>
                           </div>
                         )}
@@ -2701,6 +2705,32 @@ export default function ChatPage() {
                                 </Button>
                               ))}
                             </div>
+                          </div>
+                        )}
+
+                        {message.type === 'ai' && ((message.missingDetails && message.missingDetails.length > 0) || (message.improvementSuggestions && message.improvementSuggestions.length > 0)) && (
+                          <div className="mt-2 rounded-xl border border-amber-300/50 bg-amber-50/60 p-3 text-sm">
+                            <p className="font-semibold text-foreground mb-2">What is missing and how to improve</p>
+                            {message.missingDetails && message.missingDetails.length > 0 && (
+                              <div className="mb-2">
+                                <p className="text-xs font-semibold text-amber-800 mb-1">Missing</p>
+                                <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                                  {message.missingDetails.slice(0, 4).map((item, idx) => (
+                                    <li key={`${message.id}-missing-${idx}`}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
+                            {message.improvementSuggestions && message.improvementSuggestions.length > 0 && (
+                              <div>
+                                <p className="text-xs font-semibold text-emerald-800 mb-1">Improve</p>
+                                <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                                  {message.improvementSuggestions.slice(0, 4).map((item, idx) => (
+                                    <li key={`${message.id}-improve-${idx}`}>{item}</li>
+                                  ))}
+                                </ul>
+                              </div>
+                            )}
                           </div>
                         )}
 
