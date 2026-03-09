@@ -127,6 +127,28 @@ Metrics summary (golden set):
 | Citation accuracy | 0.780 |
 | Gap detection accuracy | 1.000 |
 
+### Easy Stats (For Non-Technical Users)
+
+This is the same data in plain words:
+
+| Easy Metric | Current Value | What It Means |
+|---|---:|---|
+| Average answer time | 20.48 seconds | A normal response takes about 20 to 21 seconds end-to-end. |
+| Typical answer time | 19.98 seconds | Most responses are around 20 seconds. |
+| Slow-case answer time (P95) | 31.13 seconds | 95% of answers finish within about 31 seconds. |
+| Retrieval speed (average) | 0.07 seconds | Finding relevant chunks in the vector DB is very fast. |
+| Retrieval speed (P95) | 0.24 seconds | Even in slow retrieval cases, evidence lookup stays below 1 second. |
+| Real document grounding | 100% | Every evaluated answer used real indexed documents. |
+| Default/no-document answers | 0% | The system did not fall back to generic no-doc responses in this run. |
+| Evidence breadth | 8.56 sources/answer | Each answer uses around 8 to 9 cited sources. |
+| Citation quality | 78% | Most citations matched expected benchmark sources. |
+| Gap finding reliability | 100% | When a test expected a gap signal, the model detected it. |
+| Clause coverage quality | 32% recall | Clause-level coverage is improving but still a key optimization area. |
+
+Quick read:
+- Strong: grounding, retrieval speed, gap detection.
+- Improving: clause recall and citation precision.
+
 ### Quick Visual Summary
 
 ```mermaid
