@@ -80,6 +80,8 @@ def measure_query(bot: ArthMitraBot, case: Dict[str, Any], profile: Dict) -> Tup
 
     sources = result.get("sources", [])
     response_text = result.get("response", "")
+    rag_metrics = result.get("ragMetrics") if isinstance(result.get("ragMetrics"), dict) else {}
+    clause_validation = result.get("clauseValidation") if isinstance(result.get("clauseValidation"), dict) else {}
     doc_sources = []
     for doc in docs:
         source = doc.metadata.get("source", "Unknown")
@@ -107,6 +109,15 @@ def measure_query(bot: ArthMitraBot, case: Dict[str, Any], profile: Dict) -> Tup
         source_hits = sum(1 for src in expected_sources if any(src in found for found in lower_sources))
     citation_accuracy = round(source_hits / max(len(expected_sources), 1), 3) if expected_sources else None
 
+    company_chunks = int(rag_metrics.get("companyChunks", 0) or 0)
+    baseline_chunks = int(rag_metrics.get("baselineChunks", 0) or 0)
+    if company_chunks > 0 and baseline_chunks > 0:
+        evidence_balance_score = round(min(company_chunks, baseline_chunks) / max(company_chunks, baseline_chunks), 3)
+    elif company_chunks > 0 or baseline_chunks > 0:
+        evidence_balance_score = 0.0
+    else:
+        evidence_balance_score = None
+
     response_l = response_text.lower()
     gap_detected = any(k in response_l for k in ["gap", "missing", "not enough evidence", "recommendation"])
     gap_accuracy = 1.0 if requires_gap == gap_detected else 0.0
@@ -125,10 +136,23 @@ def measure_query(bot: ArthMitraBot, case: Dict[str, Any], profile: Dict) -> Tup
         "requires_gap": requires_gap,
         "clause_precision": clause_precision,
         "clause_recall": clause_recall,
+        "clause_hit": (clause_hits > 0) if expected_clauses else None,
         "citation_accuracy": citation_accuracy,
+        "source_hit": (source_hits > 0) if expected_sources else None,
         "gap_detection_accuracy": gap_accuracy,
         "response_chars": len(response_text),
+        "response_has_missing_section": "what is missing" in response_l,
+        "response_has_improve_section": "how to improve" in response_l,
         "used_default_sources": is_default_sources(sources),
+        "unique_retrieved_doc_sources": len(set(doc_sources)),
+        "source_diversity_ratio": round(len(set(doc_sources)) / max(len(docs), 1), 3) if docs else None,
+        "company_chunks": company_chunks,
+        "baseline_chunks": baseline_chunks,
+        "evidence_balance_score": evidence_balance_score,
+        "clause_validation_valid": clause_validation.get("isValid") if "isValid" in clause_validation else None,
+        "strict_no_evidence_mode": bool(result.get("strictNoEvidenceMode", False)),
+        "has_missing_details": bool(result.get("missingDetails", [])),
+        "has_improvement_suggestions": bool(result.get("improvementSuggestions", [])),
     }, sources
 
 
@@ -145,6 +169,17 @@ def summarize(results: List[Dict]) -> Dict:
     clause_recalls = [item["clause_recall"] for item in results if item.get("clause_recall") is not None]
     citation_scores = [item["citation_accuracy"] for item in results if item.get("citation_accuracy") is not None]
     gap_scores = [item["gap_detection_accuracy"] for item in results]
+    clause_hit_scores = [item["clause_hit"] for item in results if item.get("clause_hit") is not None]
+    source_hit_scores = [item["source_hit"] for item in results if item.get("source_hit") is not None]
+    unique_doc_sources = [item["unique_retrieved_doc_sources"] for item in results if item.get("unique_retrieved_doc_sources") is not None]
+    source_diversity = [item["source_diversity_ratio"] for item in results if item.get("source_diversity_ratio") is not None]
+    evidence_balance = [item["evidence_balance_score"] for item in results if item.get("evidence_balance_score") is not None]
+    grounding_validity = [item["clause_validation_valid"] for item in results if item.get("clause_validation_valid") is not None]
+    missing_section_presence = [item["response_has_missing_section"] for item in results]
+    improve_section_presence = [item["response_has_improve_section"] for item in results]
+    missing_details_presence = [item["has_missing_details"] for item in results]
+    improvement_presence = [item["has_improvement_suggestions"] for item in results]
+    strict_mode_presence = [item["strict_no_evidence_mode"] for item in results]
 
     def quantile(values: List[float], n: int, index: int) -> float | None:
         if len(values) < 2:
@@ -177,8 +212,20 @@ def summarize(results: List[Dict]) -> Dict:
         "avg_response_chars": round(statistics.mean(response_sizes), 2) if response_sizes else 0,
         "precision_at_k": round(statistics.mean(clause_precisions), 3) if clause_precisions else None,
         "clause_recall": round(statistics.mean(clause_recalls), 3) if clause_recalls else None,
+        "clause_hit_query_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in clause_hit_scores), 3) if clause_hit_scores else None,
         "citation_accuracy": round(statistics.mean(citation_scores), 3) if citation_scores else None,
+        "source_hit_query_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in source_hit_scores), 3) if source_hit_scores else None,
+        "strict_citation_match_rate": round(statistics.mean(1.0 if score == 1.0 else 0.0 for score in citation_scores), 3) if citation_scores else None,
         "gap_detection_accuracy": round(statistics.mean(gap_scores), 3) if gap_scores else None,
+        "avg_unique_retrieved_doc_sources": round(statistics.mean(unique_doc_sources), 2) if unique_doc_sources else None,
+        "avg_source_diversity_ratio": round(statistics.mean(source_diversity), 3) if source_diversity else None,
+        "avg_evidence_balance_score": round(statistics.mean(evidence_balance), 3) if evidence_balance else None,
+        "clause_grounding_valid_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in grounding_validity), 3) if grounding_validity else None,
+        "missing_section_presence_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in missing_section_presence), 3) if missing_section_presence else None,
+        "improve_section_presence_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in improve_section_presence), 3) if improve_section_presence else None,
+        "missing_details_presence_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in missing_details_presence), 3) if missing_details_presence else None,
+        "improvement_suggestions_presence_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in improvement_presence), 3) if improvement_presence else None,
+        "strict_mode_rate": round(statistics.mean(1.0 if flag else 0.0 for flag in strict_mode_presence), 3) if strict_mode_presence else None,
     }
     return summary
 
@@ -245,8 +292,20 @@ def main() -> None:
     print(f"Avg response length (chars): {summary['avg_response_chars']}")
     print(f"Precision@k: {summary['precision_at_k']}")
     print(f"Clause recall: {summary['clause_recall']}")
+    print(f"Clause hit query rate: {summary['clause_hit_query_rate']}")
     print(f"Citation accuracy: {summary['citation_accuracy']}")
+    print(f"Source hit query rate: {summary['source_hit_query_rate']}")
+    print(f"Strict citation match rate: {summary['strict_citation_match_rate']}")
     print(f"Gap detection accuracy: {summary['gap_detection_accuracy']}")
+    print(f"Avg unique retrieved doc sources: {summary['avg_unique_retrieved_doc_sources']}")
+    print(f"Avg source diversity ratio: {summary['avg_source_diversity_ratio']}")
+    print(f"Avg evidence balance score: {summary['avg_evidence_balance_score']}")
+    print(f"Clause grounding valid rate: {summary['clause_grounding_valid_rate']}")
+    print(f"Missing section presence rate: {summary['missing_section_presence_rate']}")
+    print(f"Improve section presence rate: {summary['improve_section_presence_rate']}")
+    print(f"Missing details presence rate: {summary['missing_details_presence_rate']}")
+    print(f"Improvement suggestions presence rate: {summary['improvement_suggestions_presence_rate']}")
+    print(f"Strict mode rate: {summary['strict_mode_rate']}")
 
     print("\n=== Easy Words ===")
     print("Speed (average time): Avg total ms")
@@ -259,6 +318,13 @@ def main() -> None:
     print("Default source rate: % answers with no real docs")
     print("Unique sources: How many different docs were cited")
     print("Response length: Avg response length (chars)")
+    print("Clause hit query rate: % queries where at least one expected clause was retrieved")
+    print("Source hit query rate: % queries where at least one expected source was cited")
+    print("Strict citation match rate: % queries where all expected sources were cited")
+    print("Source diversity ratio: How varied retrieved evidence is per query")
+    print("Evidence balance score: How balanced company vs baseline evidence is (0-1)")
+    print("Clause grounding valid rate: % responses with fully grounded clause references")
+    print("Missing/improve section rates: % responses that include explicit gap/improvement sections")
 
     if args.out:
         payload = {

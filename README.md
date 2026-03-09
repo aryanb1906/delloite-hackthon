@@ -112,13 +112,13 @@ Metrics summary (golden set):
 |---|---:|
 | Queries | 25 |
 | Documents indexed | 940 |
-| Avg total latency | 20,482.28 ms |
-| Median total latency | 19,975.75 ms |
-| P95 total latency | 31,134.21 ms |
-| Avg retrieval latency | 74.12 ms |
-| P95 retrieval latency | 242.73 ms |
+| Avg total latency | 19,934.73 ms |
+| Median total latency | 19,950.38 ms |
+| P95 total latency | 32,504.58 ms |
+| Avg retrieval latency | 252.41 ms |
+| P95 retrieval latency | 657.04 ms |
 | Avg retrieved docs/query | 10.00 |
-| Avg cited sources/answer | 8.56 |
+| Avg cited sources/answer | 8.52 |
 | Coverage rate (real doc-backed answers) | 100.0% |
 | Default source rate | 0.0% |
 | Unique sources cited | 104 |
@@ -126,6 +126,18 @@ Metrics summary (golden set):
 | Clause recall | 0.320 |
 | Citation accuracy | 0.780 |
 | Gap detection accuracy | 1.000 |
+| Clause hit query rate | 0.400 |
+| Source hit query rate | 0.880 |
+| Strict citation match rate | 0.680 |
+| Avg unique retrieved doc sources/query | 3.48 |
+| Avg source diversity ratio | 0.348 |
+| Avg evidence balance score (company vs baseline) | 0.309 |
+| Clause grounding valid rate | 0.720 |
+| Missing section presence rate | 0.960 |
+| Improve section presence rate | 0.960 |
+| Missing details presence rate | 1.000 |
+| Improvement suggestions presence rate | 1.000 |
+| Strict no-evidence mode rate | 1.000 |
 
 ### Easy Stats (For Non-Technical Users)
 
@@ -133,35 +145,40 @@ This is the same data in plain words:
 
 | Easy Metric | Current Value | What It Means |
 |---|---:|---|
-| Average answer time | 20.48 seconds | A normal response takes about 20 to 21 seconds end-to-end. |
-| Typical answer time | 19.98 seconds | Most responses are around 20 seconds. |
-| Slow-case answer time (P95) | 31.13 seconds | 95% of answers finish within about 31 seconds. |
-| Retrieval speed (average) | 0.07 seconds | Finding relevant chunks in the vector DB is very fast. |
-| Retrieval speed (P95) | 0.24 seconds | Even in slow retrieval cases, evidence lookup stays below 1 second. |
+| Average answer time | 19.93 seconds | A normal response takes about 20 seconds end-to-end. |
+| Typical answer time | 19.95 seconds | Most responses are around 20 seconds. |
+| Slow-case answer time (P95) | 32.50 seconds | 95% of answers finish within about 33 seconds. |
+| Retrieval speed (average) | 0.25 seconds | Finding relevant chunks in the vector DB is still fast. |
+| Retrieval speed (P95) | 0.66 seconds | Even in slower cases, evidence lookup is under 1 second. |
 | Real document grounding | 100% | Every evaluated answer used real indexed documents. |
 | Default/no-document answers | 0% | The system did not fall back to generic no-doc responses in this run. |
-| Evidence breadth | 8.56 sources/answer | Each answer uses around 8 to 9 cited sources. |
+| Evidence breadth | 8.52 sources/answer | Each answer uses around 8 to 9 cited sources. |
 | Citation quality | 78% | Most citations matched expected benchmark sources. |
 | Gap finding reliability | 100% | When a test expected a gap signal, the model detected it. |
 | Clause coverage quality | 32% recall | Clause-level coverage is improving but still a key optimization area. |
+| Query-level clause hit | 40% | In 40% of benchmark queries, at least one expected clause was retrieved. |
+| Query-level source hit | 88% | In most queries, at least one expected source was correctly cited. |
+| Full source match | 68% | Around two-thirds of queries cited all expected sources. |
+| Evidence balance | 0.309 / 1.0 | Company-vs-ISO evidence balance needs improvement for stronger comparisons. |
+| Clause grounding validity | 72% | Most clause references are grounded, but more validation improvement is needed. |
 
 Quick read:
-- Strong: grounding, retrieval speed, gap detection.
-- Improving: clause recall and citation precision.
+- Strong: grounding coverage, source hit rate, and gap detection.
+- Improving: clause recall, full citation match rate, and company-vs-ISO evidence balance.
 
 ### Quick Visual Summary
 
 ```mermaid
 flowchart LR
 	A[25 Golden Queries] --> B[Retriever]
-	B --> C[Avg 74.12 ms]
-	B --> D[P95 242.73 ms]
+	B --> C[Avg 252.41 ms]
+	B --> D[P95 657.04 ms]
 	C --> E[LLM + Reasoning]
 	D --> E
-	E --> F[End-to-end Avg 20,482.28 ms]
-	E --> G[End-to-end P95 31,134.21 ms]
+	E --> F[End-to-end Avg 19,934.73 ms]
+	E --> G[End-to-end P95 32,504.58 ms]
 	F --> H[Coverage 100%]
-	G --> I[Citation Accuracy 78%]
+	G --> I[Citation Accuracy 78% | Source Hit 88%]
 	H --> J[Gap Detection 100%]
 	I --> J
 ```
