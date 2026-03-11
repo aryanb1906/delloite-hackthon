@@ -1,13 +1,13 @@
-# ARTH-MITRA Performance Metrics Report
+﻿# FinGuide Performance Metrics Report
 
 **Test Date**: February 27, 2026  
-**System Status**: ✅ Operational  
+**System Status**: âœ… Operational  
 **Documents Indexed**: 17,035  
 **AI Model**: Google Gemini 2.5-Flash (primary) / OpenRouter gpt-4o-mini (fallback)
 
 ---
 
-## 📊 Performance Test Results
+## ðŸ“Š Performance Test Results
 
 ### System Configuration
 - **Vector Database**: ChromaDB
@@ -19,7 +19,7 @@
 
 ---
 
-## 🚀 Response Time Analysis
+## ðŸš€ Response Time Analysis
 
 ### TEST 1: First-Time Queries (Cold Start)
 
@@ -46,18 +46,18 @@
 
 | # | Query | Response Time | Cache Speedup | Efficiency |
 |---|-------|--------------|---------------|------------|
-| 1 | "What is PPF?" | **2.03s** | **7.7x faster** | ⚡ 87.1% faster |
-| 2 | "Tell me about NPS scheme" | **2.04s** | **6.1x faster** | ⚡ 83.7% faster |
-| 3 | "What are the tax benefits of ELSS?" | **2.05s** | **6.0x faster** | ⚡ 83.3% faster |
-| 4 | "How does 80C deduction work?" | **2.05s** | **8.0x faster** | ⚡ 87.4% faster |
+| 1 | "What is PPF?" | **2.03s** | **7.7x faster** | âš¡ 87.1% faster |
+| 2 | "Tell me about NPS scheme" | **2.04s** | **6.1x faster** | âš¡ 83.7% faster |
+| 3 | "What are the tax benefits of ELSS?" | **2.05s** | **6.0x faster** | âš¡ 83.3% faster |
+| 4 | "How does 80C deduction work?" | **2.05s** | **8.0x faster** | âš¡ 87.4% faster |
 
 **Average Cached Response**: **2.04 seconds**
 
 ---
 
-## 🔄 Historical Benchmark Comparison
+## ðŸ”„ Historical Benchmark Comparison
 
-### Latest Test Run — February 27, 2026 (`python test_performance.py`)
+### Latest Test Run â€” February 27, 2026 (`python test_performance.py`)
 
 | Query | First Run | Cached Run | Speedup |
 |---|---:|---:|---:|
@@ -86,15 +86,15 @@
 | Avg Cached Query | 2.53s | 2.05s | 2.04s |
 | Cache Speedup | 5.05x | 7.3x | 7.0x |
 | Speed Improvement | 80.2% | 86.2% | 85.6% |
-| Profile Speedup | — | 8.7x | 9.1x |
-| Retrieval Latency | ~2-3s | — | 18ms |
+| Profile Speedup | â€” | 8.7x | 9.1x |
+| Retrieval Latency | ~2-3s | â€” | 18ms |
 
 ### Key Takeaways from Comparison
 
 - ONNX-accelerated embeddings reduced retrieval latency from seconds to ~18ms.
 - Cache behavior improved significantly (faster cached responses and higher speedup factor) since the Feb 16 baseline.
-- Cold-start time stabilized around 14s despite a 53% larger document corpus (11K→17K).
-- Profile query caching continues to improve (8.7x → 9.1x).
+- Cold-start time stabilized around 14s despite a 53% larger document corpus (11Kâ†’17K).
+- Profile query caching continues to improve (8.7x â†’ 9.1x).
 - Overall production behavior remains strong for repeat usage patterns, which dominate practical chatbot sessions.
 
 #### Cache Performance Breakdown:
@@ -107,7 +107,7 @@
 
 ---
 
-## 📈 Key Performance Indicators (KPIs)
+## ðŸ“ˆ Key Performance Indicators (KPIs)
 
 ### 1. Cache Effectiveness
 - **Cache Hit Speedup**: **7.0x average** (9.1x for profile queries)
@@ -118,15 +118,15 @@
 ### 2. Response Quality
 - **Source Retrieval Success Rate**: **100%**
 - **Average Sources per Query**: **10 documents** (9.12 unique sources cited)
-- **Multi-source Validation**: ✅ Enabled
+- **Multi-source Validation**: âœ… Enabled
 - **Answer Relevance**: High (all queries returned relevant sources)
 - **Unique Sources Across Queries**: 59 (ONNX-optimized pipeline)
 
 ### 3. System Reliability
 - **Query Success Rate**: **100%** (8/8 queries successful)
 - **Error Rate**: **0%**
-- **System Uptime**: ✅ Stable
-- **Source Availability**: ✅ All documents accessible
+- **System Uptime**: âœ… Stable
+- **Source Availability**: âœ… All documents accessible
 
 ### 4. Document Retrieval Metrics
 - **Total Documents Indexed**: 17,035
@@ -137,7 +137,7 @@
 
 ---
 
-## 💡 Performance Insights
+## ðŸ’¡ Performance Insights
 
 ### Strengths
 1. **Excellent Cache Performance**
@@ -149,7 +149,7 @@
 2. **ONNX-Accelerated Embeddings**
    - Cold embedding: ~4-7ms per query
    - Cached embedding: ~0.003ms per query
-   - 56% reduction in retrieval latency vs pre-ONNX baseline (41ms → 18ms)
+   - 56% reduction in retrieval latency vs pre-ONNX baseline (41ms â†’ 18ms)
 
 3. **Robust RAG System**
    - Successfully searches 17K+ documents
@@ -180,7 +180,7 @@
 
 ---
 
-## 🎯 Real-World Impact
+## ðŸŽ¯ Real-World Impact
 
 ### User Experience Metrics
 - **First-Time Users**: 14.21s average (acceptable for complex financial queries)
@@ -203,23 +203,23 @@
 
 ---
 
-## 📊 Comparative Analysis
+## ðŸ“Š Comparative Analysis
 
 ### Industry Benchmarks
-| Metric | ARTH-MITRA | Industry Average | Performance |
+| Metric | FinGuide | Industry Average | Performance |
 |--------|------------|------------------|-------------|
-| Cold Start Query | 14.21s | 10-15s | ✅ Within range |
-| Cached Query | 2.04s | 3-5s | ⚡ Above average |
-| Cache Speedup | 7.0x | 2-3x | ⚡ Excellent |
-| Profile Speedup | 9.1x | — | ⚡ Exceptional |
-| Document Volume | 17,035 | 1,000-5,000 | ⚡ Advanced |
-| Retrieval Latency | 18ms | 50-200ms | ⚡ Exceptional |
-| Sources per Query | 9.12 | 3-5 | ⚡ Comprehensive |
-| Success Rate | 100% | 95-98% | ⚡ Exceptional |
+| Cold Start Query | 14.21s | 10-15s | âœ… Within range |
+| Cached Query | 2.04s | 3-5s | âš¡ Above average |
+| Cache Speedup | 7.0x | 2-3x | âš¡ Excellent |
+| Profile Speedup | 9.1x | â€” | âš¡ Exceptional |
+| Document Volume | 17,035 | 1,000-5,000 | âš¡ Advanced |
+| Retrieval Latency | 18ms | 50-200ms | âš¡ Exceptional |
+| Sources per Query | 9.12 | 3-5 | âš¡ Comprehensive |
+| Success Rate | 100% | 95-98% | âš¡ Exceptional |
 
 ---
 
-## 🔧 Technical Stack Performance
+## ðŸ”§ Technical Stack Performance
 
 ### ChromaDB Vector Database
 - **Performance**: Excellent for 17K documents
@@ -248,13 +248,13 @@
 
 ---
 
-## 🎯 Recommendations
+## ðŸŽ¯ Recommendations
 
 ### Immediate Actions (High Priority)
-1. ✅ Multi-layer cache is working optimally - no changes needed
-2. ✅ Document retrieval is accurate with 10 sources per query
-3. ✅ ONNX embeddings delivering 18ms retrieval latency
-4. 📋 Consider implementing response streaming for better UX
+1. âœ… Multi-layer cache is working optimally - no changes needed
+2. âœ… Document retrieval is accurate with 10 sources per query
+3. âœ… ONNX embeddings delivering 18ms retrieval latency
+4. ðŸ“‹ Consider implementing response streaming for better UX
 
 ### Short-Term Improvements (1-2 weeks)
 1. Pre-warm cache for top 100 most common queries
@@ -269,7 +269,7 @@
 
 ---
 
-## 📝 Test Methodology
+## ðŸ“ Test Methodology
 
 ### Test Queries
 Queries were selected to represent common financial advisory questions:
@@ -293,17 +293,17 @@ Queries were selected to represent common financial advisory questions:
 
 ---
 
-## 🏆 Conclusion
+## ðŸ† Conclusion
 
-ARTH-MITRA's RAG system demonstrates **excellent performance** for a financial advisory chatbot:
+FinGuide's RAG system demonstrates **excellent performance** for a financial advisory chatbot:
 
-✅ **Fast repeat queries** (2.04s) provide great user experience  
-✅ **100% reliability** with zero errors  
-✅ **Comprehensive coverage** with 17K+ documents and 10 sources per query  
-✅ **ONNX-accelerated retrieval** at 18ms latency  
-✅ **Multi-layer caching** reduces response time by 85.6% (7.0x speedup)  
-✅ **Profile-aware caching** delivers 9.1x speedup for personalized queries  
-✅ **Scalable architecture** ready for production use
+âœ… **Fast repeat queries** (2.04s) provide great user experience  
+âœ… **100% reliability** with zero errors  
+âœ… **Comprehensive coverage** with 17K+ documents and 10 sources per query  
+âœ… **ONNX-accelerated retrieval** at 18ms latency  
+âœ… **Multi-layer caching** reduces response time by 85.6% (7.0x speedup)  
+âœ… **Profile-aware caching** delivers 9.1x speedup for personalized queries  
+âœ… **Scalable architecture** ready for production use
 
 The system is **production-ready** and performs above industry benchmarks for cached queries, retrieval latency, and source comprehensiveness while maintaining acceptable first-time query speeds.
 
@@ -313,3 +313,4 @@ The system is **production-ready** and performs above industry benchmarks for ca
 **Next Performance Review**: March 2026  
 **Test Script**: `backend/test_performance.py`  
 **Test Data**: Real financial documents and government schemes
+

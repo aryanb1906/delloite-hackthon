@@ -1,5 +1,5 @@
-// ─── Voice Assistant Types ──────────────────────────────────────
-// Modular type definitions for the ARTH-MITRA Voice Copilot.
+﻿// â”€â”€â”€ Voice Assistant Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// Modular type definitions for the FinGuide Voice Copilot.
 
 export type AssistantState =
   | "idle"
@@ -17,7 +17,7 @@ export type ActionType =
   | "explain_graph";
 
 /**
- * Action types that are system/UI commands — these remain ephemeral
+ * Action types that are system/UI commands â€” these remain ephemeral
  * and should NOT create a chat thread.
  * Everything else (including "none") is conversational.
  */
@@ -97,3 +97,4 @@ export interface HighlightRect {
   height: number;
   label?: string;
 }
+

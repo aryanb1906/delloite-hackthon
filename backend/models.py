@@ -1,5 +1,5 @@
-"""
-Database models for ARTH-MITRA
+﻿"""
+Database models for FinGuide
 Using SQLAlchemy ORM with SQLite for development
 """
 
@@ -228,3 +228,4 @@ class Analytics(Base):
             "eventData": self.event_data,
             "timestamp": self.timestamp.isoformat()
         }
+

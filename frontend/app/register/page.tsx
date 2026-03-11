@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
@@ -95,7 +95,7 @@ export default function RegisterPage() {
             <LogoWithTagline size="lg" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mt-4">Create an account</h1>
-          <p className="text-muted-foreground mt-2">Get started with Arth-Mitra</p>
+          <p className="text-muted-foreground mt-2">Get started with Arth Mitra</p>
         </div>
 
         {error && (
@@ -256,3 +256,4 @@ export default function RegisterPage() {
     </div>
   );
 }
+

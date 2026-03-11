@@ -1,5 +1,5 @@
-@echo off
-cd /d "c:\Users\KIIT0001\OneDrive\Desktop\minor project\ARTH-MITRA"
+﻿@echo off
+cd /d "c:\Users\KIIT0001\OneDrive\Desktop\minor project\FinGuide"
 
 echo Resetting git merge state...
 git merge --abort 2>nul
@@ -25,3 +25,4 @@ git push origin master
 echo.
 echo Done! Check the output above for any errors.
 pause
+

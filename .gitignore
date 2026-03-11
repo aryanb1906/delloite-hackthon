@@ -1,5 +1,5 @@
-# ============================================
-# ARTH-MITRA - Root .gitignore
+﻿# ============================================
+# FinGuide - Root .gitignore
 # ============================================
 
 # ----- Environment & Secrets -----
@@ -84,3 +84,4 @@ build/
 *.db
 backend/arth_mitra.db
 backend/*.db
+

@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
@@ -227,7 +227,7 @@ export default function ProfileSetupPage() {
                     <div className="mb-4">
                         <Logo size="lg" showText={true} showTagline={true} href={null} />
                     </div>
-                    <h1 className="text-4xl font-bold text-foreground mb-2">Welcome to Arth-Mitra! 👋</h1>
+                    <h1 className="text-4xl font-bold text-foreground mb-2">Welcome to Arth Mitra! 👋</h1>
                     <p className="text-muted-foreground text-lg">
                         {user?.name ? `Hi ${user.name},` : 'Hi there,'} let's set up your financial profile for personalized guidance
                     </p>
@@ -302,7 +302,7 @@ export default function ProfileSetupPage() {
                                         value={profile.income}
                                         onChange={(e) => updateProfile('income', e.target.value)}
                                         className="border-border/40 focus:ring-2 focus:ring-primary/20"
-                                        placeholder="e.g., ₹15 LPA"
+                                        placeholder="e.g., â‚¹15 LPA"
                                     />
                                 </div>
 
@@ -417,11 +417,11 @@ export default function ProfileSetupPage() {
                                             <SelectValue placeholder="Select capacity" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="₹0-50k">₹0 - ₹50,000</SelectItem>
-                                            <SelectItem value="₹50k-1L">₹50,000 - ₹1 Lakh</SelectItem>
-                                            <SelectItem value="₹1L-2.5L">₹1 Lakh - ₹2.5 Lakhs</SelectItem>
-                                            <SelectItem value="₹2.5L-5L">₹2.5 Lakhs - ₹5 Lakhs</SelectItem>
-                                            <SelectItem value="₹5L+">₹5 Lakhs+</SelectItem>
+                                            <SelectItem value="â‚¹0-50k">â‚¹0 - â‚¹50,000</SelectItem>
+                                            <SelectItem value="â‚¹50k-1L">â‚¹50,000 - â‚¹1 Lakh</SelectItem>
+                                            <SelectItem value="â‚¹1L-2.5L">â‚¹1 Lakh - â‚¹2.5 Lakhs</SelectItem>
+                                            <SelectItem value="â‚¹2.5L-5L">â‚¹2.5 Lakhs - â‚¹5 Lakhs</SelectItem>
+                                            <SelectItem value="â‚¹5L+">â‚¹5 Lakhs+</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
@@ -482,3 +482,4 @@ export default function ProfileSetupPage() {
         </div>
     )
 }
+

@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { Wallet } from 'lucide-react'
+import Image from 'next/image'
 
 interface LogoProps {
     size?: 'sm' | 'md' | 'lg' | 'xl'
@@ -45,18 +45,21 @@ export function Logo({
 
     const logoContent = (
         <div className="flex items-center gap-3">
-            {/* Logo Icon */}
-            <div className="flex items-center">
-                <img
-                    src="/finallogo.png"
-                    alt="Arth-Mitra Logo"
-                    className="h-12 w-auto"
+            <div className={`${sizes.container} rounded-xl flex items-center justify-center overflow-hidden`}>
+                <Image
+                    src="/mitrasvglogo.png"
+                    alt="Arth Mitra Logo"
+                    width={64}
+                    height={64}
+                    className="w-full h-full object-contain"
                 />
             </div>
 
-            {/* Text Content */}
             {showText && (
                 <div className="flex flex-col">
+                    <span className={`${sizes.text} font-bold text-foreground leading-tight`}>
+                        Arth Mitra
+                    </span>
                     {showTagline && (
                         <span className={`${sizes.tagline} text-muted-foreground font-medium`}>
                             Your Financial Companion

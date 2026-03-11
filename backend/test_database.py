@@ -1,4 +1,4 @@
-"""
+﻿"""
 Database Test Script
 Test the new database and analytics features
 """
@@ -31,10 +31,10 @@ def test_register():
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Registration successful!")
+        print("âœ… Registration successful!")
         return data["user"]["id"]
     else:
-        print("⚠️ User might already exist, trying login...")
+        print("âš ï¸ User might already exist, trying login...")
         return None
 
 def test_login():
@@ -54,7 +54,7 @@ def test_login():
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Login successful!")
+        print("âœ… Login successful!")
         return data["user"]["id"]
     return None
 
@@ -80,7 +80,7 @@ def test_update_profile(user_id):
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Profile updated!")
+        print("âœ… Profile updated!")
 
 def test_create_session(user_id):
     """Test chat session creation"""
@@ -98,7 +98,7 @@ def test_create_session(user_id):
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Chat session created!")
+        print("âœ… Chat session created!")
         return data["session"]["id"]
     return None
 
@@ -113,7 +113,7 @@ def test_chat_with_db(user_id, session_id):
     ]
     
     for query in queries:
-        print(f"\n💬 Query: {query}")
+        print(f"\nðŸ’¬ Query: {query}")
         
         response = requests.post(
             f"{BASE_URL}/api/chat",
@@ -137,7 +137,7 @@ def test_chat_with_db(user_id, session_id):
             data = response.json()
             print(f"Response: {data['response'][:150]}...")
             print(f"Sources: {data['sources']}")
-            print("✅ Message logged to database!")
+            print("âœ… Message logged to database!")
 
 def test_get_sessions(user_id):
     """Test retrieving chat sessions"""
@@ -150,7 +150,7 @@ def test_get_sessions(user_id):
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print(f"✅ Found {len(data['sessions'])} sessions")
+        print(f"âœ… Found {len(data['sessions'])} sessions")
 
 def test_get_messages(session_id):
     """Test retrieving session messages"""
@@ -162,7 +162,7 @@ def test_get_messages(session_id):
     data = response.json()
     
     if response.status_code == 200:
-        print(f"✅ Found {len(data['messages'])} messages")
+        print(f"âœ… Found {len(data['messages'])} messages")
         print("\nMessage Preview:")
         for msg in data['messages'][:2]:  # Show first 2 messages
             print(f"\n  {msg['role']}: {msg['content'][:100]}...")
@@ -180,8 +180,8 @@ def test_analytics():
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Analytics retrieved!")
-        print(f"\n📊 Summary:")
+        print("âœ… Analytics retrieved!")
+        print(f"\nðŸ“Š Summary:")
         print(f"  Total Queries: {data['totalQueries']}")
         print(f"  Active Users: {data['activeUsers']}")
         print(f"  Avg Response Time: {data['avgResponseTime']}s")
@@ -198,11 +198,11 @@ def test_query_distribution():
     print(json.dumps(data, indent=2))
     
     if response.status_code == 200:
-        print("✅ Query distribution retrieved!")
+        print("âœ… Query distribution retrieved!")
 
 def main():
     print("\n" + "=" * 60)
-    print("  ARTH-MITRA DATABASE & ANALYTICS TEST")
+    print("  FinGuide DATABASE & ANALYTICS TEST")
     print("=" * 60)
     print("\nMake sure backend is running on port 8000!")
     input("Press Enter to start tests...")
@@ -216,10 +216,10 @@ def main():
             user_id = test_login()
         
         if not user_id:
-            print("\n❌ Failed to get user ID. Exiting...")
+            print("\nâŒ Failed to get user ID. Exiting...")
             return
         
-        print(f"\n✅ Using User ID: {user_id}")
+        print(f"\nâœ… Using User ID: {user_id}")
         
         # Test profile update
         test_update_profile(user_id)
@@ -228,7 +228,7 @@ def main():
         session_id = test_create_session(user_id)
         
         if session_id:
-            print(f"✅ Using Session ID: {session_id}")
+            print(f"âœ… Using Session ID: {session_id}")
             
             # Test chat with DB logging
             test_chat_with_db(user_id, session_id)
@@ -241,25 +241,26 @@ def main():
         test_analytics()
         test_query_distribution()
         
-        section("🎉 ALL TESTS COMPLETED!")
-        print("\n✅ Database integration working correctly!")
-        print("\n📊 Check the following:")
+        section("ðŸŽ‰ ALL TESTS COMPLETED!")
+        print("\nâœ… Database integration working correctly!")
+        print("\nðŸ“Š Check the following:")
         print("  1. backend/arth_mitra.db - SQLite database file")
         print("  2. User profile persisted across sessions")
         print("  3. Chat history saved in database")
         print("  4. Analytics data collected")
-        print("\n💡 Next Steps:")
+        print("\nðŸ’¡ Next Steps:")
         print("  1. Update frontend to use new API endpoints")
         print("  2. Replace localStorage with database calls")
         print("  3. Build analytics dashboard")
         
     except requests.exceptions.ConnectionError:
-        print("\n❌ ERROR: Could not connect to backend!")
+        print("\nâŒ ERROR: Could not connect to backend!")
         print("Make sure backend is running: python backend/run.py")
     except Exception as e:
-        print(f"\n❌ Error: {e}")
+        print(f"\nâŒ Error: {e}")
         import traceback
         traceback.print_exc()
 
 if __name__ == "__main__":
     main()
+

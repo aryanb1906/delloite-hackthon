@@ -1,5 +1,5 @@
-"""
-Pre-warm utilities for Arth-Mitra backend.
+﻿"""
+Pre-warm utilities for FinGuide backend.
 
 Loads models into memory and pre-computes common query embeddings
 so the first user request is fast instead of cold-starting.
@@ -8,7 +8,7 @@ so the first user request is fast instead of cold-starting.
 import time
 
 
-# Common Indian finance queries — embeddings are cached at startup
+# Common Indian finance queries â€” embeddings are cached at startup
 WARMUP_QUERIES = [
     "section 80c deductions",
     "new tax regime slabs 2024-25",
@@ -30,7 +30,7 @@ WARMUP_QUERIES = [
 
 def warmup_embeddings(embeddings):
     """Pre-compute embeddings for common queries to warm up the model and cache."""
-    print("🔥 Warming up embedding model with common queries...")
+    print("ðŸ”¥ Warming up embedding model with common queries...")
     start = time.time()
     count = 0
     for query in WARMUP_QUERIES:
@@ -38,23 +38,23 @@ def warmup_embeddings(embeddings):
             embeddings.embed_query(query)
             count += 1
         except Exception as e:
-            print(f"  ⚠️ Warmup query failed: {e}")
+            print(f"  âš ï¸ Warmup query failed: {e}")
     elapsed = time.time() - start
-    print(f"✅ Warmed up {count} query embeddings in {elapsed:.1f}s")
+    print(f"âœ… Warmed up {count} query embeddings in {elapsed:.1f}s")
 
 
 def warmup_vectorstore(vectorstore):
     """Run a dummy query to load ChromaDB index into memory."""
-    print("🔥 Loading ChromaDB index into memory...")
+    print("ðŸ”¥ Loading ChromaDB index into memory...")
     start = time.time()
     try:
         count = vectorstore._collection.count()
         if count > 0:
             vectorstore.similarity_search("tax", k=1)
         elapsed = time.time() - start
-        print(f"✅ ChromaDB ready ({count} chunks indexed) in {elapsed:.1f}s")
+        print(f"âœ… ChromaDB ready ({count} chunks indexed) in {elapsed:.1f}s")
     except Exception as e:
-        print(f"⚠️ ChromaDB warmup skipped: {e}")
+        print(f"âš ï¸ ChromaDB warmup skipped: {e}")
 
 
 def full_warmup(bot):
@@ -63,7 +63,7 @@ def full_warmup(bot):
     Call this during FastAPI lifespan startup.
     """
     if not bot._initialized:
-        print("⚠️ Bot not initialized — skipping warmup")
+        print("âš ï¸ Bot not initialized â€” skipping warmup")
         return
 
     total_start = time.time()
@@ -75,4 +75,5 @@ def full_warmup(bot):
         warmup_vectorstore(bot.vectorstore)
 
     total_elapsed = time.time() - total_start
-    print(f"🚀 All systems warmed up and ready ({total_elapsed:.1f}s total)")
+    print(f"ðŸš€ All systems warmed up and ready ({total_elapsed:.1f}s total)")
+

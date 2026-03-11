@@ -1,5 +1,5 @@
-"use client";
-// ─── VoiceAssistantBubble: main floating bubble + orchestrator ───
+﻿"use client";
+// â”€â”€â”€ VoiceAssistantBubble: main floating bubble + orchestrator â”€â”€â”€
 // Features: Audio visualizer, voice selection, quick commands,
 // interrupt/barge-in, contextual awareness, multi-turn flows,
 // TTS pronunciation fix, offline fallback, conversation memory,
@@ -22,7 +22,7 @@ import { SYSTEM_ACTIONS } from "./types";
 import type { AssistantState, AssistantAction, AssistantContext } from "./types";
 import { useToast } from "@/hooks/use-toast";
 
-// ─── Finance topic detection ────────────────────────────────────
+// â”€â”€â”€ Finance topic detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const FINANCE_KEYWORDS = [
   // English
   "tax", "taxes", "taxation", "income tax", "gst", "tds", "tcs",
@@ -39,25 +39,25 @@ const FINANCE_KEYWORDS = [
   "itr", "return filing", "assessment year", "financial year",
   "old regime", "new regime", "tax slab", "surcharge", "cess",
   // Hindi (Devanagari)
-  "कर", "आयकर", "निवेश", "बचत", "योजना", "कटौती", "छूट",
-  "वित्तीय", "वित्त", "ऋण", "बजट", "सरकारी योजना", "ब्याज दर",
-  "कर स्लैब", "पेंशन", "बीमा", "म्यूचुअल फंड",
-  "आय", "वेतन", "तनख्वाह", "सैलरी", "कर योग्य आय",
-  "कर विवरणी", "निर्धारण वर्ष", "वित्तीय वर्ष",
-  "सकल आय", "शुद्ध आय", "कर छूट", "कर कटौती",
-  "जीएसटी", "टीडीएस", "टीसीएस", "आईटीआर",
-  "सेस", "सरचार्ज", "अधिभार", "उपकर",
-  "पूंजीगत लाभ", "लाभांश", "ब्याज",
-  "गोल्ड", "सोना", "बॉन्ड", "शेयर", "शेयर बाजार",
-  "म्यूचुअल", "एसआईपी", "पीपीएफ", "एनपीएस", "ईएलएसएस",
-  "ईपीएफ", "भविष्य निधि", "सावधि जमा", "आवर्ती जमा",
-  "प्रधानमंत्री", "प्रधानमंत्री योजना", "सुकन्या", "पीएमएवाय",
-  "बीमा योजना", "जीवन बीमा", "टर्म प्लान",
-  "गृह ऋण", "होम लोन", "व्यक्तिगत ऋण", "ईएमआई",
-  "महंगाई", "मुद्रास्फीति", "आरबीआई", "सेबी",
-  "सब्सिडी", "अनुदान", "राजकोषीय",
-  "पुरानी व्यवस्था", "नई व्यवस्था", "कर व्यवस्था",
-  "धारा 80", "एचआरए",
+  "à¤•à¤°", "à¤†à¤¯à¤•à¤°", "à¤¨à¤¿à¤µà¥‡à¤¶", "à¤¬à¤šà¤¤", "à¤¯à¥‹à¤œà¤¨à¤¾", "à¤•à¤Ÿà¥Œà¤¤à¥€", "à¤›à¥‚à¤Ÿ",
+  "à¤µà¤¿à¤¤à¥à¤¤à¥€à¤¯", "à¤µà¤¿à¤¤à¥à¤¤", "à¤‹à¤£", "à¤¬à¤œà¤Ÿ", "à¤¸à¤°à¤•à¤¾à¤°à¥€ à¤¯à¥‹à¤œà¤¨à¤¾", "à¤¬à¥à¤¯à¤¾à¤œ à¤¦à¤°",
+  "à¤•à¤° à¤¸à¥à¤²à¥ˆà¤¬", "à¤ªà¥‡à¤‚à¤¶à¤¨", "à¤¬à¥€à¤®à¤¾", "à¤®à¥à¤¯à¥‚à¤šà¥à¤…à¤² à¤«à¤‚à¤¡",
+  "à¤†à¤¯", "à¤µà¥‡à¤¤à¤¨", "à¤¤à¤¨à¤–à¥à¤µà¤¾à¤¹", "à¤¸à¥ˆà¤²à¤°à¥€", "à¤•à¤° à¤¯à¥‹à¤—à¥à¤¯ à¤†à¤¯",
+  "à¤•à¤° à¤µà¤¿à¤µà¤°à¤£à¥€", "à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤£ à¤µà¤°à¥à¤·", "à¤µà¤¿à¤¤à¥à¤¤à¥€à¤¯ à¤µà¤°à¥à¤·",
+  "à¤¸à¤•à¤² à¤†à¤¯", "à¤¶à¥à¤¦à¥à¤§ à¤†à¤¯", "à¤•à¤° à¤›à¥‚à¤Ÿ", "à¤•à¤° à¤•à¤Ÿà¥Œà¤¤à¥€",
+  "à¤œà¥€à¤à¤¸à¤Ÿà¥€", "à¤Ÿà¥€à¤¡à¥€à¤à¤¸", "à¤Ÿà¥€à¤¸à¥€à¤à¤¸", "à¤†à¤ˆà¤Ÿà¥€à¤†à¤°",
+  "à¤¸à¥‡à¤¸", "à¤¸à¤°à¤šà¤¾à¤°à¥à¤œ", "à¤…à¤§à¤¿à¤­à¤¾à¤°", "à¤‰à¤ªà¤•à¤°",
+  "à¤ªà¥‚à¤‚à¤œà¥€à¤—à¤¤ à¤²à¤¾à¤­", "à¤²à¤¾à¤­à¤¾à¤‚à¤¶", "à¤¬à¥à¤¯à¤¾à¤œ",
+  "à¤—à¥‹à¤²à¥à¤¡", "à¤¸à¥‹à¤¨à¤¾", "à¤¬à¥‰à¤¨à¥à¤¡", "à¤¶à¥‡à¤¯à¤°", "à¤¶à¥‡à¤¯à¤° à¤¬à¤¾à¤œà¤¾à¤°",
+  "à¤®à¥à¤¯à¥‚à¤šà¥à¤…à¤²", "à¤à¤¸à¤†à¤ˆà¤ªà¥€", "à¤ªà¥€à¤ªà¥€à¤à¤«", "à¤à¤¨à¤ªà¥€à¤à¤¸", "à¤ˆà¤à¤²à¤à¤¸à¤à¤¸",
+  "à¤ˆà¤ªà¥€à¤à¤«", "à¤­à¤µà¤¿à¤·à¥à¤¯ à¤¨à¤¿à¤§à¤¿", "à¤¸à¤¾à¤µà¤§à¤¿ à¤œà¤®à¤¾", "à¤†à¤µà¤°à¥à¤¤à¥€ à¤œà¤®à¤¾",
+  "à¤ªà¥à¤°à¤§à¤¾à¤¨à¤®à¤‚à¤¤à¥à¤°à¥€", "à¤ªà¥à¤°à¤§à¤¾à¤¨à¤®à¤‚à¤¤à¥à¤°à¥€ à¤¯à¥‹à¤œà¤¨à¤¾", "à¤¸à¥à¤•à¤¨à¥à¤¯à¤¾", "à¤ªà¥€à¤à¤®à¤à¤µà¤¾à¤¯",
+  "à¤¬à¥€à¤®à¤¾ à¤¯à¥‹à¤œà¤¨à¤¾", "à¤œà¥€à¤µà¤¨ à¤¬à¥€à¤®à¤¾", "à¤Ÿà¤°à¥à¤® à¤ªà¥à¤²à¤¾à¤¨",
+  "à¤—à¥ƒà¤¹ à¤‹à¤£", "à¤¹à¥‹à¤® à¤²à¥‹à¤¨", "à¤µà¥à¤¯à¤•à¥à¤¤à¤¿à¤—à¤¤ à¤‹à¤£", "à¤ˆà¤à¤®à¤†à¤ˆ",
+  "à¤®à¤¹à¤‚à¤—à¤¾à¤ˆ", "à¤®à¥à¤¦à¥à¤°à¤¾à¤¸à¥à¤«à¥€à¤¤à¤¿", "à¤†à¤°à¤¬à¥€à¤†à¤ˆ", "à¤¸à¥‡à¤¬à¥€",
+  "à¤¸à¤¬à¥à¤¸à¤¿à¤¡à¥€", "à¤…à¤¨à¥à¤¦à¤¾à¤¨", "à¤°à¤¾à¤œà¤•à¥‹à¤·à¥€à¤¯",
+  "à¤ªà¥à¤°à¤¾à¤¨à¥€ à¤µà¥à¤¯à¤µà¤¸à¥à¤¥à¤¾", "à¤¨à¤ˆ à¤µà¥à¤¯à¤µà¤¸à¥à¤¥à¤¾", "à¤•à¤° à¤µà¥à¤¯à¤µà¤¸à¥à¤¥à¤¾",
+  "à¤§à¤¾à¤°à¤¾ 80", "à¤à¤šà¤†à¤°à¤",
   // Romanized Hindi (speech-to-text often outputs this)
   "kar", "aykar", "nivesh", "bachat", "yojana", "katoti", "chhut",
   "vittiya", "rin", "bajat", "sarkari yojana", "byaj dar",
@@ -83,10 +83,10 @@ function isFinanceQuery(text: string): boolean {
   return FINANCE_RE.test(text);
 }
 
-// ─── TTS truncation for long responses ───────────────────────────
+// â”€â”€â”€ TTS truncation for long responses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const TTS_MAX_WORDS = 150;
-const TTS_TRUNCATION_SUFFIX_EN = "… For the full answer, please check the chat.";
-const TTS_TRUNCATION_SUFFIX_HI = "… पूरा जवाब चैट में देखें।";
+const TTS_TRUNCATION_SUFFIX_EN = "â€¦ For the full answer, please check the chat.";
+const TTS_TRUNCATION_SUFFIX_HI = "â€¦ à¤ªà¥‚à¤°à¤¾ à¤œà¤µà¤¾à¤¬ à¤šà¥ˆà¤Ÿ à¤®à¥‡à¤‚ à¤¦à¥‡à¤–à¥‡à¤‚à¥¤";
 
 /** Truncate text to TTS_MAX_WORDS for speech; returns original + isTruncated flag */
 function truncateForTTS(text: string, lang: string): { spoken: string; truncated: boolean } {
@@ -97,7 +97,7 @@ function truncateForTTS(text: string, lang: string): { spoken: string; truncated
   return { spoken: cut + suffix, truncated: true };
 }
 
-// ─── Conversation memory (sessionStorage, last 20 turns) ────────
+// â”€â”€â”€ Conversation memory (sessionStorage, last 20 turns) â”€â”€â”€â”€â”€â”€â”€â”€
 const MEMORY_KEY = "arth_voice_memory";
 const MEMORY_ACTIVITY_KEY = "arth_voice_memory_ts";
 const MAX_TURNS = 20;
@@ -134,10 +134,10 @@ function appendMemory(turns: VoiceTurn[]): void {
     const merged = [...existing, ...turns].slice(-MAX_TURNS);
     sessionStorage.setItem(MEMORY_KEY, JSON.stringify(merged));
     sessionStorage.setItem(MEMORY_ACTIVITY_KEY, String(Date.now()));
-  } catch { /* quota exceeded — silently ignore */ }
+  } catch { /* quota exceeded â€” silently ignore */ }
 }
 
-// ─── Multi-turn guided flow engine ──────────────────────────────
+// â”€â”€â”€ Multi-turn guided flow engine â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const FLOW_KEY = "arth_voice_flow";
 
 interface FlowState {
@@ -167,29 +167,29 @@ interface FlowDefinition {
 const GUIDED_FLOWS: FlowDefinition[] = [
   {
     id: "tax_calc",
-    trigger: /(?:help\s+(?:me\s+)?(?:calculate|compute|figure\s+out)\s+(?:my\s+)?tax|calculate\s+(?:my\s+)?tax|tax\s+calculation\s+help|कर\s*(?:गणना|कैलकुलेट)|mera\s+tax\s+calculate)/i,
+    trigger: /(?:help\s+(?:me\s+)?(?:calculate|compute|figure\s+out)\s+(?:my\s+)?tax|calculate\s+(?:my\s+)?tax|tax\s+calculation\s+help|à¤•à¤°\s*(?:à¤—à¤£à¤¨à¤¾|à¤•à¥ˆà¤²à¤•à¥à¤²à¥‡à¤Ÿ)|mera\s+tax\s+calculate)/i,
     steps: [
       { prompt: "Sure! What's your annual income?", field: "income", validate: (v) => /\d/.test(v) },
       { prompt: "Got it. Do you have any Section 80C deductions? If yes, how much?", field: "deductions_80c" },
       { prompt: "Any HRA exemption? Enter yearly HRA amount or say 'no'.", field: "hra" },
-      { prompt: "Which tax regime — old or new?", field: "regime", validate: (v) => /old|new|पुरान|नई/i.test(v) },
+      { prompt: "Which tax regime â€” old or new?", field: "regime", validate: (v) => /old|new|à¤ªà¥à¤°à¤¾à¤¨|à¤¨à¤ˆ/i.test(v) },
     ],
     onComplete: (data) => ({
-      reply: `Thanks! Opening the tax calculator with your details — income ₹${data.income}, 80C deductions: ${data.deductions_80c}, HRA: ${data.hra}, regime: ${data.regime}.`,
+      reply: `Thanks! Opening the tax calculator with your details â€” income â‚¹${data.income}, 80C deductions: ${data.deductions_80c}, HRA: ${data.hra}, regime: ${data.regime}.`,
       navigateTo: "/tax-calculator",
       params: data,
     }),
   },
   {
     id: "scheme_finder",
-    trigger: /(?:find\s+(?:me\s+)?(?:a\s+)?scheme|suggest\s+(?:a\s+)?scheme|which\s+scheme|best\s+scheme|सरकारी\s*योजना\s*(?:बताओ|सुझाव)?|scheme\s+suggest)/i,
+    trigger: /(?:find\s+(?:me\s+)?(?:a\s+)?scheme|suggest\s+(?:a\s+)?scheme|which\s+scheme|best\s+scheme|à¤¸à¤°à¤•à¤¾à¤°à¥€\s*à¤¯à¥‹à¤œà¤¨à¤¾\s*(?:à¤¬à¤¤à¤¾à¤“|à¤¸à¥à¤à¤¾à¤µ)?|scheme\s+suggest)/i,
     steps: [
       { prompt: "What's your age group? (e.g., 25-35, 35-50, 50+)", field: "age_group" },
       { prompt: "What's your approximate annual income?", field: "income", validate: (v) => /\d/.test(v) },
-      { prompt: "What's your primary goal — tax saving, retirement, child education, or wealth building?", field: "goal" },
+      { prompt: "What's your primary goal â€” tax saving, retirement, child education, or wealth building?", field: "goal" },
     ],
     onComplete: (data) => ({
-      reply: `Let me find schemes for a ${data.age_group} age group, income ₹${data.income}, goal: ${data.goal}. Opening chat to search our database.`,
+      reply: `Let me find schemes for a ${data.age_group} age group, income â‚¹${data.income}, goal: ${data.goal}. Opening chat to search our database.`,
       navigateTo: "/chat",
     }),
   },
@@ -209,7 +209,7 @@ function saveFlowState(state: FlowState | null): void {
   } catch { /* ignore */ }
 }
 
-// ─── Contextual awareness helpers ───────────────────────────────
+// â”€â”€â”€ Contextual awareness helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getPageContextHint(route: string): string | null {
   if (route.startsWith("/tax-calculator")) {
     return "You're on the tax calculator. I can help fill in values or explain any field. Just ask!";
@@ -229,12 +229,12 @@ function getPageContextHint(route: string): string | null {
   return null;
 }
 
-// ─── Offline detection ──────────────────────────────────────────
+// â”€â”€â”€ Offline detection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function isOnline(): boolean {
   return typeof navigator !== "undefined" ? navigator.onLine : true;
 }
 
-// ─── Helpers ────────────────────────────────────────────────────
+// â”€â”€â”€ Helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function getActiveModule(route: string): string {
   if (route.startsWith("/chat")) return "chat";
   if (route.startsWith("/tax-calculator")) return "tax-calculator";
@@ -244,7 +244,7 @@ function getActiveModule(route: string): string {
   return "home";
 }
 
-// ─── State-based icon SVGs ──────────────────────────────────────
+// â”€â”€â”€ State-based icon SVGs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function MicIcon() {
   return (
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -273,18 +273,18 @@ function SpeakerIcon() {
   );
 }
 
-// ─── Component ──────────────────────────────────────────────────
+// â”€â”€â”€ Component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 /** Map language code to BCP-47 recognition locale */
 const RECOGNITION_LOCALE: Record<string, string> = {
   en: "en-US",
   hi: "hi-IN",
-  "en-IN": "en-IN",  // Hinglish — Indian English accent, better for code-switching
+  "en-IN": "en-IN",  // Hinglish â€” Indian English accent, better for code-switching
 };
 
 /** Display labels for the language toggle */
 const LANG_LABELS: Record<string, string> = {
   en: "EN",
-  hi: "हि",
+  hi: "à¤¹à¤¿",
   "en-IN": "HI/EN",
 };
 
@@ -300,10 +300,10 @@ export function VoiceAssistantBubble() {
   const [isOffline, setIsOffline] = useState(false);
   const [followUps, setFollowUps] = useState<string[]>([]);
 
-  // ── Multilingual state (isolated) ──
+  // â”€â”€ Multilingual state (isolated) â”€â”€
   const [language, setLanguage] = useState<string>("en");
 
-  // Voice speech hook — must be declared before toggleLanguage so autoSelectVoiceForLanguage is available
+  // Voice speech hook â€” must be declared before toggleLanguage so autoSelectVoiceForLanguage is available
   const { isSpeaking, speak, stopSpeaking, selectedVoiceName, setVoicePreference, getAvailableVoices, autoSelectVoiceForLanguage, ttsSpeed, setTtsSpeed, ttsPitch, setTtsPitch } = useVoiceSpeech();
 
   const toggleLanguage = useCallback(() => {
@@ -311,7 +311,7 @@ export function VoiceAssistantBubble() {
       let next: string;
       if (prev === "en") next = "hi";
       else if (prev === "hi") next = "en-IN";
-      else next = "en"; // en-IN → en
+      else next = "en"; // en-IN â†’ en
       autoSelectVoiceForLanguage(next === "en-IN" ? "en" : next);
       return next;
     });
@@ -330,7 +330,7 @@ export function VoiceAssistantBubble() {
   // System-status message (shown in floating tooltip only for system actions)
   const [systemStatus, setSystemStatus] = useState<string | null>(null);
 
-  // ── Abort controller for cancellable API requests (Feature 1) ──
+  // â”€â”€ Abort controller for cancellable API requests (Feature 1) â”€â”€
   const abortControllerRef = useRef<AbortController | null>(null);
 
   // Hooks
@@ -372,7 +372,7 @@ export function VoiceAssistantBubble() {
       setBubbleAnimating(true);
       setBubbleOffset({ x: dx, y: dy });
 
-      // After arrive → trigger highlight → return
+      // After arrive â†’ trigger highlight â†’ return
       setTimeout(() => {
         cb();
         setTimeout(() => {
@@ -392,7 +392,7 @@ export function VoiceAssistantBubble() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isListening, transcript]);
 
-  // ── Online/offline tracking ──
+  // â”€â”€ Online/offline tracking â”€â”€
   useEffect(() => {
     const goOnline = () => setIsOffline(false);
     const goOffline = () => setIsOffline(true);
@@ -405,16 +405,16 @@ export function VoiceAssistantBubble() {
     };
   }, []);
 
-  // ── Proactive hints (show subtle toast after inactivity on specific pages) ──
+  // â”€â”€ Proactive hints (show subtle toast after inactivity on specific pages) â”€â”€
   const proactiveShownRef = useRef<Set<string>>(new Set());
   useEffect(() => {
     // Only show once per page per session
     if (proactiveShownRef.current.has(pathname)) return;
     const HINTS: Record<string, { delay: number; title: string; msg: string }> = {
-      "/tax-calculator": { delay: 45000, title: "💡 Need help?", msg: "Try saying \"Help me calculate my tax\" to the voice assistant!" },
-      "/analytics": { delay: 60000, title: "💡 Voice tip", msg: "Ask the voice assistant to explain any chart on this page." },
-      "/chat": { delay: 90000, title: "💡 Did you know?", msg: "You can start a voice conversation — just tap the mic button!" },
-      "/profile-setup": { delay: 30000, title: "💡 Quick setup", msg: "Tell the voice assistant your details and it can help fill in your profile." },
+      "/tax-calculator": { delay: 45000, title: "ðŸ’¡ Need help?", msg: "Try saying \"Help me calculate my tax\" to the voice assistant!" },
+      "/analytics": { delay: 60000, title: "ðŸ’¡ Voice tip", msg: "Ask the voice assistant to explain any chart on this page." },
+      "/chat": { delay: 90000, title: "ðŸ’¡ Did you know?", msg: "You can start a voice conversation â€” just tap the mic button!" },
+      "/profile-setup": { delay: 30000, title: "ðŸ’¡ Quick setup", msg: "Tell the voice assistant your details and it can help fill in your profile." },
     };
     const hint = HINTS[pathname];
     if (!hint) return;
@@ -436,7 +436,7 @@ export function VoiceAssistantBubble() {
       playStopListening();
       hapticTap();
 
-      // ── 1. Check for active multi-turn flow ───────────────────
+      // â”€â”€ 1. Check for active multi-turn flow â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const activeFlow = loadFlowState();
       if (activeFlow) {
         const flowDef = GUIDED_FLOWS.find((f) => f.id === activeFlow.flowId);
@@ -444,7 +444,7 @@ export function VoiceAssistantBubble() {
           const currentStep = flowDef.steps[activeFlow.step];
 
           // Cancel flow on "cancel" / "stop"
-          if (/^(?:cancel|stop|रुको|बंद)/i.test(text.trim())) {
+          if (/^(?:cancel|stop|à¤°à¥à¤•à¥‹|à¤¬à¤‚à¤¦)/i.test(text.trim())) {
             saveFlowState(null);
             const msg = "Flow cancelled.";
             setLastReply(msg);
@@ -491,7 +491,7 @@ export function VoiceAssistantBubble() {
         }
       }
 
-      // ── 2. Check for multi-turn flow triggers ─────────────────
+      // â”€â”€ 2. Check for multi-turn flow triggers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       for (const flowDef of GUIDED_FLOWS) {
         if (flowDef.trigger.test(text.trim())) {
           const newFlow: FlowState = { flowId: flowDef.id, step: 0, data: {} };
@@ -504,7 +504,7 @@ export function VoiceAssistantBubble() {
         }
       }
 
-      // ── 3. Quick commands (skip LLM entirely) ─────────────────
+      // â”€â”€ 3. Quick commands (skip LLM entirely) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const quickResult = matchQuickCommand(text);
       if (quickResult) {
         playActionClick();
@@ -567,7 +567,7 @@ export function VoiceAssistantBubble() {
           const url = URL.createObjectURL(blob);
           const a = document.createElement("a");
           a.href = url;
-          a.download = `arth-mitra-conversation-${Date.now()}.txt`;
+          a.download = `ArthMitra-conversation-${Date.now()}.txt`;
           document.body.appendChild(a);
           a.click();
           document.body.removeChild(a);
@@ -597,10 +597,10 @@ export function VoiceAssistantBubble() {
         return;
       }
 
-      // ── 4. Offline fallback ───────────────────────────────────
+      // â”€â”€ 4. Offline fallback â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       if (isOffline || !isOnline()) {
         const offlineMsg = language === "hi"
-          ? "आप ऑफलाइन हैं। कृपया इंटरनेट कनेक्शन जाँचें। आप अभी भी बुनियादी कमांड जैसे 'होम पेज', 'नया चैट', या 'कैलकुलेटर खोलो' का उपयोग कर सकते हैं।"
+          ? "à¤†à¤ª à¤‘à¤«à¤²à¤¾à¤‡à¤¨ à¤¹à¥ˆà¤‚à¥¤ à¤•à¥ƒà¤ªà¤¯à¤¾ à¤‡à¤‚à¤Ÿà¤°à¤¨à¥‡à¤Ÿ à¤•à¤¨à¥‡à¤•à¥à¤¶à¤¨ à¤œà¤¾à¤à¤šà¥‡à¤‚à¥¤ à¤†à¤ª à¤…à¤­à¥€ à¤­à¥€ à¤¬à¥à¤¨à¤¿à¤¯à¤¾à¤¦à¥€ à¤•à¤®à¤¾à¤‚à¤¡ à¤œà¥ˆà¤¸à¥‡ 'à¤¹à¥‹à¤® à¤ªà¥‡à¤œ', 'à¤¨à¤¯à¤¾ à¤šà¥ˆà¤Ÿ', à¤¯à¤¾ 'à¤•à¥ˆà¤²à¤•à¥à¤²à¥‡à¤Ÿà¤° à¤–à¥‹à¤²à¥‹' à¤•à¤¾ à¤‰à¤ªà¤¯à¥‹à¤— à¤•à¤° à¤¸à¤•à¤¤à¥‡ à¤¹à¥ˆà¤‚à¥¤"
           : "You're offline. Please check your internet connection. You can still use basic commands like 'go home', 'new chat', or 'open calculator'.";
         toast({
           title: "Offline",
@@ -613,7 +613,7 @@ export function VoiceAssistantBubble() {
         return;
       }
 
-      // ── 5. Build context + call LLM backend ──────────────────
+      // â”€â”€ 5. Build context + call LLM backend â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
       const snapshot = assistantCtx.getSnapshot();
       const ctx: AssistantContext = {
         currentRoute: pathname,
@@ -658,7 +658,7 @@ export function VoiceAssistantBubble() {
           { role: "assistant", text: response.reply, ts: Date.now() },
         ]);
 
-        // ── Conversational response (no action field) ────────────
+        // â”€â”€ Conversational response (no action field) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (!isSystemAction) {
           // Use LLM classification with keyword fallback
           const isFinance = response.isFinanceRelated ?? isFinanceQuery(text);
@@ -684,7 +684,7 @@ export function VoiceAssistantBubble() {
           return;
         }
 
-        // ── System actions — remain ephemeral ────────────────────
+        // â”€â”€ System actions â€” remain ephemeral â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         setLastReply(null);
         setSystemStatus(response.reply);
         if (response.followUps?.length) setFollowUps(response.followUps);
@@ -722,7 +722,7 @@ export function VoiceAssistantBubble() {
           else if (detail) userMessage = detail;
         }
 
-        // Check if it's a network error → switch to offline mode
+        // Check if it's a network error â†’ switch to offline mode
         if (err && typeof err === "object" && "message" in err) {
           const msg = (err as { message: string }).message;
           if (/network|timeout|ECONNREFUSED/i.test(msg)) {
@@ -770,7 +770,7 @@ export function VoiceAssistantBubble() {
     }
   }, [state, isSpeaking]);
 
-  // ── Live transcript tracking ──
+  // â”€â”€ Live transcript tracking â”€â”€
   useEffect(() => {
     if (isListening && transcript) {
       setLiveTranscript(transcript);
@@ -782,7 +782,7 @@ export function VoiceAssistantBubble() {
     }
   }, [isListening, transcript]);
 
-  // ── Keyboard shortcut: Ctrl+Shift+V to toggle voice ──
+  // â”€â”€ Keyboard shortcut: Ctrl+Shift+V to toggle voice â”€â”€
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if (e.ctrlKey && e.shiftKey && e.key === "V") {
@@ -798,7 +798,7 @@ export function VoiceAssistantBubble() {
   // ---- Click handler (with barge-in support) ----
   const lastContextHintRef = useRef<string | null>(null);
   const handleClick = () => {
-    // While TTS is playing: barge-in — stop speaking and start listening
+    // While TTS is playing: barge-in â€” stop speaking and start listening
     if (state === "speaking" || isSpeaking) {
       stopSpeaking();
       setState("listening");
@@ -892,21 +892,21 @@ export function VoiceAssistantBubble() {
     guiding: "ring-purple-400/30",
   };
 
-  // Mic is disabled when TTS is in progress (loading or playing) — processing is now cancellable
+  // Mic is disabled when TTS is in progress (loading or playing) â€” processing is now cancellable
   const micDisabled = isSpeaking;
 
   if (!micSupported) return null;
 
   return (
     <>
-      {/* ── Offline indicator ── */}
+      {/* â”€â”€ Offline indicator â”€â”€ */}
       {isOffline && (
         <div className="fixed bottom-[8rem] right-6 z-[9999] px-3 py-1.5 rounded-full text-xs font-medium text-amber-200 bg-amber-900/80 backdrop-blur-sm border border-amber-700/50 animate-pulse">
-          Offline — quick commands only
+          Offline â€” quick commands only
         </div>
       )}
 
-      {/* ── Voice Picker Popover ── */}
+      {/* â”€â”€ Voice Picker Popover â”€â”€ */}
       {showVoicePicker && (
         <div className="fixed z-[10000] w-64 max-h-52 overflow-y-auto rounded-xl bg-gray-900/95 backdrop-blur-xl border border-white/10 shadow-2xl p-2 animate-in fade-in slide-in-from-bottom-3 duration-200"
           style={{ bottom: "calc(3.25rem + 2.3rem - 1rem + 2.25rem)", right: "calc(3.25rem + 2.3rem - 1rem)" }}
@@ -918,7 +918,7 @@ export function VoiceAssistantBubble() {
               className="text-white/50 hover:text-white text-xs"
               aria-label="Close voice picker"
             >
-              ✕
+              âœ•
             </button>
           </div>
           <div className="mt-1 space-y-0.5">
@@ -933,11 +933,10 @@ export function VoiceAssistantBubble() {
                     setShowVoicePicker(false);
                     toast({ title: "Voice Changed", description: voice.name });
                   }}
-                  className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${
-                    selectedVoiceName === voice.name
+                  className={`w-full text-left px-2 py-1.5 rounded-lg text-xs transition-colors ${selectedVoiceName === voice.name
                       ? "bg-blue-600/40 text-white"
                       : "text-white/70 hover:bg-white/10 hover:text-white"
-                  }`}
+                    }`}
                 >
                   <div className="font-medium truncate">{voice.name}</div>
                   <div className="text-[10px] text-white/40">{voice.lang}</div>
@@ -945,7 +944,7 @@ export function VoiceAssistantBubble() {
               ))}
           </div>
 
-          {/* ── Speed & Pitch sliders ── */}
+          {/* â”€â”€ Speed & Pitch sliders â”€â”€ */}
           <div className="mt-2 pt-2 border-t border-white/10 space-y-2 px-1">
             <div>
               <div className="flex items-center justify-between mb-0.5">
@@ -981,15 +980,15 @@ export function VoiceAssistantBubble() {
         </div>
       )}
 
-      {/* ── Orbital satellite buttons on a circular orbit around the main bubble ──
+      {/* â”€â”€ Orbital satellite buttons on a circular orbit around the main bubble â”€â”€
            Bubble center: bottom 3.25rem, right 3.25rem (1.5rem margin + 1.75rem half of 3.5rem)
            Orbit radius: 2.75rem from center
-           Voice picker:  225° on unit circle → upper-left  (cos225 ≈ -0.707, sin225 ≈ -0.707)
-           Language:      270° on unit circle → directly above (cos270 = 0, sin270 = -1)
+           Voice picker:  225Â° on unit circle â†’ upper-left  (cos225 â‰ˆ -0.707, sin225 â‰ˆ -0.707)
+           Language:      270Â° on unit circle â†’ directly above (cos270 = 0, sin270 = -1)
            Satellite size: w-8 h-8 = 2rem, half = 1rem
-      ── */}
+      â”€â”€ */}
 
-      {/* Voice Picker — 225° orbit (upper-left of bubble) */}
+      {/* Voice Picker â€” 225Â° orbit (upper-left of bubble) */}
       <button
         onClick={() => setShowVoicePicker((v) => !v)}
         aria-label="Select voice"
@@ -1009,18 +1008,18 @@ export function VoiceAssistantBubble() {
         "
         style={{
           bottom: "calc(3.25rem + 2.3rem - 1rem)",
-          right:  "calc(3.25rem + 2.3rem - 1rem)",
+          right: "calc(3.25rem + 2.3rem - 1rem)",
         }}
       >
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/>
-          <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
-          <line x1="12" y1="19" x2="12" y2="23"/>
-          <line x1="8" y1="23" x2="16" y2="23"/>
+          <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z" />
+          <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+          <line x1="12" y1="19" x2="12" y2="23" />
+          <line x1="8" y1="23" x2="16" y2="23" />
         </svg>
       </button>
 
-      {/* Language Toggle — 270° orbit (directly above bubble) */}
+      {/* Language Toggle â€” 270Â° orbit (directly above bubble) */}
       <button
         onClick={toggleLanguage}
         aria-label={`Switch language (current: ${LANG_LABELS[language] || language})`}
@@ -1039,13 +1038,13 @@ export function VoiceAssistantBubble() {
         "
         style={{
           bottom: "calc(3.25rem + 3.25rem - 1rem)",
-          right:  "calc(3.25rem - 1rem)",
+          right: "calc(3.25rem - 1rem)",
         }}
       >
         {LANG_LABELS[language] || language}
       </button>
 
-      {/* ── Floating Bubble ── */}
+      {/* â”€â”€ Floating Bubble â”€â”€ */}
       <button
         ref={bubbleRef}
         onClick={handleClick}
@@ -1055,12 +1054,12 @@ export function VoiceAssistantBubble() {
           state === "idle"
             ? "Activate voice assistant (Ctrl+Shift+V)"
             : state === "listening"
-            ? "Listening to your voice — click to stop"
-            : state === "speaking"
-            ? "Speaking response — click to stop"
-            : state === "processing"
-            ? "Processing — click to cancel"
-            : "Processing your request"
+              ? "Listening to your voice â€” click to stop"
+              : state === "speaking"
+                ? "Speaking response â€” click to stop"
+                : state === "processing"
+                  ? "Processing â€” click to cancel"
+                  : "Processing your request"
         }
         aria-busy={isSpeaking || state === "processing"}
         aria-live="polite"
@@ -1068,12 +1067,12 @@ export function VoiceAssistantBubble() {
           state === "idle"
             ? "Click to speak (Ctrl+Shift+V)"
             : state === "listening"
-            ? "Listening… click to stop"
-            : state === "speaking"
-            ? "Speaking… click to stop"
-            : state === "processing"
-            ? "Processing… click to cancel"
-            : "Processing…"
+              ? "Listeningâ€¦ click to stop"
+              : state === "speaking"
+                ? "Speakingâ€¦ click to stop"
+                : state === "processing"
+                  ? "Processingâ€¦ click to cancel"
+                  : "Processingâ€¦"
         }
         className={`
           fixed bottom-6 right-6 z-[9999]
@@ -1099,7 +1098,7 @@ export function VoiceAssistantBubble() {
         {icon}
       </button>
 
-      {/* ── Live transcript tooltip (shown while listening) ── */}
+      {/* â”€â”€ Live transcript tooltip (shown while listening) â”€â”€ */}
       {liveTranscript && (state === "listening" || state === "processing") && (
         <div
           className="fixed bottom-24 right-6 z-[9999] max-w-xs p-3 rounded-xl text-sm text-white bg-black/60 backdrop-blur-md border border-white/10 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-200"
@@ -1112,12 +1111,12 @@ export function VoiceAssistantBubble() {
             </span>
           </div>
           <p className="mt-1 text-white/90 leading-snug">
-            &quot;{liveTranscript.length > 120 ? liveTranscript.slice(0, 120) + "…" : liveTranscript}&quot;
+            &quot;{liveTranscript.length > 120 ? liveTranscript.slice(0, 120) + "â€¦" : liveTranscript}&quot;
           </p>
         </div>
       )}
 
-      {/* ── System-status tooltip (only for system/ephemeral actions) ── */}
+      {/* â”€â”€ System-status tooltip (only for system/ephemeral actions) â”€â”€ */}
       {systemStatus && state === "speaking" && (
         <div className="fixed bottom-24 right-6 z-[9999] max-w-xs p-3 rounded-xl text-sm text-white bg-black/70 backdrop-blur-md border border-white/10 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-300">
           <div className="flex items-center gap-2">
@@ -1128,12 +1127,12 @@ export function VoiceAssistantBubble() {
                 <span className="w-0.5 h-2 bg-green-400 rounded-full animate-[pulse_0.6s_ease-in-out_0.3s_infinite]" />
               </span>
             ) : null}
-            <span>{systemStatus.length > 160 ? systemStatus.slice(0, 160) + "…" : systemStatus}</span>
+            <span>{systemStatus.length > 160 ? systemStatus.slice(0, 160) + "â€¦" : systemStatus}</span>
           </div>
         </div>
       )}
 
-      {/* ── Follow-up suggestion pills ── */}
+      {/* â”€â”€ Follow-up suggestion pills â”€â”€ */}
       {followUps.length > 0 && state === "idle" && (
         <div className="fixed bottom-36 right-6 z-[9999] flex flex-col gap-2 items-end animate-in fade-in slide-in-from-bottom-2 duration-300">
           <span className="text-[10px] text-blue-300 font-semibold uppercase tracking-wider mr-1">Follow up</span>
@@ -1163,7 +1162,7 @@ export function VoiceAssistantBubble() {
         </div>
       )}
 
-      {/* ── Highlight Overlay ── */}
+      {/* â”€â”€ Highlight Overlay â”€â”€ */}
       <AssistantOverlay
         targetId={highlightTarget}
         visible={highlightVisible}
@@ -1174,3 +1173,4 @@ export function VoiceAssistantBubble() {
     </>
   );
 }
+

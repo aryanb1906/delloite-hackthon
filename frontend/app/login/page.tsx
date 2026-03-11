@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -57,14 +57,14 @@ function LoginForm() {
       } else {
         localStorage.removeItem('rememberedEmail');
       }
-      
+
       // Store user info in localStorage
       localStorage.setItem('user', JSON.stringify(user));
       localStorage.setItem('userId', user.id);
 
       // Fetch full profile from backend to check completeness
       const fullProfile = await getProfile(user.id);
-      
+
       // Check if profile is complete
       const isComplete = fullProfile.income && fullProfile.taxRegime && fullProfile.age;
 
@@ -124,7 +124,7 @@ function LoginForm() {
             <LogoWithTagline size="lg" />
           </div>
           <h1 className="text-2xl font-bold text-foreground mt-4">Welcome back</h1>
-          <p className="text-muted-foreground mt-2">Sign in to Arth-Mitra</p>
+          <p className="text-muted-foreground mt-2">Sign in to Arth Mitra</p>
         </div>
 
         {errorMessage && (
@@ -268,3 +268,4 @@ export default function LoginPage() {
     </Suspense>
   );
 }
+

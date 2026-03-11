@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
@@ -71,7 +71,7 @@ export default function Page() {
         </div>
       </nav>
 
-     {/* {msg && (
+      {/* {msg && (
         <p className="mt-2 mx-auto w-fit text-sm text-primary font-medium rounded-full border border-primary/20 bg-primary/5 px-4 py-1">
           {msg}
         </p>
@@ -98,7 +98,7 @@ export default function Page() {
 
           <div className="flex flex-col md:flex-row gap-3 justify-center mb-10">
             <Button className="w-full md:w-auto transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25 active:scale-95" onClick={handleGetStarted}>
-              Try Arth-Mitra
+              Try Arth Mitra
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button className="w-full md:w-auto bg-slate-600 border border-border hover:bg-slate-700 transition-all duration-200 hover:-translate-y-0.5 active:scale-95">
@@ -122,7 +122,7 @@ export default function Page() {
               <Cpu className="w-4 h-4 text-primary" />
               <p className="text-xs text-primary font-semibold">RAG Architecture</p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">How Arth-Mitra Works</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">How Arth Mitra Works</h2>
             <p className="text-base text-muted-foreground max-w-2xl mx-auto">
               Our advanced Retrieval-Augmented Generation system combines real government data with cutting-edge AI
             </p>
@@ -174,7 +174,7 @@ export default function Page() {
                   <p className="text-xs text-muted-foreground text-center mb-2">{step.desc}</p>
                   <p className="text-xs text-muted-foreground/70 text-center italic">{step.details}</p>
                 </div>
-                {i < 4 && <div className="hidden md:block absolute right-0 top-8 text-border/40 text-2xl">→</div>}
+                {i < 4 && <div className="hidden md:block absolute right-0 top-8 text-border/40 text-2xl">â†’</div>}
               </div>
             ))}
           </div>
@@ -297,7 +297,7 @@ export default function Page() {
               <BarChart3 className="w-4 h-4 text-primary" />
               <p className="text-xs text-primary font-semibold">Real Examples</p>
             </div>
-            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">See Arth-Mitra In Action</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-2">See Arth Mitra In Action</h2>
             <p className="text-base text-muted-foreground max-w-2xl mx-auto">Real scenarios where users got clarity and saved money</p>
           </div>
 
@@ -318,19 +318,19 @@ export default function Page() {
               <div className="space-y-4 mb-6">
                 <div className="bg-gradient-to-r from-primary/10 to-primary/5 rounded-lg p-4 border border-primary/20">
                   <p className="text-sm font-medium text-foreground mb-2">Your Question:</p>
-                  <p className="text-sm text-muted-foreground">I earn ₹15 lakh per year. What are all the tax deductions I can claim?</p>
+                  <p className="text-sm text-muted-foreground">I earn â‚¹15 lakh per year. What are all the tax deductions I can claim?</p>
                 </div>
 
                 <div className="bg-gradient-to-r from-accent/10 to-accent/5 rounded-lg p-4 border border-accent/20">
-                  <p className="text-sm font-medium text-foreground mb-2">Arth-Mitra's Answer:</p>
+                  <p className="text-sm font-medium text-foreground mb-2">Arth Mitra's Answer:</p>
                   <div className="space-y-2 text-sm text-foreground">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                      <span><strong>Section 80C:</strong> Up to ₹1.5L (PPF, ELSS, LIC, investments)</span>
+                      <span><strong>Section 80C:</strong> Up to â‚¹1.5L (PPF, ELSS, LIC, investments)</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
-                      <span><strong>Section 80D:</strong> Health insurance up to ₹50K (₹1L for senior parents)</span>
+                      <span><strong>Section 80D:</strong> Health insurance up to â‚¹50K (â‚¹1L for senior parents)</span>
                     </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />
@@ -346,7 +346,7 @@ export default function Page() {
                 <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200 transition-all duration-200 hover:shadow-sm">
                   <p className="text-sm font-semibold text-green-700 flex items-center gap-2">
                     <TrendingUp className="w-4 h-4" />
-                    Potential Tax Saving: Up to ₹2-3L per year!
+                    Potential Tax Saving: Up to â‚¹2-3L per year!
                   </p>
                 </div>
               </div>
@@ -370,12 +370,12 @@ export default function Page() {
                   {
                     name: 'Atal Pension Yojana',
                     rate: 'Government Guaranteed',
-                    desc: '₹1000-5000/month pension'
+                    desc: 'â‚¹1000-5000/month pension'
                   },
                   {
                     name: 'Senior Citizen Savings Scheme',
                     rate: '8.2% p.a.',
-                    desc: 'Quarterly interest, ₹15L limit'
+                    desc: 'Quarterly interest, â‚¹15L limit'
                   },
                   {
                     name: 'PM Vaya Vandana Yojana',
@@ -414,7 +414,7 @@ export default function Page() {
           <div className="flex flex-col md:flex-row gap-3 justify-center">
             <Link href="/chat">
               <Button className="transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/25 active:scale-95">
-                Try Arth-Mitra
+                Try Arth Mitra
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </Link>
@@ -430,10 +430,10 @@ export default function Page() {
 
         <div className="space-y-4">
           {[
-            { q: 'Is Arth-Mitra advice legally binding?', a: 'No. Arth-Mitra provides informational guidance based on public government data. Always consult with a qualified tax professional or financial advisor before making important decisions.' },
+            { q: 'Is Arth Mitra advice legally binding?', a: 'No. Arth Mitra provides informational guidance based on public government data. Always consult with a qualified tax professional or financial advisor before making important decisions.' },
             { q: 'How accurate is the information?', a: 'We use only official government sources and maintain 98% accuracy. Our AI is regularly updated with latest tax laws and scheme changes. However, always verify specific details for your situation.' },
             { q: 'Is my data secure?', a: 'Yes. We use bank-grade encryption (HTTPS/TLS), never store personal data permanently, and comply with all RBI guidelines. Your financial information is completely private.' },
-            { q: 'Can I use this for GST/business taxes?', a: 'Currently, Arth-Mitra focuses on personal income tax and investment schemes. We\'re working on business tax features for the future.' },
+            { q: 'Can I use this for GST/business taxes?', a: 'Currently, Arth Mitra focuses on personal income tax and investment schemes. We\'re working on business tax features for the future.' },
             { q: 'What if I have complex financial situations?', a: 'For complex cases, our Professional and Premium plans include access to expert consultations with experienced tax professionals.' }
           ].map((faq, i) => (
             <Card
@@ -455,7 +455,7 @@ export default function Page() {
           <div className="grid md:grid-cols-5 gap-12 mb-12">
             <div className="md:col-span-1">
               <div className="flex items-center gap-3 mb-4">
-                  <Logo size="md" showText={false} href="/" />
+                <Logo size="md" showText={false} href="/" />
               </div>
               <p className="text-sm text-muted-foreground">Making Indian finance simple for everyone.</p>
             </div>
@@ -463,15 +463,15 @@ export default function Page() {
             <div>
               <h4 className="font-bold text-foreground mb-4 text-sm">Product</h4>
               <ul className="space-y-2">
-                <li><a href="https://github.com/aryanb1906/ARTH-MITRA?tab=readme-ov-file#-arth-mitra---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">How It Works</a></li>
-                <li><a href="https://github.com/aryanb1906/ARTH-MITRA?tab=readme-ov-file#-arth-mitra---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</a></li>
+                <li><a href="https://github.com/aryanb1906/FinGuide?tab=readme-ov-file#-FinGuide---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">How It Works</a></li>
+                <li><a href="https://github.com/aryanb1906/FinGuide?tab=readme-ov-file#-FinGuide---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">Features</a></li>
               </ul>
             </div>
 
             <div>
               <h4 className="font-bold text-foreground mb-4 text-sm">Company</h4>
               <ul className="space-y-2">
-                <li><a href="https://github.com/aryanb1906/ARTH-MITRA?tab=readme-ov-file#-arth-mitra---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">About Us</a></li>
+                <li><a href="https://github.com/aryanb1906/FinGuide?tab=readme-ov-file#-FinGuide---ai-powered-financial-assistant-for-india" className="text-sm text-muted-foreground hover:text-primary transition-colors">About Us</a></li>
                 <li><a href="https://www.linkedin.com/in/aryan-bhargava/" className="text-sm text-muted-foreground hover:text-primary transition-colors">Contact</a></li>
               </ul>
             </div>
@@ -489,14 +489,14 @@ export default function Page() {
             <div>
               <h4 className="font-bold text-foreground mb-4 text-sm">Connect</h4>
               <ul className="space-y-2">
-                <li><a href="https://github.com/aryanb1906/ARTH-MITRA" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</a></li>
-                <li><a href="https://github.com/aryanb1906/ARTH-MITRA" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"><Mail className="w-4 h-4" /> Email</a></li>
+                <li><a href="https://github.com/aryanb1906/FinGuide" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"><Github className="w-4 h-4" /> GitHub</a></li>
+                <li><a href="https://github.com/aryanb1906/FinGuide" className="text-sm text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"><Mail className="w-4 h-4" /> Email</a></li>
               </ul>
             </div>
           </div>
 
           <div className="border-t border-border/40 pt-8 flex flex-col md:flex-row justify-between items-center">
-            <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Arth-Mitra. All rights reserved. Made with care for Indians.</p>
+            <p className="text-sm text-muted-foreground">Â© {new Date().getFullYear()} Arth Mitra. All rights reserved. Made with care for Indians.</p>
             <div className="flex items-center gap-6 mt-4 md:mt-0">
               <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Status</a>
               <a href="#" className="text-sm text-muted-foreground hover:text-primary transition-colors">Sitemap</a>
@@ -508,3 +508,4 @@ export default function Page() {
     </div>
   )
 }
+

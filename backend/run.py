@@ -1,6 +1,6 @@
-#!/usr/bin/env python
+﻿#!/usr/bin/env python
 """
-Arth-Mitra Backend Startup Script
+FinGuide Backend Startup Script
 """
 import sys
 import os
@@ -10,9 +10,9 @@ import socket
 sys.stdout = open(sys.stdout.fileno(), mode='w', buffering=1)
 sys.stderr = open(sys.stderr.fileno(), mode='w', buffering=1)
 
-print("🚀 Starting Arth-Mitra Backend...")
-print(f"📍 Working directory: {os.getcwd()}")
-print(f"🐍 Python version: {sys.version}")
+print("ðŸš€ Starting FinGuide Backend...")
+print(f"ðŸ“ Working directory: {os.getcwd()}")
+print(f"ðŸ Python version: {sys.version}")
 
 
 def _is_port_in_use(host: str, port: int) -> bool:
@@ -24,23 +24,23 @@ def _is_port_in_use(host: str, port: int) -> bool:
 try:
     from dotenv import load_dotenv
     load_dotenv()
-    print("✅ Loaded .env file")
+    print("âœ… Loaded .env file")
 except Exception as e:
-    print(f"⚠️ Error loading .env: {e}")
+    print(f"âš ï¸ Error loading .env: {e}")
 
 try:
     import uvicorn
-    print("✅ Imported uvicorn")
+    print("âœ… Imported uvicorn")
 
     host = os.getenv("HOST", "0.0.0.0")
     port = int(os.getenv("PORT", "8000"))
 
     if _is_port_in_use("127.0.0.1", port):
-        print(f"⚠️ Port {port} is already in use. Another backend instance is likely running.")
-        print(f"➡️ Reuse existing server at http://127.0.0.1:{port} (docs: /docs)")
+        print(f"âš ï¸ Port {port} is already in use. Another backend instance is likely running.")
+        print(f"âž¡ï¸ Reuse existing server at http://127.0.0.1:{port} (docs: /docs)")
         sys.exit(0)
     
-    print(f"\n⚡ Starting FastAPI server on http://{host}:{port}")
+    print(f"\nâš¡ Starting FastAPI server on http://{host}:{port}")
     uvicorn.run(
         "main:app",
         host=host,
@@ -49,7 +49,8 @@ try:
         log_level="info"
     )
 except Exception as e:
-    print(f"❌ Error starting server: {e}")
+    print(f"âŒ Error starting server: {e}")
     import traceback
     traceback.print_exc()
     sys.exit(1)
+

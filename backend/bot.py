@@ -1,5 +1,5 @@
-"""
-Arth-Mitra AI Bot - RAG-based financial assistant
+﻿"""
+FinGuide AI Bot - RAG-based financial assistant
 Uses LangChain + OpenRouter + ChromaDB for document retrieval and response generation
 """
 
@@ -300,10 +300,10 @@ def format_user_profile(profile: Dict) -> str:
 
     EMP_NOTES = {
     "Salaried - Government":
-        "Higher NPS employer contribution limit – 14% of salary",
+        "Higher NPS employer contribution limit â€“ 14% of salary",
 
     "Salaried - Private":
-        "Optimize 80C + 80D, consider NPS Tier I ₹50,000 under 80CCD(1B)",
+        "Optimize 80C + 80D, consider NPS Tier I â‚¹50,000 under 80CCD(1B)",
 
     "Self-Employed":
         "Consider presumptive taxation (44ADA), expense deductions, advance tax planning",
@@ -360,7 +360,7 @@ def format_user_profile(profile: Dict) -> str:
         profile_text += f"- **Parents Age**: {profile.get('parentsAge')}\n"
         # Check if parents are senior citizens
         if '60' in str(profile.get('parentsAge', '')) or '65' in str(profile.get('parentsAge', '')):
-            profile_text += "  (Note: Additional 80D deduction for senior citizen parents - ₹50,000)\n"
+            profile_text += "  (Note: Additional 80D deduction for senior citizen parents - â‚¹50,000)\n"
     
     if profile.get('investmentCapacity'):
         profile_text += f"- **Investment Capacity**: {profile.get('investmentCapacity')}\n"
@@ -529,7 +529,7 @@ class ArthMitraBot:
         self._response_cache.clear()
         if self.embeddings and hasattr(self.embeddings, 'clear_cache'):
             self.embeddings.clear_cache()
-        print("✅ Response and embedding caches cleared")
+        print("âœ… Response and embedding caches cleared")
 
     def _load_framework_rubrics(self) -> Dict[str, Any]:
         """Load framework-specific scoring rubrics from local JSON."""
@@ -540,7 +540,7 @@ class ArthMitraBot:
                 data = json.load(rubric_file)
             return data if isinstance(data, dict) else {}
         except Exception as error:
-            print(f"⚠️ Could not load framework rubrics: {error}")
+            print(f"âš ï¸ Could not load framework rubrics: {error}")
             return {}
 
     def _get_framework_rubric(self, framework_key: str) -> Dict[str, Any]:
@@ -600,11 +600,11 @@ class ArthMitraBot:
         for index, (provider_name, client) in enumerate(self.llm_clients):
             try:
                 if index > 0:
-                    print(f"↪️ Falling back to {provider_name}")
+                    print(f"â†ªï¸ Falling back to {provider_name}")
                 return client.invoke(prompt)
             except Exception as error:
                 last_error = error
-                print(f"⚠️ {provider_name} failed: {error}")
+                print(f"âš ï¸ {provider_name} failed: {error}")
 
         raise RuntimeError(f"All configured providers failed: {last_error}")
 
@@ -617,13 +617,13 @@ class ArthMitraBot:
         for index, (provider_name, client) in enumerate(self.llm_clients):
             try:
                 if index > 0:
-                    print(f"↪️ Falling back to {provider_name} (stream)")
+                    print(f"â†ªï¸ Falling back to {provider_name} (stream)")
                 for chunk in client.stream(prompt):
                     yield chunk
                 return
             except Exception as error:
                 last_error = error
-                print(f"⚠️ {provider_name} stream failed: {error}")
+                print(f"âš ï¸ {provider_name} stream failed: {error}")
 
         raise RuntimeError(f"All configured providers failed during streaming: {last_error}")
     
@@ -635,16 +635,16 @@ class ArthMitraBot:
         openai_key = os.getenv("OPENAI_API_KEY")
         
         if not gemini_key and not openrouter_key and not openai_key:
-            print("⚠️ No API keys found - will use offline LLM now")
+            print("âš ï¸ No API keys found - will use offline LLM now")
         
         # Initialize ONNX-accelerated embeddings with built-in LRU cache
         # Falls back to standard HuggingFace if ONNX runtime not available
         if self.embeddings is None:
-            print("🔄 Loading optimized embeddings model...")
+            print("ðŸ”„ Loading optimized embeddings model...")
             self.embeddings = OptimizedEmbeddings(
                 model_name="sentence-transformers/all-MiniLM-L6-v2"
             )
-        print("✅ Embeddings model loaded")
+        print("âœ… Embeddings model loaded")
         
         # Initialize LLM providers in fallback order: OpenRouter -> OpenAI -> Gemini
         self.llm_clients = []
@@ -683,11 +683,11 @@ class ArthMitraBot:
         if self.llm_clients:
             self.llm_provider_order = [name for name, _ in self.llm_clients]
             self.llm = self.llm_clients[0][1]
-            print(f"🤖 Enabled providers: {' -> '.join(self.llm_provider_order)}")
-            print(f"🤖 Primary provider: {self.llm_provider_order[0]}")
+            print(f"ðŸ¤– Enabled providers: {' -> '.join(self.llm_provider_order)}")
+            print(f"ðŸ¤– Primary provider: {self.llm_provider_order[0]}")
         else:
             # Offline fallback LLM
-            print("🟡 No API keys found — using offline LLM (gemma3:1b)")
+            print("ðŸŸ¡ No API keys found â€” using offline LLM (gemma3:1b)")
             self.llm = ChatOllama(
             model="gemma3:1b",   # speeeed
             temperature=0.2,
@@ -738,7 +738,7 @@ class ArthMitraBot:
                 files_to_index.extend(glob.glob(os.path.join(base_dir, '**', ext), recursive=True))
         
         if not files_to_index:
-            print(f"📭 No documents found in {DOCS_DIR} or {UPLOADS_DIR}. Add PDF/CSV/TXT/MD/DOCX files for knowledge base.")
+            print(f"ðŸ“­ No documents found in {DOCS_DIR} or {UPLOADS_DIR}. Add PDF/CSV/TXT/MD/DOCX files for knowledge base.")
             return
         
         # Check which files are already indexed (by checking metadata)
@@ -756,15 +756,15 @@ class ArthMitraBot:
         new_files = [f for f in files_to_index if os.path.basename(f) not in existing_sources]
         
         if new_files:
-            print(f"📚 Indexing {len(new_files)} new document(s)...")
+            print(f"ðŸ“š Indexing {len(new_files)} new document(s)...")
             for file_path in new_files:
                 try:
                     result = self.add_documents(file_path)
-                    print(f"  ✓ {result['message']}")
+                    print(f"  âœ“ {result['message']}")
                 except Exception as e:
-                    print(f"  ✗ Failed to index {os.path.basename(file_path)}: {e}")
+                    print(f"  âœ— Failed to index {os.path.basename(file_path)}: {e}")
         else:
-            print(f"✓ Knowledge base up to date ({len(existing_sources)} documents indexed)")
+            print(f"âœ“ Knowledge base up to date ({len(existing_sources)} documents indexed)")
     
     def _format_docs(self, docs):
         """Format retrieved documents into a string with source info - optimized for speed"""
@@ -968,7 +968,7 @@ class ArthMitraBot:
                             }
                         ))
         except Exception as error:
-            print(f"⚠️ Table parsing unavailable for {os.path.basename(file_path)}: {error}")
+            print(f"âš ï¸ Table parsing unavailable for {os.path.basename(file_path)}: {error}")
         return table_docs
 
     def _try_ocr_pdf_documents(self, file_path: str, source_name: str, framework: Optional[str], source_type: str) -> List[Document]:
@@ -992,7 +992,7 @@ class ArthMitraBot:
                     }
                 ))
         except Exception as error:
-            print(f"⚠️ OCR fallback failed for {os.path.basename(file_path)}: {error}")
+            print(f"âš ï¸ OCR fallback failed for {os.path.basename(file_path)}: {error}")
         return ocr_docs
 
     def _load_documents_with_fallback(
@@ -1168,7 +1168,7 @@ class ArthMitraBot:
                     expanded_targets.add(source_name)
 
         except Exception as error:
-            print(f"⚠️ Could not expand framework paired targets: {error}")
+            print(f"âš ï¸ Could not expand framework paired targets: {error}")
 
         return expanded_targets
 
@@ -1233,7 +1233,7 @@ class ArthMitraBot:
                 framework_hint = self._infer_framework_from_query(query)
                 return self._rerank_documents(direct_matches, query, top_k=OPTIMIZED_RETRIEVAL_K, framework_hint=framework_hint)
         except Exception as e:
-            print(f"⚠️ Source filter fallback failed: {e}")
+            print(f"âš ï¸ Source filter fallback failed: {e}")
 
         return []
     
@@ -1523,13 +1523,13 @@ class ArthMitraBot:
             {
                 "name": "Public Provident Fund (PPF)",
                 "base": 72,
-                "eligibility": "Resident individual; 15-year lock-in; up to ₹1.5L under 80C (Old Regime)",
+                "eligibility": "Resident individual; 15-year lock-in; up to â‚¹1.5L under 80C (Old Regime)",
                 "nextStep": "Open/continue PPF account and set monthly auto-debit.",
             },
             {
                 "name": "National Pension System (NPS)",
                 "base": 70,
-                "eligibility": "Age 18-70; extra ₹50,000 deduction under 80CCD(1B) (Old Regime)",
+                "eligibility": "Age 18-70; extra â‚¹50,000 deduction under 80CCD(1B) (Old Regime)",
                 "nextStep": "Select active/auto choice and set annual contribution target.",
             },
             {
@@ -1539,7 +1539,7 @@ class ArthMitraBot:
                 "nextStep": "Start SIP aligned to risk profile and 3+ year horizon.",
             },
             {
-                "name": "Senior Citizens’ Savings Scheme (SCSS)",
+                "name": "Senior Citizensâ€™ Savings Scheme (SCSS)",
                 "base": 64,
                 "eligibility": "Age 60+ (or eligible retirees); quarterly interest payout",
                 "nextStep": "Evaluate SCSS for stable retirement income allocation.",
@@ -2320,7 +2320,7 @@ class ArthMitraBot:
                     if remaining_company <= 0 and remaining_baseline <= 0:
                         break
             except Exception as error:
-                print(f"⚠️ Could not backfill balanced evidence: {error}")
+                print(f"âš ï¸ Could not backfill balanced evidence: {error}")
 
         # Keep mandatory evidence and then fill with best-ranked docs.
         reranked = self._rerank_documents(augmented, query, top_k=max(OPTIMIZED_RETRIEVAL_K * 2, 16), framework_hint=framework_hint)
@@ -2640,7 +2640,7 @@ class ArthMitraBot:
         price_data = gold_lookup.get_price(parsed_date)
         
         if price_data:
-            response = f"""Namaste! I am Arth-Mitra, your AI financial advisor.
+            response = f"""Namaste! I am FinGuide, your AI financial advisor.
 
 Here is the gold price data for **{requested_date_readable}**:
 
@@ -2669,7 +2669,7 @@ If you have any questions about investing in gold (like Sovereign Gold Bonds, Go
         nearest_data, explanation = gold_lookup.get_nearest_price(parsed_date)
         
         if nearest_data:
-            response = f"""Namaste! I am Arth-Mitra, your AI financial advisor.
+            response = f"""Namaste! I am FinGuide, your AI financial advisor.
 
 I don't have gold price data for **{requested_date_readable}** (this may be a holiday or weekend when markets were closed).
 
@@ -2702,7 +2702,7 @@ If you need information about gold investment options available in India, such a
         if date_range[0] and date_range[1]:
             range_info = f" The available data ranges from {date_range[0]} to {date_range[1]}."
         
-        response = f"""Namaste! I am Arth-Mitra, your AI financial advisor.
+        response = f"""Namaste! I am FinGuide, your AI financial advisor.
 
 I don't have gold price data for **{requested_date_readable}**.{range_info}
 
@@ -2734,7 +2734,7 @@ If you have questions about current gold investment options in India or tax impl
         if not source_filter and not is_gold_price_query(query) and not compliance_query:
             cached_response = self._response_cache.get(query, profile)
             if cached_response:
-                print("⚡ Cache hit - returning cached response")
+                print("âš¡ Cache hit - returning cached response")
                 cached_response["cached"] = True
                 return cached_response
         
@@ -2860,7 +2860,7 @@ If you have questions about current gold investment options in India or tax impl
                 response = future_llm.result() if future_llm else self._invoke_llm(prompt)
                 result = self._extract_text(response.content)
         except Exception as e:
-            print(f"⚠️ LLM invocation failed, returning grounded fallback: {e}")
+            print(f"âš ï¸ LLM invocation failed, returning grounded fallback: {e}")
             result = "I am facing a temporary model issue. I am sharing grounded details from the retrieved documents instead."
 
         clause_validation = self._validate_clause_grounding(result, source_docs) if compliance_context else {"isValid": True, "unsupportedClauses": [], "message": "Not a compliance query."}
@@ -3073,3 +3073,4 @@ def initialize_bot(api_key: Optional[str] = None) -> ArthMitraBot:
     if not bot._initialized:
         bot.initialize()
     return bot
+

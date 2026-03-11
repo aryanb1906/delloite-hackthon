@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import { useState, useRef, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
@@ -233,7 +233,7 @@ export default function ChatPage() {
   const buildWelcomeMessage = (): Message => ({
     id: '1',
     type: 'ai',
-    content: 'Welcome to Arth-Mitra ISO Compliance Assistant.\n\nUpload your company documents into the 4 ISO slots, then ask for clause mapping, readiness scores, gap analysis, and remediation plans against baseline ISO documents.',
+    content: 'Welcome to Arth Mitra ISO Compliance Assistant.\n\nUpload your company documents into the 4 ISO slots, then ask for clause mapping, readiness scores, gap analysis, and remediation plans against baseline ISO documents.',
     timestamp: new Date(),
     sources: []
   })
@@ -473,7 +473,7 @@ export default function ChatPage() {
     localStorage.setItem(`chatHistory_${userId}`, JSON.stringify(serializable))
   }, [messages, userId])
 
-  // ── Voice assistant: inject finance queries into a new chat ──
+  // Voice assistant: inject finance queries into a new chat
   const handleVoiceFinanceQuery = useCallback(async (e: Event) => {
     const { userText, reply } = (e as CustomEvent).detail as { userText: string; reply: string }
     if (!userId) return
@@ -537,7 +537,7 @@ export default function ChatPage() {
 
   const parseNumericValue = (raw: string): number | null => {
     const cleaned = raw
-      .replace(/[,₹$]/g, '')
+      .replace(/[,Rs.$]/g, '')
       .replace(/%/g, '')
       .trim()
 
@@ -568,13 +568,13 @@ export default function ChatPage() {
       }
     }
 
-    const colonRegex = /([A-Za-z][^:\n]{1,40})\s*:\s*([₹$]?\d[\d,]*\.?\d*%?)/g
+    const colonRegex = /([A-Za-z][^:\n]{1,40})\s*:\s*((?:Rs\.?|INR|\$)?\d[\d,]*\.?\d*%?)/g
     let colonMatch: RegExpExecArray | null
     while ((colonMatch = colonRegex.exec(content)) !== null) {
       addRow(colonMatch[1], parseNumericValue(colonMatch[2]))
     }
 
-    const bulletRegex = /[-*]\s*\*\*?([^*]+)\*\*?:?\s*([₹$]?\d[\d,]*\.?\d*%?)/g
+    const bulletRegex = /[-*]\s*\*\*?([^*]+)\*\*?:?\s*((?:Rs\.?|INR|\$)?\d[\d,]*\.?\d*%?)/g
     let bulletMatch: RegExpExecArray | null
     while ((bulletMatch = bulletRegex.exec(content)) !== null) {
       addRow(bulletMatch[1], parseNumericValue(bulletMatch[2]))
@@ -589,8 +589,8 @@ export default function ChatPage() {
     }
 
     let unit = ''
-    if (/₹|\binr\b/i.test(content)) unit = '₹'
-    if (/\b(lpa|lakh|lakhs|lac|crore|cr)\b/i.test(content)) unit = '₹'
+    if (/\b(inr|rs\.?|rupees?)\b/i.test(content)) unit = 'Rs.'
+    if (/\b(lpa|lakh|lakhs|lac|crore|cr)\b/i.test(content)) unit = 'Rs.'
     if (/%/.test(content)) unit = '%'
 
     if (dateHint) {
@@ -620,7 +620,7 @@ export default function ChatPage() {
   const getLegendLabel = () => {
     if (chartMode === 'sources') return 'Source frequency'
     if (chartUnit === '%') return 'Savings (%)'
-    if (chartUnit === '₹') return 'Savings (₹)'
+    if (chartUnit === 'Rs.') return 'Savings (INR)'
     return 'Savings'
   }
 
@@ -655,7 +655,7 @@ export default function ChatPage() {
       const pngUrl = canvas.toDataURL('image/png')
       const link = document.createElement('a')
       link.href = pngUrl
-      link.download = `arth-mitra-chart-${Date.now()}.png`
+      link.download = `ArthMitra-chart-${Date.now()}.png`
       link.click()
       URL.revokeObjectURL(url)
     }
@@ -732,7 +732,7 @@ export default function ChatPage() {
   }, [activeChartId, chartSnapshots, chartMode])
 
   const recentQueries: RecentQuery[] = [
-    { id: '1', title: 'Tax saving with ₹10 lakh income', timestamp: '13/02/2026', category: 'tax' },
+    { id: '1', title: 'Tax saving with Rs. 10 lakh income', timestamp: '13/02/2026', category: 'tax' },
     { id: '2', title: 'Best pension scheme comparison', timestamp: '12/02/2026', category: 'pension' },
     { id: '3', title: 'Investment portfolio allocation', timestamp: '11/02/2026', category: 'investment' }
   ]
@@ -803,9 +803,9 @@ export default function ChatPage() {
     const history: ChatHistoryMessage[] = messages
       .filter(msg => {
         if (msg.type === 'user') return true
-        if (msg.content.startsWith('📄 Uploading')) return false
-        if (msg.content.startsWith('✅ ')) return false
-        if (msg.content.startsWith('❌ Failed to upload')) return false
+        if (msg.content.startsWith('[Uploading]')) return false
+        if (msg.content.startsWith('[Success]')) return false
+        if (msg.content.startsWith('[Error] Failed to upload')) return false
         return true
       })
       .map(msg => ({
@@ -1047,13 +1047,13 @@ export default function ChatPage() {
       },
       {
         field: 'Pros',
-        a: message.comparison.schemeA.pros.join('; ') || '—',
-        b: message.comparison.schemeB.pros.join('; ') || '—',
+        a: message.comparison.schemeA.pros.join('; ') || 'N/A',
+        b: message.comparison.schemeB.pros.join('; ') || 'N/A',
       },
       {
         field: 'Cons',
-        a: message.comparison.schemeA.cons.join('; ') || '—',
-        b: message.comparison.schemeB.cons.join('; ') || '—',
+        a: message.comparison.schemeA.cons.join('; ') || 'N/A',
+        b: message.comparison.schemeB.cons.join('; ') || 'N/A',
       },
       {
         field: 'Recommended fit',
@@ -1185,13 +1185,13 @@ export default function ChatPage() {
                   </tr>
                   <tr>
                     <td>Pros</td>
-                    <td>${escapeHtml(message.comparison.schemeA.pros.join('; ') || '—')}</td>
-                    <td>${escapeHtml(message.comparison.schemeB.pros.join('; ') || '—')}</td>
+                    <td>${escapeHtml(message.comparison.schemeA.pros.join('; ') || 'N/A')}</td>
+                    <td>${escapeHtml(message.comparison.schemeB.pros.join('; ') || 'N/A')}</td>
                   </tr>
                   <tr>
                     <td>Cons</td>
-                    <td>${escapeHtml(message.comparison.schemeA.cons.join('; ') || '—')}</td>
-                    <td>${escapeHtml(message.comparison.schemeB.cons.join('; ') || '—')}</td>
+                    <td>${escapeHtml(message.comparison.schemeA.cons.join('; ') || 'N/A')}</td>
+                    <td>${escapeHtml(message.comparison.schemeB.cons.join('; ') || 'N/A')}</td>
                   </tr>
                   <tr>
                     <td>Recommended Fit</td>
@@ -1265,7 +1265,7 @@ export default function ChatPage() {
 
         return `
           <article class="msg">
-            <h3>${message.type === 'user' ? 'User' : 'Arth Mitra'} • ${escapeHtml(message.timestamp.toLocaleString())}</h3>
+            <h3>${message.type === 'user' ? 'User' : 'Arth Mitra'} - ${escapeHtml(message.timestamp.toLocaleString())}</h3>
             <div class="msg-content">${markdownToPrintableHtml(message.content)}</div>
             ${trust}
           </article>
@@ -1277,7 +1277,7 @@ export default function ChatPage() {
       <html>
         <head>
           <meta charset="UTF-8" />
-          <title>Arth-Mitra Chat Export</title>
+          <title>Arth Mitra Chat Export</title>
           <style>
             body { font-family: Arial, sans-serif; padding: 24px; color: #111827; }
             h1 { font-size: 20px; margin-bottom: 16px; }
@@ -1303,7 +1303,7 @@ export default function ChatPage() {
           </style>
         </head>
         <body>
-          <h1>Arth-Mitra Chat Export</h1>
+          <h1>Arth Mitra Chat Export</h1>
           ${printable}
         </body>
       </html>
@@ -1316,7 +1316,7 @@ export default function ChatPage() {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `arth-mitra-chat-${Date.now()}.html`
+    link.download = `ArthMitra-chat-${Date.now()}.html`
     link.click()
     URL.revokeObjectURL(url)
   }
@@ -1588,7 +1588,7 @@ export default function ChatPage() {
     const uploadingMessage: Message = {
       id: Date.now().toString(),
       type: 'ai',
-      content: `📄 Uploading ${frameworkLabel} company document: **${file.name}**...`,
+      content: `[Uploading] ${frameworkLabel} company document: **${file.name}**...`,
       timestamp: new Date(),
       sources: []
     }
@@ -1621,7 +1621,7 @@ export default function ChatPage() {
         : ''
       setMessages(prev => prev.map(msg =>
         msg.id === uploadingMessage.id
-          ? { ...msg, content: `✅ ${response.message}\n\nFramework scope is now set to **${frameworkLabel}** (${sourceFilename}).${qualityText}` }
+          ? { ...msg, content: `[Success] ${response.message}\n\nFramework scope is now set to **${frameworkLabel}** (${sourceFilename}).${qualityText}` }
           : msg
       ))
 
@@ -1635,7 +1635,7 @@ export default function ChatPage() {
       console.error('Upload error:', error)
       setMessages(prev => prev.map(msg =>
         msg.id === uploadingMessage.id
-          ? { ...msg, content: `❌ Failed to upload ${frameworkLabel} document (${file.name}). Please try again.` }
+          ? { ...msg, content: `[Error] Failed to upload ${frameworkLabel} document (${file.name}). Please try again.` }
           : msg
       ))
       setLastUploadedFile('')
@@ -1738,7 +1738,7 @@ export default function ChatPage() {
     .map(id => messages.find(message => message.id === id && message.type === 'ai'))
     .filter((message): message is Message => Boolean(message))
 
-  // ── Register data with assistant context ──
+  // Register data with assistant context
   const assistantContext = useAssistantContext();
 
   // Set current page on mount
@@ -1889,7 +1889,7 @@ export default function ChatPage() {
                               required
                               value={editedProfile.income}
                               onChange={(e) => setEditedProfile({ ...editedProfile, income: e.target.value })}
-                              placeholder="e.g., ₹15 LPA"
+                              placeholder="e.g., Rs. 15 LPA"
                             />
                           </div>
                         </div>
@@ -1996,11 +1996,11 @@ export default function ChatPage() {
                               <SelectValue placeholder="Select range" />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="₹0-50k">₹0 - ₹50,000</SelectItem>
-                              <SelectItem value="₹50k-1L">₹50,000 - ₹1 Lakh</SelectItem>
-                              <SelectItem value="₹1L-2.5L">₹1 Lakh - ₹2.5 Lakhs</SelectItem>
-                              <SelectItem value="₹2.5L-5L">₹2.5 Lakhs - ₹5 Lakhs</SelectItem>
-                              <SelectItem value="₹5L+">₹5 Lakhs+</SelectItem>
+                              <SelectItem value="Rs0-50k">Rs. 0 - Rs. 50,000</SelectItem>
+                              <SelectItem value="Rs50k-1L">Rs. 50,000 - Rs. 1 Lakh</SelectItem>
+                              <SelectItem value="Rs1L-2.5L">Rs. 1 Lakh - Rs. 2.5 Lakhs</SelectItem>
+                              <SelectItem value="Rs2.5L-5L">Rs. 2.5 Lakhs - Rs. 5 Lakhs</SelectItem>
+                              <SelectItem value="Rs5L+">Rs. 5 Lakhs+</SelectItem>
                             </SelectContent>
                           </Select>
                         </div>
@@ -2031,7 +2031,7 @@ export default function ChatPage() {
                 </Dialog>
               </div>
               <div className="space-y-2 text-xs text-muted-foreground">
-                <p><span className="font-medium text-foreground">Age:</span> {profile.age} {profile.age >= 60 && '👴'}</p>
+                <p><span className="font-medium text-foreground">Age:</span> {profile.age}</p>
                 <p><span className="font-medium text-foreground">Gender:</span> {profile.gender}</p>
                 <p><span className="font-medium text-foreground">Income:</span> {profile.income}</p>
                 <p><span className="font-medium text-foreground">Status:</span> {profile.employmentStatus}</p>
@@ -2255,13 +2255,13 @@ export default function ChatPage() {
               <h3 className="text-xs font-bold text-muted-foreground mb-3 uppercase tracking-wide">Categories</h3>
               <div className="space-y-2">
                 {[
-                  { label: 'Income Tax', icon: '📊' },
-                  { label: 'Investments', icon: '💰' },
-                  { label: 'Pensions', icon: '👴' },
-                  { label: 'Govt Schemes', icon: '🏛️' }
+                  { label: 'Income Tax' },
+                  { label: 'Investments' },
+                  { label: 'Pensions' },
+                  { label: 'Govt Schemes' }
                 ].map((cat, i) => (
                   <button key={i} className="w-full text-left p-2 rounded-lg text-xs text-muted-foreground hover:bg-primary/5 transition-colors">
-                    <span className="mr-2">{cat.icon}</span> {cat.label}
+                    {cat.label}
                   </button>
                 ))}
               </div>
@@ -2286,7 +2286,7 @@ export default function ChatPage() {
                 </Link>
                 <Logo size="md" showText={false} href="/" />
                 <div>
-                  <h2 className="text-base font-bold text-foreground">Arth-Mitra Chat</h2>
+                  <h2 className="text-base font-bold text-foreground">Arth Mitra Chat</h2>
                   <p className="text-xs text-muted-foreground">Arth Mitra Financial Assistant</p>
                 </div>
               </div>
@@ -2333,7 +2333,7 @@ export default function ChatPage() {
                 {pinnedMessages.length > 0 && (
                   <div className="max-w-4xl rounded-xl border border-amber-300/50 bg-amber-50/60 p-3">
                     <div className="mb-2 flex items-center justify-between">
-                      <p className="text-sm font-semibold text-amber-800">📌 Pinned answers</p>
+                      <p className="text-sm font-semibold text-amber-800">Pinned answers</p>
                       <Button
                         variant="ghost"
                         size="sm"
@@ -2381,7 +2381,9 @@ export default function ChatPage() {
                 {messages.length === 1 && showSuggestions && (
                   <div className="space-y-4 max-w-3xl">
                     <div className="text-center py-6">
-                      <div className="text-3xl mb-3">💡</div>
+                      <div className="mb-3 flex justify-center">
+                        <Zap className="h-8 w-8 text-primary" />
+                      </div>
                       <h2 className="text-xl font-bold text-foreground mb-2">What would you like to know?</h2>
                       <p className="text-sm text-muted-foreground max-w-md mx-auto">Ask me anything about Indian taxes, investment schemes, or financial planning.</p>
                     </div>
@@ -2394,11 +2396,7 @@ export default function ChatPage() {
                           className="text-left p-4 rounded-xl border border-border/40 hover:border-primary/40 hover:bg-primary/5 transition-all group"
                         >
                           <div className="flex items-start gap-3">
-                            <span className="text-lg">
-                              {query.category === 'tax' && '📊'}
-                              {query.category === 'pension' && '👴'}
-                              {query.category === 'investment' && '💰'}
-                            </span>
+                            <span className="text-lg text-primary">•</span>
                             <p className="text-sm text-foreground group-hover:text-primary font-medium transition-colors">{query.text}</p>
                           </div>
                         </button>
@@ -2419,7 +2417,7 @@ export default function ChatPage() {
                     >
                       {message.type === 'ai' && (
                         <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-blue-600 flex items-center justify-center flex-shrink-0 shadow-md">
-                          <span className="text-white font-bold text-sm">AM</span>
+                          <span className="text-white font-bold text-sm">FG</span>
                         </div>
                       )}
 
@@ -2483,7 +2481,7 @@ export default function ChatPage() {
 
                         {message.type === 'ai' && message.sources && message.sources.length > 0 && (
                           <div className="mt-2 text-sm text-muted-foreground flex flex-wrap items-start gap-2 ml-3">
-                            <span className="shrink-0">📚 Sources:</span>
+                            <span className="shrink-0">Sources:</span>
                             {message.sources.map((source, i) => (
                               <SourceWithTooltip
                                 key={i}
@@ -2574,8 +2572,8 @@ export default function ChatPage() {
                                 .slice(0, 8)
                                 .map((item, idx) => (
                                   <div key={`${message.id}-trace-${idx}`} className="rounded-md bg-muted/60 p-2">
-                                    <p className="text-xs font-semibold">{item.framework} Clause {item.clause} • {item.sourceType}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">{item.source} • Strength: {item.evidenceStrength}</p>
+                                    <p className="text-xs font-semibold">{item.framework} Clause {item.clause} - {item.sourceType}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{item.source} - Strength: {item.evidenceStrength}</p>
                                     <p className="text-xs mt-1 text-foreground/90">{cleanSnippetText(item.snippet)}</p>
                                   </div>
                                 ))}
@@ -2647,15 +2645,15 @@ export default function ChatPage() {
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs">
                               <div className="rounded bg-muted/60 p-2">
                                 <p className="font-semibold mb-1">30 days</p>
-                                {(message.actionPlan306090.d30 || []).slice(0, 3).map((a, i) => <p key={`d30-${i}`}>• {a.action}</p>)}
+                                {(message.actionPlan306090.d30 || []).slice(0, 3).map((a, i) => <p key={`d30-${i}`}>- {a.action}</p>)}
                               </div>
                               <div className="rounded bg-muted/60 p-2">
                                 <p className="font-semibold mb-1">60 days</p>
-                                {(message.actionPlan306090.d60 || []).slice(0, 3).map((a, i) => <p key={`d60-${i}`}>• {a.action}</p>)}
+                                {(message.actionPlan306090.d60 || []).slice(0, 3).map((a, i) => <p key={`d60-${i}`}>- {a.action}</p>)}
                               </div>
                               <div className="rounded bg-muted/60 p-2">
                                 <p className="font-semibold mb-1">90 days</p>
-                                {(message.actionPlan306090.d90 || []).slice(0, 3).map((a, i) => <p key={`d90-${i}`}>• {a.action}</p>)}
+                                {(message.actionPlan306090.d90 || []).slice(0, 3).map((a, i) => <p key={`d90-${i}`}>- {a.action}</p>)}
                               </div>
                             </div>
                           </div>
@@ -3350,3 +3348,5 @@ export default function ChatPage() {
     </div>
   )
 }
+
+

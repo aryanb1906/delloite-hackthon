@@ -30,7 +30,7 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function getDb(): Promise<Db> {
   const client = await clientPromise;
-  return client.db('arth-mitra');
+  return client.db('finguide');
 }
 
 export default clientPromise;

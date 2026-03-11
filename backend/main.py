@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Form
+﻿from fastapi import FastAPI, UploadFile, File, HTTPException, Depends, Form
 from fastapi.responses import StreamingResponse
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -255,14 +255,14 @@ class SavedMessageCreate(BaseModel):
 # Startup/shutdown lifecycle
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("⚡ Arth-Mitra API starting up...")
+    print("âš¡ FinGuide API starting up...")
     
     # Initialize database
-    print("🔧 Initializing database...")
+    print("ðŸ”§ Initializing database...")
     init_db()
-    print("✅ Database ready")
+    print("âœ… Database ready")
     
-    print(f"🔐 Checking API keys...")
+    print(f"ðŸ” Checking API keys...")
     
     from dotenv import load_dotenv
     load_dotenv()
@@ -280,23 +280,23 @@ async def lifespan(app: FastAPI):
         providers.append("Gemini")
 
     if providers:
-        print(f"✅ API keys found for: {', '.join(providers)}")
-        print("🔁 Multi-provider fallback enabled: OpenRouter -> OpenAI -> Gemini")
+        print(f"âœ… API keys found for: {', '.join(providers)}")
+        print("ðŸ” Multi-provider fallback enabled: OpenRouter -> OpenAI -> Gemini")
     else:
-        print("⚠️ WARNING: No API key configured in .env")
+        print("âš ï¸ WARNING: No API key configured in .env")
         print("Backend will now run on local llm (Ollama) without external API access")
     
     # Eagerly initialize bot and warm up for fast first request
-    print("🔄 Initializing bot and warming up...")
+    print("ðŸ”„ Initializing bot and warming up...")
     try:
         bot = get_bot()
         bot.initialize(auto_index=True)
-        print("✅ Bot initialized successfully")
+        print("âœ… Bot initialized successfully")
         
         from warmup import full_warmup
         full_warmup(bot)
     except Exception as e:
-        print(f"⚠️ Startup warmup failed: {e}")
+        print(f"âš ï¸ Startup warmup failed: {e}")
         print("  Bot will initialize on first request instead")
     
     yield
@@ -304,7 +304,7 @@ async def lifespan(app: FastAPI):
     print("Shutting down...")
 
 app = FastAPI(
-    title="Arth-Mitra API",
+    title="FinGuide API",
     description="AI-powered financial assistant for Indian users",
     version="1.0.0",
     lifespan=lifespan
@@ -343,16 +343,16 @@ def hello():
 
 @app.post("/api/chat", response_model=ChatResponse)
 def chat(request: ChatRequest, db: Session = Depends(get_db)):
-    """Chat with Arth-Mitra AI assistant"""
+    """Chat with FinGuide AI assistant"""
     start_time = time.time()
     
     try:
         bot = get_bot()
         if not bot._initialized:
             # Initialize bot on first request
-            print("🔄 Initializing bot for first time...")
+            print("ðŸ”„ Initializing bot for first time...")
             bot.initialize(auto_index=True)
-            print("✅ Bot initialized successfully")
+            print("âœ… Bot initialized successfully")
         
         # Convert profile to dict if provided
         profile_dict = request.profile.dict() if request.profile else None
@@ -391,7 +391,7 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
                     "response_time": response_time
                 })
             except Exception as e:
-                print(f"⚠️ Failed to log to database: {e}")
+                print(f"âš ï¸ Failed to log to database: {e}")
         
         return ChatResponse(
             response=result["response"],
@@ -421,12 +421,12 @@ def chat(request: ChatRequest, db: Session = Depends(get_db)):
             cached=result.get("cached", False),
         )
     except RuntimeError as e:
-        print(f"❌ Runtime Error: {str(e)}")
+        print(f"âŒ Runtime Error: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=503, detail=str(e))
     except Exception as e:
-        print(f"❌ Error: {str(e)}")
+        print(f"âŒ Error: {str(e)}")
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
@@ -465,9 +465,9 @@ def chat_stream(request: ChatRequest):
     try:
         bot = get_bot()
         if not bot._initialized:
-            print("🔄 Initializing bot for first time...")
+            print("ðŸ”„ Initializing bot for first time...")
             bot.initialize(auto_index=True)
-            print("✅ Bot initialized successfully")
+            print("âœ… Bot initialized successfully")
 
         profile_dict = request.profile.dict() if request.profile else None
         history = [msg.dict() for msg in request.history] if request.history else None
@@ -486,12 +486,12 @@ def chat_stream(request: ChatRequest):
                     if token:
                         token_count += 1
                         yield f"event: token\ndata: {json.dumps(token)}\n\n"
-                print(f"📤 Streamed {token_count} tokens")
+                print(f"ðŸ“¤ Streamed {token_count} tokens")
                 yield f"event: sources\ndata: {json.dumps(sources)}\n\n"
                 yield f"event: meta\ndata: {json.dumps(metadata)}\n\n"
                 yield "event: done\ndata: [DONE]\n\n"
             except Exception as e:
-                print(f"❌ Stream error: {e}")
+                print(f"âŒ Stream error: {e}")
                 yield f"event: error\ndata: {json.dumps(str(e))}\n\n"
                 yield "event: done\ndata: [DONE]\n\n"
 
@@ -554,7 +554,7 @@ async def upload_document(file: UploadFile = File(...), user_id: Optional[str] =
                     "chunks": chunks_indexed
                 })
             except Exception as e:
-                print(f"⚠️ Failed to log document to database: {e}")
+                print(f"âš ï¸ Failed to log document to database: {e}")
         
         return UploadResponse(
             status=result["status"],
@@ -651,7 +651,7 @@ async def upload_framework_document(
                     "framework": framework_key,
                 })
             except Exception as e:
-                print(f"⚠️ Failed to log framework document to database: {e}")
+                print(f"âš ï¸ Failed to log framework document to database: {e}")
 
         return UploadResponse(
             status=result["status"],
@@ -1061,9 +1061,9 @@ def get_user_analytics(user_id: str, days: int = 30, db: Session = Depends(get_d
         raise HTTPException(status_code=500, detail=f"Failed to get user analytics: {str(e)}")
 
 
-# ──────────────────────────────────────────────────────────────
-# Voice Assistant Endpoint  (ARTH-MITRA Copilot – Phase 2)
-# ──────────────────────────────────────────────────────────────
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# Voice Assistant Endpoint  (FinGuide Copilot â€“ Phase 2)
+# â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 ASSISTANT_FEATURE_FLAG = os.getenv("ENABLE_VOICE_ASSISTANT", "true").lower() == "true"
 
@@ -1125,9 +1125,9 @@ class AssistantResponse(BaseModel):
     isFinanceRelated: Optional[bool] = False
     followUps: Optional[list[str]] = None  # 2-3 suggested follow-up questions
 
-ASSISTANT_SYSTEM_PROMPT = """You are Arth-Mitra Voice Copilot, a helpful Indian financial assistant embedded inside the Arth-Mitra web application.
+ASSISTANT_SYSTEM_PROMPT = """You are FinGuide Voice Copilot, a helpful Indian financial assistant embedded inside the FinGuide web application.
 
-IMPORTANT – SAFETY POLICY:
+IMPORTANT â€“ SAFETY POLICY:
 You are NOT allowed to perform or suggest any destructive or data-modifying operations.
 This includes but is not limited to: deleting chats, deleting documents, clearing saved responses, resetting data, submitting filings, or modifying financial records.
 If the user requests any deletion, reset, or data-modification action, respond politely that such operations must be performed manually through the application UI. Do NOT return an action object for these requests.
@@ -1150,7 +1150,7 @@ Financial year: {fy}
 Visible UI components: {components}
 Language preference: {language}
 
-PAGE DATA (structured context from the current page – use this to answer questions about displayed data):
+PAGE DATA (structured context from the current page â€“ use this to answer questions about displayed data):
 {page_data}
 
 DATA-GROUNDING RULES (MANDATORY):
@@ -1160,7 +1160,7 @@ DATA-GROUNDING RULES (MANDATORY):
 - When comparing data points, use only the values listed. Do not interpolate or assume missing entries.
 - Keep the tone professional and concise.
 
-RESPONSE FORMAT – you MUST reply with valid JSON only, no markdown fences:
+RESPONSE FORMAT â€“ you MUST reply with valid JSON only, no markdown fences:
 
 For INFORMATIONAL responses (tax explanations, scheme comparisons, financial advice, data analysis):
 {{
@@ -1181,7 +1181,7 @@ For GENERAL / NON-FINANCE responses (greetings, jokes, weather, general knowledg
 FOLLOW-UP SUGGESTIONS RULES:
 - ALWAYS include 2-3 relevant follow-up questions in the "followUps" array.
 - Follow-ups should be natural next questions the user might want to ask.
-- Keep each follow-up SHORT (under 10 words) — they will be shown as tappable pills.
+- Keep each follow-up SHORT (under 10 words) â€” they will be shown as tappable pills.
 - For finance topics, suggest deeper dives, comparisons, or action items.
 - For Hindi responses, write follow-ups in Hindi too.
 - Examples: "Compare old vs new regime", "What deductions can I claim?", "Show me PPF rates"
@@ -1202,7 +1202,7 @@ For SYSTEM ACTIONS (navigation, UI interactions):
   "isFinanceRelated": false
 }}
 Only include "action" when the user explicitly requests a navigation or UI operation.
-NEVER return action.type "none" — simply omit the action field instead.
+NEVER return action.type "none" â€” simply omit the action field instead.
 
 ACTION RULES:
 - "navigate": set target to the route path, e.g. "/tax-calculator"
@@ -1212,7 +1212,7 @@ ACTION RULES:
 - "open_report": target = report identifier
 - "explain_graph": highlight a chart/visual and explain its data; target = data-assistant-id of the chart
 
-If the user is asking a question, requesting an explanation, or having a conversation, respond with ONLY "reply" and "language" — no "action".
+If the user is asking a question, requesting an explanation, or having a conversation, respond with ONLY "reply" and "language" â€” no "action".
 
 DESTRUCTIVE ACTION POLICY:
 You must NEVER return an action with any of these types: delete_chat, delete_document, clear_saved_responses, reset_data, submit_filing, modify_financial_data.
@@ -1224,7 +1224,7 @@ Available data-assistant-ids: sidebar, chat-input, file-upload, tax-form, profil
 Keep replies concise (under 120 words) and conversational. If the user speaks Hindi, reply in Hindi.
 """
 
-# ── Voice assistant rate limiter ─────────────────────────────────
+# â”€â”€ Voice assistant rate limiter â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 from collections import defaultdict as _defaultdict
 
 _voice_rate_buckets: dict[str, list[float]] = _defaultdict(list)
@@ -1242,7 +1242,7 @@ def _voice_rate_check(user_id: str) -> None:
     _voice_rate_buckets[user_id].append(now)
 
 
-# ── Prompt injection sanitization ────────────────────────────────
+# â”€â”€ Prompt injection sanitization â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 import re as _re
 
 _INJECTION_PATTERNS = [
@@ -1272,7 +1272,7 @@ def _sanitize_user_input(text: str) -> str:
         sanitized = pattern.sub("", sanitized)
 
     # Remove excessive consecutive special characters (>3 of the same)
-    sanitized = _re.sub(r"([^\w\s\u0900-\u097F₹])\1{3,}", r"\1\1", sanitized)
+    sanitized = _re.sub(r"([^\w\s\u0900-\u097Fâ‚¹])\1{3,}", r"\1\1", sanitized)
 
     # Cap input length (prevent token-stuffing attacks)
     sanitized = sanitized[:1000].strip()
@@ -1282,21 +1282,21 @@ def _sanitize_user_input(text: str) -> str:
 
 @app.post("/api/assistant", response_model=AssistantResponse)
 def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
-    """Voice assistant endpoint – thin orchestration layer over existing LLM"""
+    """Voice assistant endpoint â€“ thin orchestration layer over existing LLM"""
     if not ASSISTANT_FEATURE_FLAG:
         raise HTTPException(status_code=403, detail="Voice assistant is disabled")
 
-    # ── Auth check ──────────────────────────────────────────────
+    # â”€â”€ Auth check â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     if not request.userId:
         raise HTTPException(status_code=401, detail="Authentication required")
     user = crud.get_user_by_id(db, request.userId)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid user")
 
-    # ── Rate limiting (10 requests/minute per user) ─────────────
+    # â”€â”€ Rate limiting (10 requests/minute per user) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     _voice_rate_check(request.userId)
 
-    # ── Sanitize user input (prompt injection mitigation) ───────
+    # â”€â”€ Sanitize user input (prompt injection mitigation) â”€â”€â”€â”€â”€â”€â”€
     request.userText = _sanitize_user_input(request.userText)
 
     start_time = time.time()
@@ -1312,24 +1312,24 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
         page_data_lines: list[str] = []
         ac = ctx.assistantContext
         if ac:
-            # ── Page identity ─────────────────────────────────────
+            # â”€â”€ Page identity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.currentPage:
                 page_data_lines.append(f"Current page: {ac.currentPage}")
 
-            # ── Active chat ───────────────────────────────────────
+            # â”€â”€ Active chat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.activeChatId:
                 page_data_lines.append(f"Active chat ID: {ac.activeChatId}")
 
-            # ── Chat history ──────────────────────────────────────
+            # â”€â”€ Chat history â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.chatHistory:
                 page_data_lines.append("")
                 page_data_lines.append(f"Available chats ({len(ac.chatHistory)}):")
                 for ch in ac.chatHistory[:30]:  # cap to avoid prompt bloat
                     page_data_lines.append(f"  - [{ch.id}] {ch.title or 'Untitled'}")
                 if len(ac.chatHistory) > 30:
-                    page_data_lines.append(f"  … and {len(ac.chatHistory) - 30} more")
+                    page_data_lines.append(f"  â€¦ and {len(ac.chatHistory) - 30} more")
 
-            # ── Saved responses ───────────────────────────────────
+            # â”€â”€ Saved responses â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.savedResponses:
                 page_data_lines.append("")
                 page_data_lines.append(f"Saved responses ({len(ac.savedResponses)}):")
@@ -1339,9 +1339,9 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
                         line += f": {sr.summary[:120]}"
                     page_data_lines.append(line)
                 if len(ac.savedResponses) > 20:
-                    page_data_lines.append(f"  … and {len(ac.savedResponses) - 20} more")
+                    page_data_lines.append(f"  â€¦ and {len(ac.savedResponses) - 20} more")
 
-            # ── Summary KPIs ──────────────────────────────────────
+            # â”€â”€ Summary KPIs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.summaries:
                 page_data_lines.append("")
                 page_data_lines.append("Summaries (key figures currently displayed):")
@@ -1351,7 +1351,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
                         line += f" ({s.subtitle})"
                     page_data_lines.append(line)
 
-            # ── Visuals / charts ──────────────────────────────────
+            # â”€â”€ Visuals / charts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.visuals:
                 page_data_lines.append("")
                 page_data_lines.append("Visuals/Charts currently displayed:")
@@ -1360,7 +1360,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
                     if v.unit:
                         header += f" (unit: {v.unit})"
                     if v.description:
-                        header += f" — {v.description}"
+                        header += f" â€” {v.description}"
                     page_data_lines.append(header)
                     # Serialize actual data points so the LLM can reason over them
                     if v.data:
@@ -1368,12 +1368,12 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
                             data_str = json.dumps(v.data, default=str, ensure_ascii=False)
                             # Truncate very large payloads to keep prompt manageable
                             if len(data_str) > 2000:
-                                data_str = data_str[:2000] + "… (truncated)"
+                                data_str = data_str[:2000] + "â€¦ (truncated)"
                             page_data_lines.append(f"    Data: {data_str}")
                         except Exception:
                             page_data_lines.append("    Data: (serialisation error)")
 
-            # ── Page metadata ─────────────────────────────────────
+            # â”€â”€ Page metadata â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             if ac.metadata:
                 page_data_lines.append("")
                 page_data_lines.append(f"Page metadata: {json.dumps(ac.metadata, default=str, ensure_ascii=False)}")
@@ -1387,45 +1387,45 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
             page_data="\n".join(page_data_lines) if page_data_lines else "No additional page data is currently registered. Answer based on your financial knowledge.",
         )
 
-        # ── Hindi language extension ──────────────────────────────
+        # â”€â”€ Hindi language extension â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         if (request.language or "en") == "hi":
             system_prompt += (
-                "\n\nLANGUAGE DIRECTIVE – HINDI:"
+                "\n\nLANGUAGE DIRECTIVE â€“ HINDI:"
                 "\nYou must respond in Hindi (Devanagari script)."
                 "\nUse professional financial Hindi suitable for the Indian context."
                 "\nKeep explanations clear and formal."
                 "\nAvoid mixing excessive English unless necessary for technical terms."
                 "\n"
                 "\nUse standard Hindi financial terminology. Preferred terms include:"
-                "\n  - Tax → कर"
-                "\n  - Income Tax → आयकर"
-                "\n  - Savings → बचत"
-                "\n  - Investment → निवेश"
-                "\n  - Expenditure → व्यय"
-                "\n  - Financial Analysis → वित्तीय विश्लेषण"
-                "\n  - Deduction → कटौती"
-                "\n  - Rebate → छूट"
-                "\n  - Taxable Income → कर योग्य आय"
-                "\n  - Tax Return → कर विवरणी"
-                "\n  - Assessment Year → निर्धारण वर्ष"
-                "\n  - Financial Year → वित्तीय वर्ष"
-                "\n  - Gross Income → सकल आय"
-                "\n  - Net Income → शुद्ध आय"
-                "\n  - Tax Slab → कर स्लैब"
-                "\n  - Government Scheme → सरकारी योजना"
+                "\n  - Tax â†’ à¤•à¤°"
+                "\n  - Income Tax â†’ à¤†à¤¯à¤•à¤°"
+                "\n  - Savings â†’ à¤¬à¤šà¤¤"
+                "\n  - Investment â†’ à¤¨à¤¿à¤µà¥‡à¤¶"
+                "\n  - Expenditure â†’ à¤µà¥à¤¯à¤¯"
+                "\n  - Financial Analysis â†’ à¤µà¤¿à¤¤à¥à¤¤à¥€à¤¯ à¤µà¤¿à¤¶à¥à¤²à¥‡à¤·à¤£"
+                "\n  - Deduction â†’ à¤•à¤Ÿà¥Œà¤¤à¥€"
+                "\n  - Rebate â†’ à¤›à¥‚à¤Ÿ"
+                "\n  - Taxable Income â†’ à¤•à¤° à¤¯à¥‹à¤—à¥à¤¯ à¤†à¤¯"
+                "\n  - Tax Return â†’ à¤•à¤° à¤µà¤¿à¤µà¤°à¤£à¥€"
+                "\n  - Assessment Year â†’ à¤¨à¤¿à¤°à¥à¤§à¤¾à¤°à¤£ à¤µà¤°à¥à¤·"
+                "\n  - Financial Year â†’ à¤µà¤¿à¤¤à¥à¤¤à¥€à¤¯ à¤µà¤°à¥à¤·"
+                "\n  - Gross Income â†’ à¤¸à¤•à¤² à¤†à¤¯"
+                "\n  - Net Income â†’ à¤¶à¥à¤¦à¥à¤§ à¤†à¤¯"
+                "\n  - Tax Slab â†’ à¤•à¤° à¤¸à¥à¤²à¥ˆà¤¬"
+                "\n  - Government Scheme â†’ à¤¸à¤°à¤•à¤¾à¤°à¥€ à¤¯à¥‹à¤œà¤¨à¤¾"
                 "\nAlways prefer these Devanagari terms over their English equivalents in your reply."
             )
         elif (request.language or "en") == "en-IN":
             system_prompt += (
-                "\n\nLANGUAGE DIRECTIVE – HINGLISH (en-IN):"
-                "\nThe user speaks Hinglish — a natural mix of Hindi and English commonly used in India."
+                "\n\nLANGUAGE DIRECTIVE â€“ HINGLISH (en-IN):"
+                "\nThe user speaks Hinglish â€” a natural mix of Hindi and English commonly used in India."
                 "\nRespond in a friendly Hinglish style: primarily English but freely mix Hindi words and phrases as an Indian person naturally would."
                 "\nExamples of Hinglish style:"
                 "\n  - 'Aapka income 15 lakh hai toh new regime mein tax lagbhag 1.87 lakh hoga.'"
                 "\n  - 'PPF mein invest karna chahte ho? 80C ke under 1.5 lakh tak deduction milta hai.'"
                 "\n  - 'Yeh scheme bahut acchi hai retirement ke liye.'"
                 "\nKeep the tone conversational and natural. Use Romanized Hindi (Latin script), NOT Devanagari."
-                "\nDo NOT force pure Hindi or pure English — blend naturally."
+                "\nDo NOT force pure Hindi or pure English â€” blend naturally."
                 "\nAll financial terms can stay in English (tax, deduction, SIP, PPF, etc.)."
                 "\nFollow-up suggestions should also be in Hinglish style."
             )
@@ -1455,7 +1455,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
             # Fallback: treat entire text as a plain reply
             parsed = {"reply": raw_text, "language": request.language or "en"}
 
-        # Validate action type — only allow non-destructive actions
+        # Validate action type â€” only allow non-destructive actions
         valid_actions = {
             "navigate", "open_report", "highlight_section", "run_calculator",
             "guide_and_highlight", "explain_graph",
@@ -1469,7 +1469,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
         if isinstance(action_data, dict):
             _action_type = action_data.get("type")
             if _action_type in _BLOCKED_ACTIONS:
-                # LLM returned a destructive action despite instructions — strip it
+                # LLM returned a destructive action despite instructions â€” strip it
                 action_data = None
             elif _action_type not in valid_actions:
                 action_data = None
@@ -1507,7 +1507,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
         else:
             follow_ups = None
 
-        # Build optional action object — only when a real system action is present
+        # Build optional action object â€” only when a real system action is present
         response_action = None
         if action_data is not None:
             action_type = action_data.get("type", "none")
@@ -1527,7 +1527,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
         )
 
     except Exception as e:
-        print(f"❌ Assistant error: {e}")
+        print(f"âŒ Assistant error: {e}")
         return AssistantResponse(
             reply="I'm having trouble right now. Please try again in a moment.",
             action=None,
@@ -1536,7 +1536,7 @@ def voice_assistant(request: AssistantRequest, db: Session = Depends(get_db)):
         )
 
 
-# ── OpenAI Text-to-Speech endpoint ──────────────────────────────
+# â”€â”€ OpenAI Text-to-Speech endpoint â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 class TTSRequest(BaseModel):
     text: str
 
@@ -1570,5 +1570,6 @@ def text_to_speech(request: TTSRequest):
         )
 
     except Exception as e:
-        print(f"❌ TTS error: {e}")
+        print(f"âŒ TTS error: {e}")
         raise HTTPException(status_code=500, detail=f"TTS generation failed: {str(e)}")
+

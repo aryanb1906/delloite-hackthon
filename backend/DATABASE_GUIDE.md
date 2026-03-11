@@ -1,12 +1,12 @@
-# Database & Analytics Integration Guide
+﻿# Database & Analytics Integration Guide
 
 ## Overview
 
-This document describes the new database and analytics features added to ARTH-MITRA backend, replacing localStorage with a proper SQLite database.
+This document describes the new database and analytics features added to FinGuide backend, replacing localStorage with a proper SQLite database.
 
 ## What's New
 
-### ✅ Features Implemented
+### âœ… Features Implemented
 
 1. **User Management** - Registration, login, profile management
 2. **Chat History Persistence** - All conversations saved in database
@@ -34,7 +34,7 @@ This document describes the new database and analytics features added to ARTH-MI
 
 ## API Endpoints
 
-### 🔐 Authentication
+### ðŸ” Authentication
 
 #### Register User
 ```http
@@ -91,7 +91,7 @@ Content-Type: application/json
 
 ---
 
-### 👤 Profile Management
+### ðŸ‘¤ Profile Management
 
 #### Get User Profile
 ```http
@@ -115,7 +115,7 @@ Content-Type: application/json
 
 ---
 
-### 💬 Chat History
+### ðŸ’¬ Chat History
 
 #### Create Chat Session
 ```http
@@ -200,7 +200,7 @@ Content-Type: application/json
 
 ---
 
-### 📄 Document Management
+### ðŸ“„ Document Management
 
 #### Get User Documents
 ```http
@@ -234,7 +234,7 @@ file: (binary)
 
 ---
 
-### 🔖 Saved Messages
+### ðŸ”– Saved Messages
 
 #### Save a Message
 ```http
@@ -261,7 +261,7 @@ DELETE /api/saved-messages/{saved_id}
 
 ---
 
-### 📊 Analytics
+### ðŸ“Š Analytics
 
 #### Analytics Summary
 ```http
@@ -305,7 +305,7 @@ GET /api/users/{user_id}/analytics?days=30
 
 ---
 
-## 🎯 Landing Page Analytics Display
+## ðŸŽ¯ Landing Page Analytics Display
 
 ### LiveStats Component
 The landing page features a real-time analytics display component (`LiveStats`) that shows three key metrics:
@@ -318,9 +318,9 @@ The landing page features a real-time analytics display component (`LiveStats`) 
    - Data source: `totalQueries` from analytics summary
 
 2. **Tax Saved For Users**
-   - Calculated from query count: `totalQueries × ₹20,000`
-   - Format: Indian currency format (e.g., "₹10Cr+")
-   - Estimation: ₹20,000 saved per financial query on average
+   - Calculated from query count: `totalQueries Ã— â‚¹20,000`
+   - Format: Indian currency format (e.g., "â‚¹10Cr+")
+   - Estimation: â‚¹20,000 saved per financial query on average
 
 3. **Accuracy Rate**
    - Fixed at 98% (represents AI response quality)
@@ -354,9 +354,9 @@ function formatNumber(num: number): string {
 }
 
 function formatCurrency(amount: number): string {
-  if (amount >= 10000000) return `₹${(amount / 10000000).toFixed(0)}Cr+`;
-  if (amount >= 100000) return `₹${(amount / 100000).toFixed(0)}L+`;
-  return `₹${amount}`;
+  if (amount >= 10000000) return `â‚¹${(amount / 10000000).toFixed(0)}Cr+`;
+  if (amount >= 100000) return `â‚¹${(amount / 100000).toFixed(0)}L+`;
+  return `â‚¹${amount}`;
 }
 ```
 
@@ -367,7 +367,7 @@ The `/api/analytics/summary?days=7` endpoint returns:
 ```json
 {
   "totalQueries": 150,
-  "totalTaxSaved": 3000000,  // 150 × ₹20,000
+  "totalTaxSaved": 3000000,  // 150 Ã— â‚¹20,000
   "totalUploads": 12,
   "activeUsers": 8,
   "avgResponseTime": 2.34,
@@ -574,7 +574,7 @@ curl http://localhost:8000/api/analytics/summary?days=7
 
 ## Benefits
 
-### ✅ What You Get
+### âœ… What You Get
 
 1. **Persistent Data** - No more data loss on browser clear
 2. **Multi-Device** - Access history from any device
@@ -583,7 +583,7 @@ curl http://localhost:8000/api/analytics/summary?days=7
 5. **User Management** - Proper authentication
 6. **Scalability** - Database handles thousands of users
 
-### 📊 Analytics Insights
+### ðŸ“Š Analytics Insights
 
 - Track most asked questions
 - Monitor response times
@@ -604,11 +604,11 @@ curl http://localhost:8000/api/analytics/summary?days=7
 
 ## Next Steps
 
-1. ✅ **Install dependencies**: `pip install -r requirements.txt`
-2. ✅ **Update frontend** to use new API endpoints
-3. ✅ **Test registration/login** flow
-4. ✅ **Integrate chat logging** with userId/sessionId
-5. ✅ **Build analytics dashboard** in frontend
+1. âœ… **Install dependencies**: `pip install -r requirements.txt`
+2. âœ… **Update frontend** to use new API endpoints
+3. âœ… **Test registration/login** flow
+4. âœ… **Integrate chat logging** with userId/sessionId
+5. âœ… **Build analytics dashboard** in frontend
 
 ---
 
@@ -643,3 +643,4 @@ For issues or questions:
 **Implementation Date**: February 16, 2026
 **Database**: SQLite (upgradable to PostgreSQL)
 **ORM**: SQLAlchemy 2.0+
+

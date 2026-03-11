@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import json
 import os
 import statistics
@@ -231,7 +231,7 @@ def summarize(results: List[Dict]) -> Dict:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Quick RAG diagnostics for Arth-Mitra")
+    parser = argparse.ArgumentParser(description="Quick RAG diagnostics for FinGuide")
     parser.add_argument("--queries", help="Path to queries file (.txt or .json)", default="")
     parser.add_argument("--out", help="Optional JSON output path", default="")
     args = parser.parse_args()
@@ -244,7 +244,7 @@ def main() -> None:
 
     profile = {
         "age": 30,
-        "income": "₹10 LPA",
+        "income": "â‚¹10 LPA",
         "employmentStatus": "Salaried",
         "taxRegime": "Old Regime",
         "homeownerStatus": "Rented",
@@ -338,3 +338,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
