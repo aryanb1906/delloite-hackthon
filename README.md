@@ -1,6 +1,6 @@
-﻿# FinGuide
+﻿# ...arth mitra
 
-FinGuide is an AI-powered ISO compliance copilot that compares company policy documents against original ISO standards and produces clause-level findings, evidence traceability, and remediation actions.
+...arth mitra is an AI-powered ISO compliance copilot that compares company policy documents against original ISO standards and produces clause-level findings, evidence traceability, and remediation actions.
 
 ## Problem This Solves
 
@@ -23,7 +23,7 @@ Organizations need quick, reliable answers to questions like:
 Today, this is usually done with manual clause mapping and subjective scoring, which leads to delays and inconsistent outcomes.
 
 ### What This System Does
-FinGuide converts ISO standards into an interactive AI workflow that can:
+...arth mitra converts ISO standards into an interactive AI workflow that can:
 - ingest company policy/framework documents,
 - compare them against ISO baseline text,
 - generate clause-level readiness scoring,
@@ -255,7 +255,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8000
 
 ## Contributors Notes
 
-- Keep product name exactly `FinGuide`.
+- Keep product name exactly `...arth mitra`.
 - Do not commit runtime indexes/uploads or proprietary documents.
 - Prioritize explainability: citations, clause grounding, and actionable remediation.
 
